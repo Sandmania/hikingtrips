@@ -1,0 +1,126 @@
+speed: 3
+global:
+  legs:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    
+trip:
+  - gpx: planned_route/leg1.gpx
+    startIcon: assets/images/circle-play-regular.svg
+    endIcon: assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: true
+      dinner: true
+      snacks: true
+  - gpx: planned_route/leg2.gpx
+    endIcon: assets/images/bonfire-outline.svg
+  - gpx: planned_route/leg3.gpx
+    endIcon: assets/images/bonfire-outline.svg
+  - gpx: planned_route/leg4.gpx
+    endIcon: assets/images/bonfire-outline.svg
+  - gpx: planned_route/leg5.gpx
+    endIcon: assets/images/bonfire-outline.svg
+  - gpx: planned_route/leg6.gpx
+    endIcon: assets/images/bonfire-outline.svg
+    alternatives:
+    - gpx: planned_route/leg6_alt1.gpx
+      endIcon: assets/images/bonfire-outline.svg
+      name: alternative route 1 for leg 6 (skips leg 7)
+      skips: [7]
+    - gpx: planned_route/leg6_alt2.gpx
+      endIcon: assets/images/bonfire-outline.svg
+      name: alternative route 2 for leg 6 (skips leg 7)
+      skips: [7]
+  - gpx: planned_route/leg7.gpx
+    endIcon: assets/images/bonfire-outline.svg
+  - gpx: planned_route/leg8.gpx
+    endIcon: assets/images/bonfire-outline.svg
+    alternatives:
+    - gpx: planned_route/leg8_alt1.gpx
+      endIcon: assets/images/bonfire-outline.svg
+      name: alternative route 1 for leg 8
+  - gpx: planned_route/leg9.gpx
+    endIcon: assets/images/flag-checkered-solid.svg
+    alternatives:
+    - gpx: planned_route/leg9_alt1.gpx
+      endIcon: assets/images/bonfire-outline.svg
+      name: alternative route 1 for leg 9
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true      
+      
+evacuation_routes:
+  - gpx: planned_route/evac1.gpx
+    startIcon: assets/images/medkit-outline.svg
+    endIcon:
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  - gpx: planned_route/evac2.gpx
+    startIcon: assets/images/medkit-outline.svg
+    endIcon:
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  - gpx: planned_route/evac3.gpx
+    startIcon: medkit-outline.svg
+    endIcon:
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  - gpx: planned_route/evac4.gpx
+    startIcon: assets/images/medkit-outline.svg
+    endIcon:
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  - gpx: planned_route/evac5.gpx
+    startIcon: assets/images/medkit-outline.svg
+    endIcon:
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+
+actual_route:
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-13T07-17-31Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-14T06-20-27Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-15T05-49-56Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-17T07-04-44Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-17T12-05-23Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-18T07-10-02Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-19T06-31-08Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-19T09-16-32Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-20T06-33-58Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-21T06-53-10Z-track.gpx
+  - gpx: actual_route/suuntoapp-Trekking-2024-08-22T06-24-04Z-track.gpx
+
+
+photo_info:
+  cameraOffset:
+    realClock: 13.09
+    cameraClock: 14.02
+    substrackt: "53m"
