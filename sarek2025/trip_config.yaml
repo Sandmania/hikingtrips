@@ -1,0 +1,48 @@
+speed: 3
+global:
+  legs:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+
+trip:
+  - gpx: planned_route/day1_ele.gpx
+    startIcon: /assets/images/circle-play-regular.svg
+    endIcon: /assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: true
+      dinner: true
+      snacks: true
+  - gpx: planned_route/day2_ele.gpx
+    endIcon: /assets/images/bonfire-outline.svg
+  - gpx: planned_route/day3_ele.gpx
+    endIcon: /assets/images/bonfire-outline.svg
+  - gpx: planned_route/day4_ele.gpx
+    endIcon: /assets/images/bonfire-outline.svg
+  - gpx: planned_route/day5_ele.gpx
+    endIcon: /assets/images/bonfire-outline.svg
+  - gpx: planned_route/day6_ele.gpx
+    endIcon: /assets/images/flag-checkered-solid.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true
+
+
+photo_info:
+  cameraOffset:
+    realClock: 13.09
+    cameraClock: 14.02
+    substrackt: "53m"
