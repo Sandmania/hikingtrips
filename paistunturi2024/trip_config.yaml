@@ -81,7 +81,7 @@ evacuation_routes:
       dinner: false
       snacks: false
   - gpx: planned_route/evac3.gpx
-    startIcon: medkit-outline.svg
+    startIcon: assets/images/medkit-outline.svg
     endIcon:
     mealPlan:
       breakfast: false
