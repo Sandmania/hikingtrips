@@ -1,3 +1,5 @@
+import { loadGPX } from './gpxUtils.js';
+
 /**
  * Finalize the route addition process
  * @param {number} map - Leaflet map object
@@ -71,4 +73,42 @@ export function bindPopupToLayer(gpx, prefix, index, distance) {
     gpx.eachLayer(layer => {
         layer.bindPopup(`${prefix} ${index + 1}: ${distance.toFixed(2)} km`);
     });
+}
+
+// Function to add routes to map
+export function addRoutesToMap(map, globalConfig, routes, featureGroup, showIcons, defaultOptions, infoDiv, prefix, isAlternative = false, selectedAlternatives = []) {
+    var totalLength = 0;
+    if (!isAlternative) {
+        infoDiv.innerHTML = '';
+    }
+
+    function addNextRoute(index) {
+        if (index >= routes.length) {
+            finalizeRoutes(map, totalLength, featureGroup, infoDiv, isAlternative);
+            return;
+        }
+
+        const route = routes[index];
+        if (shouldSkipLeg(index, selectedAlternatives)) {
+            addNextRoute(index + 1);
+            return;
+        }
+
+        loadGPX(route, showIcons, featureGroup, defaultOptions, function(gpx, distance) {
+            totalLength += distance;
+            if (!isAlternative) {
+                displayRouteInfo(infoDiv, prefix, index, distance, route, globalConfig);
+            }
+            bindPopupToLayer(gpx, prefix, index, distance);
+            addNextRoute(index + 1);
+        });
+
+        // TODO I wonder why this was here?
+        // Add alternative routes for the current leg
+        //if (route.alternatives) {
+        //    addRoutesToMap(route.alternatives, alternativeFeatureGroup, showIcons, globalConfig.alternatives, infoDiv, `Alternative for ${prefix} ${index + 1}`, true);
+        //}
+    }
+
+    addNextRoute(0);
 }

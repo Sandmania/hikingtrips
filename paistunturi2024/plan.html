@@ -44,8 +44,8 @@
     <div id="info"></div>
     <div id="evacuation-info"></div>
     <script type="module">
-        import { loadGPX } from '../assets/js/gpxUtils.js';
-        import { finalizeRoutes, shouldSkipLeg, displayRouteInfo, bindPopupToLayer } from '../assets/js/routeUtils.js';
+        
+        import { addRoutesToMap } from '../assets/js/routeUtils.js';
 
         var map = new L.map("map", {
             crs: L.TileLayer.MML.get3067Proj()
@@ -116,50 +116,6 @@
 
         var globalConfig = {};
 
-        // Function to add routes to map
-        function addRoutesToMap(routes, featureGroup, showIcons, defaultOptions, infoDiv, prefix, isAlternative = false, selectedAlternatives = []) {
-            var totalLength = 0;
-            if (!isAlternative) {
-                infoDiv.innerHTML = '';
-            }
-
-            function addNextRoute(index) {
-                if (index >= routes.length) {
-                    finalizeRoutes(map, totalLength, featureGroup, infoDiv, isAlternative);
-                    return;
-                }
-
-                const route = routes[index];
-                if (shouldSkipLeg(index, selectedAlternatives)) {
-                    addNextRoute(index + 1);
-                    return;
-                }
-
-                loadGPX(route, showIcons, featureGroup, defaultOptions, function(gpx, distance) {
-                    totalLength += distance;
-                    if (!isAlternative) {
-                        displayRouteInfo(infoDiv, prefix, index, distance, route, globalConfig);
-                    }
-                    bindPopupToLayer(gpx, prefix, index, distance);
-                    addNextRoute(index + 1);
-                });
-
-                // Add alternative routes for the current leg
-                if (route.alternatives) {
-                    addRoutesToMap(route.alternatives, alternativeFeatureGroup, showIcons, globalConfig.alternatives, infoDiv, `Alternative for ${prefix} ${index + 1}`, true);
-                }
-            }
-
-            addNextRoute(0);
-        }
-
-        // Function to load the YAML configuration
-        async function loadYAMLConfig(url) {
-            const response = await fetch(url);
-            const yamlText = await response.text();
-            return jsyaml.load(yamlText);
-        }
-
         // Function to get URL parameters
         function getURLParams() {
             var params = {};
@@ -196,13 +152,13 @@
 
             if (document.getElementById('toggle-legs').checked) {
                 map.addLayer(legFeatureGroup);
-                addRoutesToMap(tripWithAlternatives, legFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.legs, document.getElementById('info'), 'Leg', false, selectedAlternatives);
+                addRoutesToMap(map, globalConfig, tripWithAlternatives, legFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.legs, document.getElementById('info'), 'Leg', false, selectedAlternatives);
             }
 
             if (document.getElementById('toggle-evacuations').checked) {
                 map.addLayer(evacuationFeatureGroup);
                 if (config.evacuation_routes) {
-                    addRoutesToMap(config.evacuation_routes, evacuationFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.evacuation, document.getElementById('evacuation-info'), 'Evacuation Route');
+                    addRoutesToMap(map, globalConfig, config.evacuation_routes, evacuationFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.evacuation, document.getElementById('evacuation-info'), 'Evacuation Route');
                 }
             }
 
@@ -210,7 +166,7 @@
                 map.addLayer(alternativeFeatureGroup);
                 config.trip.forEach((leg, index) => {
                     if (leg.alternatives) {
-                        addRoutesToMap(leg.alternatives, alternativeFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.alternatives, document.getElementById('info'), `Alternative for Leg ${index + 1}`, true, selectedAlternatives);
+                        addRoutesToMap(map, globalConfig, leg.alternatives, alternativeFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.alternatives, document.getElementById('info'), `Alternative for Leg ${index + 1}`, true, selectedAlternatives);
                     }
                 });
             }
@@ -278,8 +234,16 @@
             document.getElementById('alternative-routes').addEventListener('change', () => updateMap(config, selectedAlternatives));
         }
 
+        // Function to load the YAML configuration
+        async function loadYAMLConfig(url) {
+            const response = await fetch(url);
+            const yamlText = await response.text();
+            return jsyaml.load(yamlText);
+        }
+
         // Function to initialize the map with routes and evacuation routes
-        function initializeMap(config) {
+        async function initializeMap() {
+            const config = await loadYAMLConfig('trip_config.yaml');
             globalConfig = config.global || {};
 
             var selectedAlternatives = [];
@@ -294,8 +258,8 @@
             createAlternativeRoutesUI(config);
             addEventListeners(config, selectedAlternatives);
         }
-
+        initializeMap();
         // Load and process the configuration file
-        loadYAMLConfig('trip_config.yaml').then(initializeMap);
+        //loadYAMLConfig('trip_config.yaml').then(initializeMap);
     </script>
 </body></html>
