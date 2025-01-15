@@ -1,5 +1,16 @@
 let map;
-function initMap() {
+
+export async function loadYAMLConfig(url) {
+    const response = await fetch(url);
+    const yamlText = await response.text();
+    return jsyaml.load(yamlText);
+}
+
+export function initMap(globalConfig) {
+    console.log("Initializing map. Global config is: ", globalConfig);
+    if(globalConfig === undefined) {
+        console.warn("Global config is undefined. This might lead to problems.");
+    }
     map = new L.map("map", {
         crs: L.TileLayer.MML.get3067Proj()
     });
