@@ -24,6 +24,9 @@ trip:
       lunch: true
       dinner: true
       snacks: true
+    color: 'black'
+    opacity: 0.7
+    weight: 7
   - gpx: planned_route/leg2.gpx
     endIcon: assets/images/bonfire-outline.svg
   - gpx: planned_route/leg3.gpx
