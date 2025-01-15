@@ -1,5 +1,5 @@
 let map;
-let configurationForAll = {};
+let globalConfiguration = {};
 // Feature groups for different route types
 let legFeatureGroup = L.featureGroup();
 
@@ -9,10 +9,10 @@ export async function loadYAMLConfig(url) {
     return jsyaml.load(yamlText);
 }
 
-export function initMap(globalConfig) {
-    configurationForAll = globalConfig;
-    console.log("Initializing map. Global config is: ", globalConfig);
-    if(globalConfig === undefined) {
+export function initMap(fullConfiguration) {
+    globalConfiguration = fullConfiguration;
+    console.log("Initializing map. Global config is: ", fullConfiguration);
+    if(fullConfiguration === undefined) {
         console.warn("Global config is undefined. This might lead to problems.");
     }
     map = new L.map("map", {
@@ -77,55 +77,61 @@ export function initMap(globalConfig) {
             }
         });
     });
-
-    addRoutesToFeatureGroup(globalConfig.trip, legFeatureGroup);
+    tete(fullConfiguration, "trip")
+    var routeType = "trip";
+    addRoutesToFeatureGroup(routeType, legFeatureGroup);
     map.addLayer(legFeatureGroup);
     return map;
 }
 
-export function addRoutesToFeatureGroup(route, featureGroup) {
-    route.forEach((leg, index) => {
+function tete(fullConfiguration, tripType) {
+    console.log(fullConfiguration.tripType)
+}
+
+export function addRoutesToFeatureGroup(routeType, featureGroup) {
+    const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
+    globalConfiguration[routeType].forEach((leg, index) => {
         console.log("Adding leg to feature group: ", leg, index);
-        loadGPX(leg, true, featureGroup, {}, function(gpx, distance) {
+        loadGPX(leg, true, featureGroup, defaultOptionsForRouteType, function(gpx, distance) {
             console.log("Loaded leg: ", gpx, distance);
         });
     });
 }
 
-function loadGPX(routeConfig, showIcons, featureGroup, defaultOptions, callback) {
+function loadGPX(leg, showIcons, featureGroup, defaultOptions, callback) {
     const gpxOptions = {
         async: true,
-        marker_options: getMarkerOptions(routeConfig, showIcons),
-        polyline_options: getPolylineOptions(routeConfig, defaultOptions)
+        marker_options: getMarkerOptions(leg, showIcons),
+        polyline_options: getPolylineOptions(leg, defaultOptions)
     };
 
-    new L.GPX(routeConfig.gpx, gpxOptions).on('loaded', function(e) {
+    new L.GPX(leg.gpx, gpxOptions).on('loaded', function(e) {
         const distance = e.target.get_distance() / 1000; // convert to km
         featureGroup.addLayer(e.target);
         callback(e.target, distance);
     });
 }
 
-function getMarkerOptions(routeConfig, showIcons) {
+function getMarkerOptions(leg, showIcons) {
     return {
-        startIconUrl: showIcons && routeConfig.startIcon ? routeConfig.startIcon : null,
-        endIconUrl: showIcons && routeConfig.endIcon ? routeConfig.endIcon : null,
+        startIconUrl: showIcons && leg.startIcon ? leg.startIcon : null,
+        endIconUrl: showIcons && leg.endIcon ? leg.endIcon : null,
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/pin-shadow.png'
     };
 }
 
 /**
  * Get polyline options for GPX route
- * @param {Object} routeConfig - Configuration for the route
+ * @param {Object} leg - Configuration for the leg
  * @param {Object} defaultOptions - Default options for the route
  * @returns {Object} Polyline options
  */
-function getPolylineOptions(routeConfig, defaultOptions) {
-    console.log("Getting polyline options for route: ", routeConfig, defaultOptions, configurationForAll);
+function getPolylineOptions(leg, defaultOptions) {
+    console.log("Getting polyline options for route: ", leg, defaultOptions, globalConfiguration);
     return {
-        color: routeConfig.color || defaultOptions.color,
-        opacity: routeConfig.opacity || defaultOptions.opacity,
-        weight: routeConfig.weight || defaultOptions.weight,
-        dashArray: routeConfig.dashArray || defaultOptions.dashArray || null
+        color: leg.color || defaultOptions.color,
+        opacity: leg.opacity || defaultOptions.opacity,
+        weight: leg.weight || defaultOptions.weight,
+        dashArray: leg.dashArray || defaultOptions.dashArray || null
     };
 }
