@@ -77,23 +77,24 @@ export function initMap(fullConfiguration) {
             }
         });
     });
-    tete(fullConfiguration, "trip")
+    
+    map.addLayer(legFeatureGroup);
     var routeType = "trip";
     addRoutesToFeatureGroup(routeType, legFeatureGroup);
-    map.addLayer(legFeatureGroup);
     return map;
-}
-
-function tete(fullConfiguration, tripType) {
-    console.log(fullConfiguration.tripType)
 }
 
 export function addRoutesToFeatureGroup(routeType, featureGroup) {
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
+    const totalNumberOfRoutesForType = globalConfiguration[routeType].length;
+    console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     globalConfiguration[routeType].forEach((leg, index) => {
-        console.log("Adding leg to feature group: ", leg, index);
         loadGPX(leg, true, featureGroup, defaultOptionsForRouteType, function(gpx, distance) {
-            console.log("Loaded leg: ", gpx, distance);
+            if (index >= totalNumberOfRoutesForType-1) {
+                console.log("Last route loaded. Fitting bounds.")
+                // L.GPX is asynchronous, so we need to wait until all routes are loaded before fitting bounds
+                map.fitBounds(featureGroup.getBounds());
+            }
         });
     });
 }
