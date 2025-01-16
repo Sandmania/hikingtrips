@@ -106,6 +106,10 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
                     map.fitBounds(featureGroup.getBounds());
                 }
             }
+            // Display popup with route number and distance
+            gpx.eachLayer(layer => {
+                layer.bindPopup(`${index + 1}: ${distance.toFixed(2)} km`);
+            });
         });
         if (leg.alternatives) {
             addRoutesToFeatureGroup("alternatives", leg.alternatives, featureGroup);
