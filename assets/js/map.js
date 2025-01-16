@@ -95,9 +95,12 @@ export function addRoutesToFeatureGroup(routeType, featureGroup) {
     globalConfiguration[routeType].forEach((leg, index) => {
         loadGPX(leg, true, featureGroup, defaultOptionsForRouteType, function(gpx, distance) {
             if (index >= totalNumberOfRoutesForType-1) {
-                console.log("Last route loaded. Fitting bounds.")
+                console.log("Last route loaded.");
                 // L.GPX is asynchronous, so we need to wait until all routes are loaded before fitting bounds
-                map.fitBounds(featureGroup.getBounds());
+                if(routeType === "trip") {
+                    console.log("Fitting bounds.");
+                    map.fitBounds(featureGroup.getBounds());
+                }
             }
         });
     });
