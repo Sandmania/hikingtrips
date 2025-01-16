@@ -116,7 +116,7 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
 function loadGPX(leg, showIcons, featureGroup, defaultOptions, callback) {
     const gpxOptions = {
         async: true,
-        marker_options: getMarkerOptions(leg, showIcons),
+        marker_options: getMarkerOptions(leg, showIcons, defaultOptions),
         polyline_options: getPolylineOptions(leg, defaultOptions)
     };
 
@@ -127,10 +127,10 @@ function loadGPX(leg, showIcons, featureGroup, defaultOptions, callback) {
     });
 }
 
-function getMarkerOptions(leg, showIcons) {
+function getMarkerOptions(leg, showIcons, defaultOptions) {
     return {
-        startIconUrl: showIcons && leg.startIcon ? leg.startIcon : null,
-        endIconUrl: showIcons && leg.endIcon ? leg.endIcon : null,
+        startIconUrl: showIcons && leg.startIcon ? leg.startIcon : defaultOptions.startIcon,
+        endIconUrl: showIcons && leg.endIcon ? leg.endIcon : defaultOptions.endIcon,
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/pin-shadow.png'
     };
 }

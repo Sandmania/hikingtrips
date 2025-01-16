@@ -4,58 +4,49 @@ defaults:
     color: 'black'
     opacity: 0.7
     weight: 7
+    endIcon: assets/images/bonfire-outline.svg
   alternatives:
     color: 'blue'
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
+    endIcon: assets/images/bonfire-outline.svg
   evacuation:
     color: 'red'
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
+    startIcon: assets/images/medkit-outline.svg
     
 trip:
   - gpx: planned_route/leg1.gpx
     startIcon: assets/images/circle-play-regular.svg
-    endIcon: assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: false
       lunch: true
       dinner: true
       snacks: true
   - gpx: planned_route/leg2.gpx
-    endIcon: assets/images/bonfire-outline.svg
   - gpx: planned_route/leg3.gpx
-    endIcon: assets/images/bonfire-outline.svg
   - gpx: planned_route/leg4.gpx
-    endIcon: assets/images/bonfire-outline.svg
   - gpx: planned_route/leg5.gpx
-    endIcon: assets/images/bonfire-outline.svg
   - gpx: planned_route/leg6.gpx
-    endIcon: assets/images/bonfire-outline.svg
     alternatives:
     - gpx: planned_route/leg6_alt1.gpx
-      endIcon: assets/images/bonfire-outline.svg
       name: alternative route 1 for leg 6 (skips leg 7)
       skips: [7]
     - gpx: planned_route/leg6_alt2.gpx
-      endIcon: assets/images/bonfire-outline.svg
       name: alternative route 2 for leg 6 (skips leg 7)
       skips: [7]
   - gpx: planned_route/leg7.gpx
-    endIcon: assets/images/bonfire-outline.svg
   - gpx: planned_route/leg8.gpx
-    endIcon: assets/images/bonfire-outline.svg
     alternatives:
     - gpx: planned_route/leg8_alt1.gpx
-      endIcon: assets/images/bonfire-outline.svg
       name: alternative route 1 for leg 8
   - gpx: planned_route/leg9.gpx
     endIcon: assets/images/flag-checkered-solid.svg
     alternatives:
     - gpx: planned_route/leg9_alt1.gpx
-      endIcon: assets/images/bonfire-outline.svg
       name: alternative route 1 for leg 9
     mealPlan:
       breakfast: true
@@ -65,7 +56,6 @@ trip:
       
 evacuation:
   - gpx: planned_route/evac1.gpx
-    startIcon: assets/images/medkit-outline.svg
     endIcon:
     mealPlan:
       breakfast: false
@@ -73,7 +63,6 @@ evacuation:
       dinner: false
       snacks: false
   - gpx: planned_route/evac2.gpx
-    startIcon: assets/images/medkit-outline.svg
     endIcon:
     mealPlan:
       breakfast: false
@@ -81,7 +70,6 @@ evacuation:
       dinner: false
       snacks: false
   - gpx: planned_route/evac3.gpx
-    startIcon: assets/images/medkit-outline.svg
     endIcon:
     mealPlan:
       breakfast: false
@@ -89,7 +77,6 @@ evacuation:
       dinner: false
       snacks: false
   - gpx: planned_route/evac4.gpx
-    startIcon: assets/images/medkit-outline.svg
     endIcon:
     mealPlan:
       breakfast: false
@@ -97,7 +84,6 @@ evacuation:
       dinner: false
       snacks: false
   - gpx: planned_route/evac5.gpx
-    startIcon: assets/images/medkit-outline.svg
     endIcon:
     mealPlan:
       breakfast: false
