@@ -63,7 +63,7 @@ trip:
       dinner: false
       snacks: true      
       
-evacuation_routes:
+evacuation:
   - gpx: planned_route/evac1.gpx
     startIcon: assets/images/medkit-outline.svg
     endIcon:

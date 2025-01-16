@@ -2,6 +2,7 @@ let map;
 let globalConfiguration = {};
 // Feature groups for different route types
 let legFeatureGroup = L.featureGroup();
+var evacuationFeatureGroup = L.featureGroup();
 
 export async function loadYAMLConfig(url) {
     const response = await fetch(url);
@@ -79,8 +80,11 @@ export function initMap(fullConfiguration) {
     });
     
     map.addLayer(legFeatureGroup);
+    map.addLayer(evacuationFeatureGroup);
     var routeType = "trip";
     addRoutesToFeatureGroup(routeType, legFeatureGroup);
+    routeType = "evacuation";
+    addRoutesToFeatureGroup(routeType, evacuationFeatureGroup);
     return map;
 }
 
