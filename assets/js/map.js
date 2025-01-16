@@ -2,7 +2,8 @@ let map;
 let globalConfiguration = {};
 // Feature groups for different route types
 let legFeatureGroup = L.featureGroup();
-var evacuationFeatureGroup = L.featureGroup();
+let evacuationFeatureGroup = L.featureGroup();
+let alternativeFeatureGroup = L.featureGroup();
 
 export async function loadYAMLConfig(url) {
     const response = await fetch(url);
@@ -81,18 +82,21 @@ export function initMap(fullConfiguration) {
     
     map.addLayer(legFeatureGroup);
     map.addLayer(evacuationFeatureGroup);
+    map.addLayer(alternativeFeatureGroup);
     var routeType = "trip";
-    addRoutesToFeatureGroup(routeType, legFeatureGroup);
+    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup);
     routeType = "evacuation";
-    addRoutesToFeatureGroup(routeType, evacuationFeatureGroup);
+    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
+    routeType = "alternatives";
+    //addRoutesToFeatureGroup(routeType, evacuationFeatureGroup);
     return map;
 }
 
-export function addRoutesToFeatureGroup(routeType, featureGroup) {
+export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) {
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
-    const totalNumberOfRoutesForType = globalConfiguration[routeType].length;
+    const totalNumberOfRoutesForType = routesForType.length;
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
-    globalConfiguration[routeType].forEach((leg, index) => {
+    routesForType.forEach((leg, index) => {
         loadGPX(leg, true, featureGroup, defaultOptionsForRouteType, function(gpx, distance) {
             if (index >= totalNumberOfRoutesForType-1) {
                 console.log("Last route loaded.");
@@ -103,6 +107,9 @@ export function addRoutesToFeatureGroup(routeType, featureGroup) {
                 }
             }
         });
+        if (leg.alternatives) {
+            addRoutesToFeatureGroup("alternatives", leg.alternatives, featureGroup);
+        }
     });
 }
 
