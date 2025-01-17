@@ -1,22 +1,37 @@
-speed: 3
 defaults:
+  walkingSpeed: 3
   trip:
     color: 'black'
     opacity: 0.7
     weight: 7
     endIcon: assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
   alternatives:
     color: 'blue'
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
     endIcon: assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
   evacuation:
     color: 'red'
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
     startIcon: assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
     
 trip:
   - gpx: planned_route/leg1.gpx
@@ -57,39 +72,14 @@ trip:
 evacuation:
   - gpx: planned_route/evac1.gpx
     endIcon:
-    mealPlan:
-      breakfast: false
-      lunch: false
-      dinner: false
-      snacks: false
   - gpx: planned_route/evac2.gpx
     endIcon:
-    mealPlan:
-      breakfast: false
-      lunch: false
-      dinner: false
-      snacks: false
   - gpx: planned_route/evac3.gpx
     endIcon:
-    mealPlan:
-      breakfast: false
-      lunch: false
-      dinner: false
-      snacks: false
   - gpx: planned_route/evac4.gpx
     endIcon:
-    mealPlan:
-      breakfast: false
-      lunch: false
-      dinner: false
-      snacks: false
   - gpx: planned_route/evac5.gpx
     endIcon:
-    mealPlan:
-      breakfast: false
-      lunch: false
-      dinner: false
-      snacks: false
 
 actual_route:
   - gpx: actual_route/suuntoapp-Trekking-2024-08-13T07-17-31Z-track.gpx

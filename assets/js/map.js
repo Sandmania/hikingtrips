@@ -113,7 +113,11 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
                 console.log("Adding distance to total length: " + distance);
                 totalLengtOfRoutes += distance;
                 console.log("Total length of routes after addition " + totalLengtOfRoutes);
-                document.getElementById('info').innerHTML += `<p>Leg 1 length: ${distance.toFixed(2)} km</p>`;
+                document.getElementById('info').innerHTML += `<p>Leg ${index + 1} length: ${distance.toFixed(2)} km</p>`;
+                const speed = globalConfiguration.defaults.walkingSpeed;
+                const mealPlan = leg.mealPlan || globalConfiguration.defaults[routeType].mealPlan;
+                const mealPlanDetails = calculateMealPlan(distance, speed, mealPlan);
+                document.getElementById('info').innerHTML += `<p>Meal Plan for ${index + 1}: ${mealPlanDetails}</p>`;
             }
             var isLastRoute = index >= totalNumberOfRoutesForType-1;
             if (isLastRoute) {
@@ -168,4 +172,21 @@ function getPolylineOptions(leg, defaultOptions) {
         weight: leg.weight || defaultOptions.weight,
         dashArray: leg.dashArray || defaultOptions.dashArray || null
     };
+}
+
+// Function to calculate meal plan
+function calculateMealPlan(distance, speed, mealPlan) {
+    var time = distance / speed;
+    var mealPlanDetails = [];
+
+    if (mealPlan.breakfast) mealPlanDetails.push("Breakfast");
+    if (mealPlan.lunch) mealPlanDetails.push("Lunch");
+    if (mealPlan.dinner) mealPlanDetails.push("Dinner");
+
+    if (mealPlan.snacks) {
+        var snacks = Math.floor(time);
+        mealPlanDetails.push(`${snacks} Snack Bar${snacks > 1 ? 's' : ''}`);
+    }
+
+    return mealPlanDetails.join(", ");
 }
