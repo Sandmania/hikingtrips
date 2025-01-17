@@ -22,24 +22,29 @@
     <!--<script src="/assets/js/map.js"></script> -->
 
     <style>
-        body {
-            padding: 0;
-            margin: 0;
-        }
-
         html,
         body {
+            margin: 0px;
             height: 100%;
         }
 
-        #map {
-            height: 80%;
-            width: 80%;
+        body {
+            display: flex;
+            flex-flow: column wrap;
         }
 
-        h1 {
-            padding: 0.2em;
-            margin: 0.2em;
+        #content {
+            flex: 1 1;
+            order: 2;
+            display: flex;
+        }
+
+        #map {
+            flex: 1;
+        }
+
+        #info {
+            padding: 10px;
         }
     </style>
 
@@ -47,8 +52,10 @@
 </head>
 
 <body>
-    <div id="map"></div>
-    <div id="info"></div>
+    <div id="content">
+        <div id="map"></div>
+        <div id="info"></div>
+    </div>
     <script type="module">
         import { loadYAMLConfig, initMap } from '../assets/js/map.js';
         const configurationFileName = 'trip_config.yaml'
