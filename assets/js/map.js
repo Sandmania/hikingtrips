@@ -84,7 +84,7 @@ export function initMap(fullConfiguration) {
     map.addLayer(evacuationFeatureGroup);
     map.addLayer(alternativeFeatureGroup);
     var routeType = "trip";
-    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup);
+    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup, addTotalLengthOfRoutesToInfoDiv);
     routeType = "evacuation";
     addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
     routeType = "alternatives";
@@ -92,24 +92,38 @@ export function initMap(fullConfiguration) {
     return map;
 }
 
-export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) {
+function addTotalLengthOfRoutesToInfoDiv(totalLengthOfRoutes) {
+    console.log("Displaying total length of routes: " + totalLengthOfRoutes);
+    document.getElementById('info').innerHTML += `<p>Total length: ${totalLengthOfRoutes.toFixed(2)} km</p>`;
+}
+
+export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, callback) {
+    callback = callback || function(){};
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
+    let totalLengtOfRoutes = 0;
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     routesForType.forEach((leg, index) => {
         loadGPX(leg, true, featureGroup, defaultOptionsForRouteType, function(gpx, distance) {
-            if (index >= totalNumberOfRoutesForType-1) {
+            // Display popup with route number and distance
+            gpx.eachLayer(layer => {
+                layer.bindPopup(`${index + 1}: ${distance.toFixed(2)} km`);
+            });
+            if(routeType === "trip") {
+                console.log("Adding distance to total length: " + distance);
+                totalLengtOfRoutes += distance;
+                console.log("Total length of routes after addition " + totalLengtOfRoutes);
+            }
+            var isLastRoute = index >= totalNumberOfRoutesForType-1;
+            if (isLastRoute) {
                 console.log("Last route loaded.");
                 // L.GPX is asynchronous, so we need to wait until all routes are loaded before fitting bounds
                 if(routeType === "trip") {
                     console.log("Fitting bounds.");
                     map.fitBounds(featureGroup.getBounds());
                 }
+                callback(totalLengtOfRoutes);
             }
-            // Display popup with route number and distance
-            gpx.eachLayer(layer => {
-                layer.bindPopup(`${index + 1}: ${distance.toFixed(2)} km`);
-            });
         });
         if (leg.alternatives) {
             addRoutesToFeatureGroup("alternatives", leg.alternatives, featureGroup);
