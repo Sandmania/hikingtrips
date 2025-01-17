@@ -113,6 +113,7 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
                 console.log("Adding distance to total length: " + distance);
                 totalLengtOfRoutes += distance;
                 console.log("Total length of routes after addition " + totalLengtOfRoutes);
+                document.getElementById('info').innerHTML += `<p>Leg 1 length: ${distance.toFixed(2)} km</p>`;
             }
             var isLastRoute = index >= totalNumberOfRoutesForType-1;
             if (isLastRoute) {
