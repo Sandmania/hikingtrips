@@ -130,8 +130,8 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
                 if(routeType === "trip") {
                     console.log("Fitting bounds.");
                     map.fitBounds(featureGroup.getBounds());
+                    callback(totalLengtOfRoutes);
                 }
-                callback(totalLengtOfRoutes);
             }
         });
         if (leg.alternatives) {
@@ -241,6 +241,6 @@ export function updateMapWithAlternatives() {
     }).filter((leg, index) => !legsToSkip.has(index)); // Filter out legs to be skipped
 
     legFeatureGroup.clearLayers();
-    addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, globalConfiguration.defaults.trip);
+    addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, addTotalLengthOfRoutesToInfoDiv);
     map.fitBounds(legFeatureGroup.getBounds());
 }

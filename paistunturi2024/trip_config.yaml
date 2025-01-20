@@ -63,6 +63,12 @@ trip:
     alternatives:
     - gpx: planned_route/leg9_alt1.gpx
       name: alternative route 1 for leg 9
+      endIcon: assets/images/flag-checkered-solid.svg
+      mealPlan:
+        breakfast: true
+        lunch: true
+        dinner: false
+        snacks: true 
     mealPlan:
       breakfast: true
       lunch: true
