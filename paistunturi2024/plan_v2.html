@@ -54,13 +54,22 @@
 <body>
     <div id="content">
         <div id="map"></div>
-        <div id="info"></div>
+        <div>
+            <div id="info"></div>
+            <div id="alternative-routes"></div>
+        </div>
     </div>
     <script type="module">
-        import { loadYAMLConfig, initMap } from '../assets/js/map.js';
+        import { loadYAMLConfig, initMap, updateMapWithAlternatives } from '../assets/js/map.js';
         const configurationFileName = 'trip_config.yaml'
         loadYAMLConfig(configurationFileName).then((config) => {
             initMap(config);
+        });
+
+        document.getElementById('alternative-routes').addEventListener('change', (event) => {
+            if (event.target.type === 'checkbox') {
+                updateMapWithAlternatives();
+            }
         });
     </script>
 </body>

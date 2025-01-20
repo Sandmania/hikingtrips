@@ -89,6 +89,7 @@ export function initMap(fullConfiguration) {
     addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
     routeType = "alternatives";
     //addRoutesToFeatureGroup(routeType, evacuationFeatureGroup);
+    generateAlternativeCheckboxes(globalConfiguration);
     return map;
 }
 
@@ -99,6 +100,9 @@ function addTotalLengthOfRoutesToInfoDiv(totalLengthOfRoutes) {
 
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, callback) {
     callback = callback || function(){};
+    if (routeType !== "alternatives") {
+        document.getElementById('info').innerHTML = '';
+    }
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
     let totalLengtOfRoutes = 0;
@@ -189,4 +193,54 @@ function calculateMealPlan(distance, speed, mealPlan) {
     }
 
     return mealPlanDetails.join(", ");
+}
+
+function generateAlternativeCheckboxes(config) {
+    const alternativeRoutesDiv = document.getElementById('alternative-routes');
+    config.trip.forEach((leg, legIndex) => {
+        if (leg.alternatives) {
+            leg.alternatives.forEach((alt, altIndex) => {
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `alt-leg-${legIndex + 1}-${altIndex + 1}`;
+                checkbox.dataset.legIndex = legIndex;
+                checkbox.dataset.altIndex = altIndex;
+
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.innerText = `Alternative for Leg ${legIndex + 1} - Option ${altIndex + 1}`;
+
+                alternativeRoutesDiv.appendChild(checkbox);
+                alternativeRoutesDiv.appendChild(label);
+                alternativeRoutesDiv.appendChild(document.createElement('br'));
+            });
+        }
+    });
+}
+
+export function updateMapWithAlternatives() {
+    const selectedAlternatives = Array.from(document.querySelectorAll('#alternative-routes input:checked')).map(checkbox => ({
+        legIndex: parseInt(checkbox.dataset.legIndex),
+        altIndex: parseInt(checkbox.dataset.altIndex)
+    }));
+
+    // Create a set to keep track of legs to be skipped
+    const legsToSkip = new Set();
+
+    // Build the trip with selected alternatives and determine legs to skip
+    const tripWithAlternatives = globalConfiguration.trip.map((leg, index) => {
+        const selectedAlt = selectedAlternatives.find(alt => alt.legIndex === index);
+        if (selectedAlt) {
+            const alternative = leg.alternatives[selectedAlt.altIndex];
+            if (alternative.skips) {
+                alternative.skips.forEach(skipIndex => legsToSkip.add(skipIndex - 1)); // Convert to zero-based index
+            }
+            return alternative;
+        }
+        return leg;
+    }).filter((leg, index) => !legsToSkip.has(index)); // Filter out legs to be skipped
+
+    legFeatureGroup.clearLayers();
+    addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, globalConfiguration.defaults.trip);
+    map.fitBounds(legFeatureGroup.getBounds());
 }
