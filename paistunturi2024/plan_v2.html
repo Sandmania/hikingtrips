@@ -43,8 +43,27 @@
             flex: 1;
         }
 
-        #info {
+        #right-content {
+            display: flex;
+            flex-direction: column;
             padding: 10px;
+        }
+
+        /* Option 2: Wrap Under the Map */
+        @media (max-width: 600px) {
+            #content {
+                flex-direction: column;
+            }
+
+            #right-content {
+                order: 2;
+                width: 100%;
+            }
+
+            #map {
+                order: 1;
+                width: 100%;
+            }
         }
     </style>
 
@@ -54,7 +73,7 @@
 <body>
     <div id="content">
         <div id="map"></div>
-        <div>
+        <div id="right-content">
             <div id="info"></div>
             <div id="alternative-routes"></div>
         </div>
