@@ -36,20 +36,18 @@ defaults:
 trip:
   - gpx: planned_route/day1_ele.gpx
     startIcon: /assets/images/circle-play-regular.svg
-    endIcon: /assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: false
       lunch: true
       dinner: true
       snacks: true
   - gpx: planned_route/day2_ele.gpx
-    endIcon: /assets/images/bonfire-outline.svg
   - gpx: planned_route/day3_ele.gpx
-    endIcon: /assets/images/bonfire-outline.svg
+    alternatives:
+    - gpx: planned_route/day3_alt.gpx
+      name: alternative route 1 for leg 3
   - gpx: planned_route/day4_ele.gpx
-    endIcon: /assets/images/bonfire-outline.svg
   - gpx: planned_route/day5_ele.gpx
-    endIcon: /assets/images/bonfire-outline.svg
   - gpx: planned_route/day6_ele.gpx
     endIcon: /assets/images/flag-checkered-solid.svg
     mealPlan:
