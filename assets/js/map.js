@@ -5,6 +5,13 @@ let legFeatureGroup = L.featureGroup();
 let evacuationFeatureGroup = L.featureGroup();
 let alternativeFeatureGroup = L.featureGroup();
 
+let totalMealPlans = {
+    breakfast: 0,
+    lunch: 0,
+    dinner: 0,
+    snacks: 0
+};
+
 export async function loadYAMLConfig(url) {
     const response = await fetch(url);
     const yamlText = await response.text();
@@ -18,7 +25,7 @@ export function initMap(fullConfiguration) {
         console.warn("Global config is undefined. This might lead to problems.");
     }
     map = new L.map("map", {
-        crs: L.TileLayer.MML.get3067Proj()
+        //crs: L.TileLayer.MML.get3067Proj()
     });
     map.setView([68.3469, 27.4620], 13);
 
@@ -38,7 +45,7 @@ export function initMap(fullConfiguration) {
         attribution: 'National Land Survey of Finland, Ortophoto'
     });
 
-    var maastokartta = L.tileLayer.mml_wmts({ layer: "maastokartta" }).addTo(map);
+    var maastokartta = L.tileLayer.mml_wmts({ layer: "maastokartta" });
 
     var baseMaps = {
         "NLS Topographic map": maastokartta,
@@ -46,6 +53,22 @@ export function initMap(fullConfiguration) {
         "OpenStreetMap": OpenStreetMap,
         "NLS Ortophoto": orto
     };
+
+    // Determine the default tile layer
+    const defaultTileLayerName = globalConfiguration.defaults.tileLayer || "OpenTopoMap";
+    const defaultTileLayer = baseMaps[defaultTileLayerName] || OpenTopoMap;
+
+    // Set the CRS based on the tile layer
+    if (defaultTileLayerName === 'NLS Topographic map') {
+        console.log("Set CRS to 3067")
+        map.options.crs = L.TileLayer.MML.get3067Proj();
+    } else {
+        console.log("Set CRS to EPSG3857")
+        map.options.crs = L.CRS.EPSG3857;
+    }
+
+    // Add the default tile layer to the map
+    defaultTileLayer.addTo(map);
 
     L.control.layers(baseMaps).addTo(map);
 
@@ -96,12 +119,22 @@ export function initMap(fullConfiguration) {
 function addTotalLengthOfRoutesToInfoDiv(totalLengthOfRoutes) {
     console.log("Displaying total length of routes: " + totalLengthOfRoutes);
     document.getElementById('info').innerHTML += `<p>Total length: ${totalLengthOfRoutes.toFixed(2)} km</p>`;
+    document.getElementById('info').innerHTML += `<p>Total Meal Plans: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
 }
 
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, callback) {
+    console.log("Adding routes to feature group for type " + routeType);
+    console.log("Routes for type: ", routesForType);
+    console.log("Feature group: ", featureGroup);
+    console.log("Callback: ", callback);
+    if (routesForType === undefined) {
+        console.log("Routes for type " + routeType + " is undefined. Skipping.");
+        return;
+    }
     callback = callback || function(){};
     if (routeType !== "alternatives") {
         document.getElementById('info').innerHTML = '';
+        totalMealPlans = { breakfast: 0, lunch: 0, dinner: 0, snacks: 0 }; // Reset meal plans
     }
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
@@ -122,6 +155,12 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
                 const mealPlan = leg.mealPlan || globalConfiguration.defaults[routeType].mealPlan;
                 const mealPlanDetails = calculateMealPlan(distance, speed, mealPlan);
                 document.getElementById('info').innerHTML += `<p>Meal Plan for ${index + 1}: ${mealPlanDetails}</p>`;
+
+                // Update total meal plans
+                if (mealPlan.breakfast) totalMealPlans.breakfast++;
+                if (mealPlan.lunch) totalMealPlans.lunch++;
+                if (mealPlan.dinner) totalMealPlans.dinner++;
+                if (mealPlan.snacks) totalMealPlans.snacks += Math.floor(distance / speed);
             }
             var isLastRoute = index >= totalNumberOfRoutesForType-1;
             if (isLastRoute) {

@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Quick Start - Leaflet</title>
+    <title>TrailTreader</title>
 
 
     <script src="https://unpkg.com/js-yaml/dist/js-yaml.min.js"></script>
@@ -15,7 +15,7 @@
         integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
         integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-    <script src="assets/js/mmlLayers.js"></script>
+    <script src="/assets/js/mmlLayers.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
     <script src="/assets/js/proj4-compressed.js"></script>
     <script src="/assets/js/proj4leaflet.js"></script>
@@ -82,6 +82,8 @@
         import { loadYAMLConfig, initMap, updateMapWithAlternatives } from '../assets/js/map.js';
         const configurationFileName = 'trip_config.yaml'
         loadYAMLConfig(configurationFileName).then((config) => {
+            // Set the page title from the configuration
+            document.title = config.heading;
             initMap(config);
         });
 

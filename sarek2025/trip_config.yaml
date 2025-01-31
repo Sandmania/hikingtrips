@@ -1,19 +1,37 @@
-speed: 3
-global:
-  legs:
+defaults:
+  walkingSpeed: 3
+  trip:
     color: 'black'
     opacity: 0.7
     weight: 7
+    endIcon: /assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
   alternatives:
     color: 'blue'
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
+    endIcon: /assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
   evacuation:
     color: 'red'
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
+    startIcon: /assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
 
 trip:
   - gpx: planned_route/day1_ele.gpx
@@ -39,7 +57,6 @@ trip:
       lunch: true
       dinner: false
       snacks: true
-
 
 photo_info:
   cameraOffset:

@@ -1,303 +1,98 @@
 <!DOCTYPE html>
-<html lang="en"><head>
-<meta http-equiv="content-type" content="text/html; charset=UTF-8">
-<meta charset="UTF-8">
-<title>TrailTreader - Sarek 2025</title>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-<script src="/assets/js/mmlLayers.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
-<script src="https://unpkg.com/js-yaml/dist/js-yaml.min.js"></script>
-<script src="/assets/js/proj4-compressed.js"></script>
-<script src="/assets/js/proj4leaflet.js"></script>
-<!-- leaflet-elevation -->
-<link rel="stylesheet" href="https://unpkg.com/@raruto/leaflet-elevation/dist/leaflet-elevation.css" />
-<script src="https://unpkg.com/@raruto/leaflet-elevation/dist/leaflet-elevation.js"></script>
+<html lang="en">
+
+<head>
+    <base target="_top">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>TrailTreader</title>
+
+
+    <script src="https://unpkg.com/js-yaml/dist/js-yaml.min.js"></script>
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script src="/assets/js/mmlLayers.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.7.0/gpx.min.js"></script>
+    <script src="/assets/js/proj4-compressed.js"></script>
+    <script src="/assets/js/proj4leaflet.js"></script>
+    <!--<script src="/assets/js/map.js"></script> -->
+
     <style>
+        html,
         body {
-            padding: 0;
-            margin: 0;
-          }
-          html,
-          body {
+            margin: 0px;
             height: 100%;
-          }
+        }
+
+        body {
+            display: flex;
+            flex-flow: column wrap;
+        }
+
+        #content {
+            flex: 1 1;
+            order: 2;
+            display: flex;
+        }
+
         #map {
-            height: 80%;
-          }
-        h1 {
-            padding: 0.2em;
-            margin: 0.2em;
+            flex: 1;
+        }
+
+        #right-content {
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+        }
+
+        /* Option 2: Wrap Under the Map */
+        @media (max-width: 600px) {
+            #content {
+                flex-direction: column;
+            }
+
+            #right-content {
+                order: 2;
+                width: 100%;
+            }
+
+            #map {
+                order: 1;
+                width: 100%;
+            }
         }
     </style>
+
+
 </head>
+
 <body>
-    <h1>Sarek 2025 - TrailTreader</h1>
-    <div id="map"></div>
-    <div id="controls">
-        <label><input type="checkbox" id="toggle-icons"> Show Icons</label>
-        <div id="alternative-routes"></div>
-        <label><input type="checkbox" id="toggle-legs"> Show Legs</label>
-        <label><input type="checkbox" id="toggle-alternatives"> Show Alternatives</label>
-        <label><input type="checkbox" id="toggle-evacuations"> Show Evacuation Routes</label>
+    <div id="content">
+        <div id="map"></div>
+        <div id="right-content">
+            <div id="info"></div>
+            <div id="alternative-routes"></div>
+        </div>
     </div>
-    <div id="info"></div>
-    <div id="evacuation-info"></div>
     <script type="module">
-        import { loadGPX } from '../assets/js/gpxUtils.js';
-        import { finalizeRoutes, shouldSkipLeg, displayRouteInfo, bindPopupToLayer } from '../assets/js/routeUtils.js';
-
-        var map = new L.map("map", {
-            crs: L.TileLayer.MML.get3067Proj()
-          });
-
-        // Base maps
-        var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            maxZoom: 17,
-            attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors'
-        }).addTo(map);
-
-        var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        import { loadYAMLConfig, initMap, updateMapWithAlternatives } from '../assets/js/map.js';
+        const configurationFileName = 'trip_config.yaml'
+        loadYAMLConfig(configurationFileName).then((config) => {
+            // Set the page title from the configuration
+            document.title = config.heading;
+            initMap(config);
         });
 
-        var orto = L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva/{z}/{x}/{y}.jpg', {
-            maxZoom: 19,
-            attribution: 'National Land Survey of Finland, Ortophoto'
+        document.getElementById('alternative-routes').addEventListener('change', (event) => {
+            if (event.target.type === 'checkbox') {
+                updateMapWithAlternatives();
+            }
         });
-
-        var maastokartta = L.tileLayer.mml_wmts({ layer: "maastokartta" });
-
-        var baseMaps = {
-            "NLS Topographic map": maastokartta,
-            "OpenTopoMap": OpenTopoMap,
-            "OpenStreetMap": OpenStreetMap,
-            "NLS Ortophoto": orto
-        };
-
-        L.control.layers(baseMaps).addTo(map);
-
-        // Event listener for baselayer change to handle CRS change
-        map.on('baselayerchange', function(e) {
-            console.log("baselayerchange event name " + e.name)
-            var center = map.getCenter();
-            var zoom = map.getZoom();
-            var currentLayers = [];
-
-            map.eachLayer(function(layer) {
-                currentLayers.push(layer);
-            });
-
-            // Re-initialize map with new CRS if necessary
-            if (e.name === 'NLS Topographic map') {
-                console.log("Set CRS to 3067")
-                map.options.crs = L.TileLayer.MML.get3067Proj();
-            } else {
-                console.log("Set CRS to 3857")
-                map.options.crs = L.CRS.EPSG3857;
-            }
-
-            map.setView(center, zoom);
-            e.layer.addTo(map);
-
-            // Re-add other layers if necessary
-            currentLayers.forEach(function(layer) {
-                if (layer !== e.layer) {
-                    map.addLayer(layer);
-                }
-            });
-        });
-
-        // Feature groups for different route types
-        var legFeatureGroup = L.featureGroup();
-        var alternativeFeatureGroup = L.featureGroup();
-        var evacuationFeatureGroup = L.featureGroup();
-
-        var globalConfig = {};
-
-        // Function to add routes to map
-        function addRoutesToMap(routes, featureGroup, showIcons, defaultOptions, infoDiv, prefix, isAlternative = false, selectedAlternatives = []) {
-            var totalLength = 0;
-            if (!isAlternative) {
-                infoDiv.innerHTML = '';
-            }
-
-            function addNextRoute(index) {
-                if (index >= routes.length) {
-                    finalizeRoutes(map, totalLength, featureGroup, infoDiv, isAlternative);
-                    return;
-                }
-
-                const route = routes[index];
-                if (shouldSkipLeg(index, selectedAlternatives)) {
-                    addNextRoute(index + 1);
-                    return;
-                }
-
-                loadGPX(route, showIcons, featureGroup, defaultOptions, function(gpx, distance) {
-                    totalLength += distance;
-                    if (!isAlternative) {
-                        displayRouteInfo(infoDiv, prefix, index, distance, route, globalConfig);
-                    }
-                    bindPopupToLayer(gpx, prefix, index, distance);
-                    addNextRoute(index + 1);
-                });
-
-                // Add alternative routes for the current leg
-                if (route.alternatives) {
-                    addRoutesToMap(route.alternatives, alternativeFeatureGroup, showIcons, globalConfig.alternatives, infoDiv, `Alternative for ${prefix} ${index + 1}`, true);
-                }
-            }
-
-            addNextRoute(0);
-        }
-
-        // Function to load the YAML configuration
-        async function loadYAMLConfig(url) {
-            const response = await fetch(url);
-            const yamlText = await response.text();
-            return jsyaml.load(yamlText);
-        }
-
-        // Function to get URL parameters
-        function getURLParams() {
-            var params = {};
-            window.location.search.substring(1).split("&").forEach(function(item) {
-                var pair = item.split("=");
-                params[pair[0]] = pair[1] === 'true';
-            });
-            return params;
-        }
-
-        // Function to update URL parameters
-        function updateURLParams(params) {
-            var queryString = Object.keys(params).map(key => `${key}=${params[key]}`).join("&");
-            history.replaceState(null, "", "?" + queryString);
-        }
-
-        // Function to update the map with current selections
-        function updateMap(config, selectedAlternatives) {
-            legFeatureGroup.clearLayers();
-            alternativeFeatureGroup.clearLayers();
-            evacuationFeatureGroup.clearLayers();
-
-            // Collect selected alternatives
-            selectedAlternatives = Array.from(document.querySelectorAll('#alternative-routes input:checked')).map(checkbox => ({
-                legIndex: parseInt(checkbox.dataset.legIndex),
-                altIndex: parseInt(checkbox.dataset.altIndex),
-                skips: config.trip[checkbox.dataset.legIndex].alternatives[checkbox.dataset.altIndex].skips
-            }));
-
-            var tripWithAlternatives = config.trip.map((leg, index) => {
-                var selectedAlt = selectedAlternatives.find(alt => alt.legIndex === index);
-                return selectedAlt ? config.trip[index].alternatives[selectedAlt.altIndex] : leg;
-            });
-
-            if (document.getElementById('toggle-legs').checked) {
-                map.addLayer(legFeatureGroup);
-                addRoutesToMap(tripWithAlternatives, legFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.legs, document.getElementById('info'), 'Leg', false, selectedAlternatives);
-            }
-
-            if (document.getElementById('toggle-evacuations').checked) {
-                map.addLayer(evacuationFeatureGroup);
-                if (config.evacuation_routes) {
-                    addRoutesToMap(config.evacuation_routes, evacuationFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.evacuation, document.getElementById('evacuation-info'), 'Evacuation Route');
-                }
-            }
-
-            if (document.getElementById('toggle-alternatives').checked) {
-                map.addLayer(alternativeFeatureGroup);
-                config.trip.forEach((leg, index) => {
-                    if (leg.alternatives) {
-                        addRoutesToMap(leg.alternatives, alternativeFeatureGroup, document.getElementById('toggle-icons').checked, globalConfig.alternatives, document.getElementById('info'), `Alternative for Leg ${index + 1}`, true, selectedAlternatives);
-                    }
-                });
-            }
-
-            updateURLParams({
-                icons: document.getElementById('toggle-icons').checked,
-                legs: document.getElementById('toggle-legs').checked,
-                alternatives: document.getElementById('toggle-alternatives').checked,
-                evacuations: document.getElementById('toggle-evacuations').checked
-            });
-        }
-
-        // Function to create UI for alternative routes
-        function createAlternativeRoutesUI(config) {
-            var altRoutesDiv = document.getElementById('alternative-routes');
-            config.trip.forEach((leg, index) => {
-                if (leg.alternatives) {
-                    leg.alternatives.forEach((alt, altIndex) => {
-                        var checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.id = `alt-leg-${index + 1}-${altIndex + 1}`;
-                        checkbox.dataset.legIndex = index;
-                        checkbox.dataset.altIndex = altIndex;
-                        var label = document.createElement('label');
-                        label.htmlFor = checkbox.id;
-                        label.innerHTML = `Use ${alt.name}`;
-                        altRoutesDiv.appendChild(checkbox);
-                        altRoutesDiv.appendChild(label);
-                        altRoutesDiv.appendChild(document.createElement('br'));
-                    });
-                }
-            });
-        }
-
-        // Function to add event listeners for toggles
-        function addEventListeners(config, selectedAlternatives) {
-            document.getElementById('toggle-icons').addEventListener('change', () => updateMap(config, selectedAlternatives));
-            document.getElementById('toggle-legs').addEventListener('change', function() {
-                if (this.checked) {
-                    map.addLayer(legFeatureGroup);
-                } else {
-                    map.removeLayer(legFeatureGroup);
-                }
-                updateMap(config, selectedAlternatives);
-            });
-
-            document.getElementById('toggle-alternatives').addEventListener('change', function() {
-                if (this.checked) {
-                    map.addLayer(alternativeFeatureGroup);
-                } else {
-                    map.removeLayer(alternativeFeatureGroup);
-                }
-                updateMap(config, selectedAlternatives);
-            });
-
-            document.getElementById('toggle-evacuations').addEventListener('change', function() {
-                if (this.checked) {
-                    map.addLayer(evacuationFeatureGroup);
-                } else {
-                    map.removeLayer(evacuationFeatureGroup);
-                }
-                updateMap(config, selectedAlternatives);
-            });
-
-            document.getElementById('alternative-routes').addEventListener('change', () => updateMap(config, selectedAlternatives));
-        }
-
-        // Function to initialize the map with routes and evacuation routes
-        function initializeMap(config) {
-            globalConfig = config.global || {};
-
-            var selectedAlternatives = [];
-
-            var params = getURLParams();
-            document.getElementById('toggle-icons').checked = params.icons !== false;
-            document.getElementById('toggle-legs').checked = params.legs !== false;
-            document.getElementById('toggle-alternatives').checked = params.alternatives !== false;
-            document.getElementById('toggle-evacuations').checked = params.evacuations !== false;
-
-            updateMap(config, selectedAlternatives);
-            createAlternativeRoutesUI(config);
-            addEventListeners(config, selectedAlternatives);
-        }
-
-        // Load and process the configuration file
-        loadYAMLConfig('trip_config.yaml').then(initializeMap);
     </script>
+</body>
 
-
-</body></html>
+</html>
