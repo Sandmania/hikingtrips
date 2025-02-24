@@ -1,4 +1,5 @@
 defaults:
+  tileLayer: Lantmäteriet
   walkingSpeed: 3
   trip:
     color: 'black'

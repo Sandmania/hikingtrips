@@ -17,6 +17,15 @@ export async function loadYAMLConfig(url) {
     const yamlText = await response.text();
     return jsyaml.load(yamlText);
 }
+const csr3006 = new L.Proj.CRS('EPSG:3006',
+    '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+    {
+        resolutions: [
+            4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8
+        ],
+        origin: [-1200000.000000, 8500000.000000],
+        bounds: L.bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000])
+    });
 
 export function initMap(fullConfiguration) {
     globalConfiguration = fullConfiguration;
@@ -24,10 +33,7 @@ export function initMap(fullConfiguration) {
     if(fullConfiguration === undefined) {
         console.warn("Global config is undefined. This might lead to problems.");
     }
-    map = new L.map("map", {
-        //crs: L.TileLayer.MML.get3067Proj()
-    });
-    map.setView([68.3469, 27.4620], 13);
+    map = new L.map("map");
 
     // Base maps
     var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
@@ -47,11 +53,17 @@ export function initMap(fullConfiguration) {
 
     var maastokartta = L.tileLayer.mml_wmts({ layer: "maastokartta" });
 
+    var lantmateriet = new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
+        maxZoom: 14,
+        attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
+    });
+
     var baseMaps = {
         "NLS Topographic map": maastokartta,
         "OpenTopoMap": OpenTopoMap,
         "OpenStreetMap": OpenStreetMap,
-        "NLS Ortophoto": orto
+        "NLS Ortophoto": orto,
+        "Lantmäteriet": lantmateriet
     };
 
     // Determine the default tile layer
@@ -62,6 +74,9 @@ export function initMap(fullConfiguration) {
     if (defaultTileLayerName === 'NLS Topographic map') {
         console.log("Set CRS to 3067")
         map.options.crs = L.TileLayer.MML.get3067Proj();
+    } else if (defaultTileLayerName === 'Lantmäteriet') {
+        console.log("Set CRS to 3006 1")
+        map.options.crs = csr3006;
     } else {
         console.log("Set CRS to EPSG3857")
         map.options.crs = L.CRS.EPSG3857;
@@ -87,6 +102,9 @@ export function initMap(fullConfiguration) {
         if (e.name === 'NLS Topographic map') {
             console.log("Set CRS to 3067")
             map.options.crs = L.TileLayer.MML.get3067Proj();
+        } else if (e.name === 'Lantmäteriet') {
+            console.log("Set CRS to 3006 2")
+            map.options.crs = csr3006;
         } else {
             console.log("Set CRS to EPSG3857")
             map.options.crs = L.CRS.EPSG3857;

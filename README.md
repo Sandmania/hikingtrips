@@ -1,0 +1,24 @@
+Lantmäteriet
+https://geotorget.lantmateriet.se/dokumentation/GEODOK/72/latest/atkomst-och-leverans/teknisk-beskrivning.html
+https://apimanager.lantmateriet.se/devportal/apis
+https://www.lantmateriet.se/contentassets/7f1d8234566942e8a58140d2911bd105/api-portal-get-started-guide.pdf
+
+https://kartena.github.io/Proj4Leaflet/
+Just take a look at the source and fix the API url:
+https://kartena.github.io/Proj4Leaflet/examples/wmts/
+
+## Lantmäteriet
+
+API Keys and service subscriptions:
+https://apimanager.lantmateriet.se/devportal/apis
+
+Api portal getting started
+https://www.lantmateriet.se/contentassets/7f1d8234566942e8a58140d2911bd105/api-portal-get-started-guide.pdf
+
+WMTS Technical documentation
+https://geotorget.lantmateriet.se/dokumentation/GEODOK/72/latest/atkomst-och-leverans/teknisk-beskrivning.html
+
+Examples:
+https://kartena.github.io/Proj4Leaflet/
+Just take a look at the source and fix the API url as this page doesn't currently work (using old api endpoint)
+https://kartena.github.io/Proj4Leaflet/examples/wmts/
