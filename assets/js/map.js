@@ -12,11 +12,37 @@ let totalMealPlans = {
     snacks: 0
 };
 
+let selectedTripConfiguration;
+
 export async function loadYAMLConfig(url) {
     const response = await fetch(url);
     const yamlText = await response.text();
     return jsyaml.load(yamlText);
 }
+
+// Base maps
+var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+    maxZoom: 17,
+    attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors'
+});
+
+var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+});
+
+var orto = L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva/{z}/{x}/{y}.jpg', {
+    maxZoom: 19,
+    attribution: 'National Land Survey of Finland, Ortophoto'
+});
+
+var maastokartta = L.tileLayer.mml_wmts({ layer: "maastokartta" });
+
+var lantmateriet = new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
+    maxZoom: 14,
+    attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
+});
+
 const csr3006 = new L.Proj.CRS('EPSG:3006',
     '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
     {
@@ -34,29 +60,6 @@ export function initMap(fullConfiguration) {
         console.warn("Global config is undefined. This might lead to problems.");
     }
     map = new L.map("map");
-
-    // Base maps
-    var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-        maxZoom: 17,
-        attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors'
-    });
-
-    var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    });
-
-    var orto = L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva/{z}/{x}/{y}.jpg', {
-        maxZoom: 19,
-        attribution: 'National Land Survey of Finland, Ortophoto'
-    });
-
-    var maastokartta = L.tileLayer.mml_wmts({ layer: "maastokartta" });
-
-    var lantmateriet = new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-        maxZoom: 14,
-        attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
-    });
 
     var baseMaps = {
         "NLS Topographic map": maastokartta,
@@ -124,19 +127,37 @@ export function initMap(fullConfiguration) {
     map.addLayer(legFeatureGroup);
     map.addLayer(evacuationFeatureGroup);
     map.addLayer(alternativeFeatureGroup);
+
+    generateAlternativeCheckboxes(globalConfiguration);
+
+    const routeAlternatives = gatherAllAlternatives(globalConfiguration);
+
     var routeType = "trip";
-    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup, addTotalLengthOfRoutesToInfoDiv);
+    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup, addRouteInformationToInfoDiv);
     routeType = "evacuation";
     addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
     routeType = "alternatives";
     //addRoutesToFeatureGroup(routeType, evacuationFeatureGroup);
-    generateAlternativeCheckboxes(globalConfiguration);
+    addRoutesToFeatureGroup(routeType, routeAlternatives, alternativeFeatureGroup);
+    
     return map;
 }
 
-function addTotalLengthOfRoutesToInfoDiv(totalLengthOfRoutes) {
-    console.log("Displaying total length of routes: " + totalLengthOfRoutes);
-    document.getElementById('info').innerHTML += `<p>Total length: ${totalLengthOfRoutes.toFixed(2)} km</p>`;
+function addRouteInformationToInfoDiv() {
+    const speed = globalConfiguration.defaults.walkingSpeed;
+    const trip = selectedTripConfiguration || globalConfiguration.trip;
+    trip.forEach((leg, index) => {
+        const mealPlan = leg.mealPlan || globalConfiguration.defaults.trip.mealPlan;
+        const mealPlanDetails = calculateMealPlan(leg.distance, speed, mealPlan);
+        leg.mealPlanDetails = mealPlanDetails;
+        if (mealPlan.breakfast) totalMealPlans.breakfast++;
+        if (mealPlan.lunch) totalMealPlans.lunch++;
+        if (mealPlan.dinner) totalMealPlans.dinner++;
+        if (mealPlan.snacks) totalMealPlans.snacks += Math.floor(leg.distance / speed);
+        document.getElementById('info').innerHTML += `<p>Leg ${index + 1} length: ${leg.distance.toFixed(2)} km</p>`;
+        document.getElementById('info').innerHTML += `<p>Meal Plan for ${index + 1}: ${mealPlanDetails}</p>`;
+    });
+    document.getElementById('info').innerHTML += `<p>Total length: ${selectedTripConfiguration.totalDistance.toFixed(2)} km</p>`;
     document.getElementById('info').innerHTML += `<p>Total Meal Plans: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
 }
 
@@ -157,57 +178,49 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
     let totalLengtOfRoutes = 0;
+    routesForType.totalDistance = 0;
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
-    routesForType.forEach((leg, index) => {
-        loadGPX(leg, true, featureGroup, defaultOptionsForRouteType, function(gpx, distance) {
+    const loadAllRoutes = routesForType.map((leg, index) => {
+        return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
+            console.log("Loaded route " + index + " with distance " + gpx.distance);
+            console.log(gpx + " " + gpx.distance);
             // Display popup with route number and distance
-            gpx.eachLayer(layer => {
-                layer.bindPopup(`${index + 1}: ${distance.toFixed(2)} km`);
+            gpx.loadedGpx.eachLayer(layer => {
+                layer.bindPopup(`${index + 1}: ${gpx.distance.toFixed(2)} km`);
             });
+            leg.distance = gpx.distance;
+            routesForType.totalDistance += leg.distance;
             if(routeType === "trip") {
-                console.log("Adding distance to total length: " + distance);
-                totalLengtOfRoutes += distance;
-                console.log("Total length of routes after addition " + totalLengtOfRoutes);
-                document.getElementById('info').innerHTML += `<p>Leg ${index + 1} length: ${distance.toFixed(2)} km</p>`;
-                const speed = globalConfiguration.defaults.walkingSpeed;
-                const mealPlan = leg.mealPlan || globalConfiguration.defaults[routeType].mealPlan;
-                const mealPlanDetails = calculateMealPlan(distance, speed, mealPlan);
-                document.getElementById('info').innerHTML += `<p>Meal Plan for ${index + 1}: ${mealPlanDetails}</p>`;
-
-                // Update total meal plans
-                if (mealPlan.breakfast) totalMealPlans.breakfast++;
-                if (mealPlan.lunch) totalMealPlans.lunch++;
-                if (mealPlan.dinner) totalMealPlans.dinner++;
-                if (mealPlan.snacks) totalMealPlans.snacks += Math.floor(distance / speed);
-            }
-            var isLastRoute = index >= totalNumberOfRoutesForType-1;
-            if (isLastRoute) {
-                console.log("Last route loaded.");
-                // L.GPX is asynchronous, so we need to wait until all routes are loaded before fitting bounds
-                if(routeType === "trip") {
-                    console.log("Fitting bounds.");
-                    map.fitBounds(featureGroup.getBounds());
-                    callback(totalLengtOfRoutes);
-                }
+                selectedTripConfiguration = routesForType;
             }
         });
-        if (leg.alternatives) {
-            addRoutesToFeatureGroup("alternatives", leg.alternatives, featureGroup);
-        }
     });
+
+    if (routeType === "trip") {
+        Promise.all(loadAllRoutes).then(() => {
+            console.log("All routes loaded.");
+            map.fitBounds(featureGroup.getBounds());
+            callback();
+        }).catch((error) => {
+            console.error("Error loading routes: ", error);
+        });
+    }
 }
 
-function loadGPX(leg, showIcons, featureGroup, defaultOptions, callback) {
-    const gpxOptions = {
-        async: true,
-        marker_options: getMarkerOptions(leg, showIcons, defaultOptions),
-        polyline_options: getPolylineOptions(leg, defaultOptions)
-    };
+function loadGPX(leg, showIcons, featureGroup, defaultOptions) {
+    return new Promise((resolve) => {
+        const gpxOptions = {
+            async: true,
+            marker_options: getMarkerOptions(leg, showIcons, defaultOptions),
+            polyline_options: getPolylineOptions(leg, defaultOptions)
+        };
 
-    new L.GPX(leg.gpx, gpxOptions).on('loaded', function(e) {
-        const distance = e.target.get_distance() / 1000; // convert to km
-        featureGroup.addLayer(e.target);
-        callback(e.target, distance);
+        new L.GPX(leg.gpx, gpxOptions).on('loaded', function(e) {
+            const distance = e.target.get_distance() / 1000; // convert to km
+            console.log("Loaded GPX with distance: " + distance);
+            featureGroup.addLayer(e.target);
+            resolve({loadedGpx: e.target, distance});
+        });
     });
 }
 
@@ -226,7 +239,6 @@ function getMarkerOptions(leg, showIcons, defaultOptions) {
  * @returns {Object} Polyline options
  */
 function getPolylineOptions(leg, defaultOptions) {
-    console.log("Getting polyline options for route: ", leg, defaultOptions, globalConfiguration);
     return {
         color: leg.color || defaultOptions.color,
         opacity: leg.opacity || defaultOptions.opacity,
@@ -298,6 +310,28 @@ export function updateMapWithAlternatives() {
     }).filter((leg, index) => !legsToSkip.has(index)); // Filter out legs to be skipped
 
     legFeatureGroup.clearLayers();
-    addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, addTotalLengthOfRoutesToInfoDiv);
+
+    addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, addRouteInformationToInfoDiv);
     map.fitBounds(legFeatureGroup.getBounds());
+}
+
+/**
+ * Gather all alternatives from the trip configuration
+ * @param {Object} config - Parsed configuration object
+ * @returns {Array} - Array of all alternatives
+ */
+function gatherAllAlternatives(config) {
+    const alternatives = [];
+    config.trip.forEach((leg, legIndex) => {
+        if (leg.alternatives) {
+            leg.alternatives.forEach((alt, altIndex) => {
+                alternatives.push({
+                    legIndex: legIndex,
+                    altIndex: altIndex,
+                    ...alt
+                });
+            });
+        }
+    });
+    return alternatives;
 }
