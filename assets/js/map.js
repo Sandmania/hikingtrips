@@ -20,39 +20,6 @@ export async function loadYAMLConfig(url) {
     return jsyaml.load(yamlText);
 }
 
-// Base maps
-var OpenTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-    maxZoom: 17,
-    attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors'
-});
-
-var OpenStreetMap = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-});
-
-var orto = L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva/{z}/{x}/{y}.jpg', {
-    maxZoom: 19,
-    attribution: 'National Land Survey of Finland, Ortophoto'
-});
-
-var maastokartta = L.tileLayer.mml_wmts({ layer: "maastokartta" });
-
-var lantmateriet = new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-    maxZoom: 14,
-    attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
-});
-
-const csr3006 = new L.Proj.CRS('EPSG:3006',
-    '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
-    {
-        resolutions: [
-            4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8
-        ],
-        origin: [-1200000.000000, 8500000.000000],
-        bounds: L.bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000])
-    });
-
 export function initMap(fullConfiguration) {
     globalConfiguration = fullConfiguration;
     console.log("Initializing map. Global config is: ", fullConfiguration);
@@ -61,29 +28,14 @@ export function initMap(fullConfiguration) {
     }
     map = new L.map("map");
 
-    var baseMaps = {
-        "NLS Topographic map": maastokartta,
-        "OpenTopoMap": OpenTopoMap,
-        "OpenStreetMap": OpenStreetMap,
-        "NLS Ortophoto": orto,
-        "Lantmäteriet": lantmateriet
-    };
+    var baseMaps = initializeBaseMaps(globalConfiguration);
 
     // Determine the default tile layer
     const defaultTileLayerName = globalConfiguration.defaults.tileLayer || "OpenTopoMap";
     const defaultTileLayer = baseMaps[defaultTileLayerName] || OpenTopoMap;
 
     // Set the CRS based on the tile layer
-    if (defaultTileLayerName === 'NLS Topographic map') {
-        console.log("Set CRS to 3067")
-        map.options.crs = L.TileLayer.MML.get3067Proj();
-    } else if (defaultTileLayerName === 'Lantmäteriet') {
-        console.log("Set CRS to 3006 1")
-        map.options.crs = csr3006;
-    } else {
-        console.log("Set CRS to EPSG3857")
-        map.options.crs = L.CRS.EPSG3857;
-    }
+    setCRSBasedOnTileLayer(defaultTileLayerName);
 
     // Add the default tile layer to the map
     defaultTileLayer.addTo(map);
@@ -101,17 +53,8 @@ export function initMap(fullConfiguration) {
             currentLayers.push(layer);
         });
 
-        // Re-initialize map with new CRS if necessary
-        if (e.name === 'NLS Topographic map') {
-            console.log("Set CRS to 3067")
-            map.options.crs = L.TileLayer.MML.get3067Proj();
-        } else if (e.name === 'Lantmäteriet') {
-            console.log("Set CRS to 3006 2")
-            map.options.crs = csr3006;
-        } else {
-            console.log("Set CRS to EPSG3857")
-            map.options.crs = L.CRS.EPSG3857;
-        }
+        // Set new CRS if necessary
+        setCRSBasedOnTileLayer(e.name);
 
         map.setView(center, zoom);
         e.layer.addTo(map);
@@ -130,17 +73,69 @@ export function initMap(fullConfiguration) {
 
     generateAlternativeCheckboxes(globalConfiguration);
 
-    const routeAlternatives = gatherAllAlternatives(globalConfiguration);
-
     var routeType = "trip";
     addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup, addRouteInformationToInfoDiv);
     routeType = "evacuation";
     addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
     routeType = "alternatives";
-    //addRoutesToFeatureGroup(routeType, evacuationFeatureGroup);
-    addRoutesToFeatureGroup(routeType, routeAlternatives, alternativeFeatureGroup);
+    addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
     
     return map;
+}
+
+function initializeBaseMaps(config) {
+    const allBaseMaps = {
+        "NLS Topographic map": L.tileLayer.mml_wmts({ layer: "maastokartta" }),
+        "OpenTopoMap": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+            maxZoom: 17,
+            attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors'
+        }),
+        "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }),
+        "NLS Ortophoto": L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva/{z}/{x}/{y}.jpg', {
+            maxZoom: 19,
+            attribution: 'National Land Survey of Finland, Ortophoto'
+        }),
+        "Lantmäteriet": new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
+            maxZoom: 14,
+            attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
+        })
+    };
+
+    if (config.defaults && config.defaults.availableTileLayers) {
+        const availableTileLayers = config.defaults.availableTileLayers;
+        return availableTileLayers.reduce((baseMaps, layerName) => {
+            if (allBaseMaps[layerName]) {
+                baseMaps[layerName] = allBaseMaps[layerName];
+            }
+            return baseMaps;
+        }, {});
+    }
+
+    return allBaseMaps;
+}
+
+function setCRSBasedOnTileLayer(tileLayerName) {
+    if (tileLayerName === 'NLS Topographic map') {
+        console.log("Set CRS to 3067");
+        map.options.crs = L.TileLayer.MML.get3067Proj();
+    } else if (tileLayerName === 'Lantmäteriet') {
+        console.log("Set CRS to 3006");
+        map.options.crs = new L.Proj.CRS('EPSG:3006',
+            '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
+            {
+                resolutions: [
+                    4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8
+                ],
+                origin: [-1200000.000000, 8500000.000000],
+                bounds: L.bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000])
+            });
+    } else {
+        console.log("Set CRS to EPSG3857");
+        map.options.crs = L.CRS.EPSG3857;
+    }
 }
 
 function addRouteInformationToInfoDiv() {

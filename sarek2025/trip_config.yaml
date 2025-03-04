@@ -1,5 +1,9 @@
 defaults:
   tileLayer: Lantmäteriet
+  availableTileLayers:
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "Lantmäteriet"
   walkingSpeed: 3
   trip:
     color: 'black'
