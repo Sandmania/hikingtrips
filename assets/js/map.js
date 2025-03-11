@@ -79,6 +79,25 @@ export function initMap(fullConfiguration) {
     addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
     routeType = "alternatives";
     addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
+
+    // Add custom control for toggling the overlay
+    const toggleControl = L.Control.extend({
+        onAdd: function(map) {
+            const button = L.DomUtil.create('button', 'leaflet-control-toggle');
+            button.innerHTML = 'Trip details';
+            const rightContent = document.getElementById('right-content');
+            button.onclick = function() {
+                if (rightContent.style.display === 'none' || rightContent.style.display === '') {
+                    rightContent.style.display = 'flex';
+                } else {
+                    rightContent.style.display = 'none';
+                }
+            };
+            return button;
+        }
+    });
+
+    map.addControl(new toggleControl({ position: 'topright' }));
     
     return map;
 }
