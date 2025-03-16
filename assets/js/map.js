@@ -118,7 +118,7 @@ function initializeBaseMaps(config) {
             attribution: 'National Land Survey of Finland, Ortophoto'
         }),
         "Lantmäteriet": new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-            maxZoom: 14,
+            maxZoom: 9,
             attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
         })
     };
