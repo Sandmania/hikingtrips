@@ -11,7 +11,7 @@ defaults:
     color: 'black'
     opacity: 0.7
     weight: 7
-    endIcon: /assets/images/bonfire-outline.svg
+    endIcon: ../assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: true
       lunch: true
@@ -22,7 +22,7 @@ defaults:
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
-    endIcon: /assets/images/bonfire-outline.svg
+    endIcon: ../assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: true
       lunch: true
@@ -33,7 +33,7 @@ defaults:
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
-    startIcon: /assets/images/medkit-outline.svg
+    startIcon: ../assets/images/medkit-outline.svg
     mealPlan:
       breakfast: false
       lunch: false
@@ -42,7 +42,7 @@ defaults:
 
 trip:
   - gpx: planned_route/day1_ele.gpx
-    startIcon: /assets/images/circle-play-regular.svg
+    startIcon: ../assets/images/circle-play-regular.svg
     mealPlan:
       breakfast: false
       lunch: true
@@ -56,7 +56,7 @@ trip:
   - gpx: planned_route/day4_ele.gpx
   - gpx: planned_route/day5_ele.gpx
   - gpx: planned_route/day6_ele.gpx
-    endIcon: /assets/images/flag-checkered-solid.svg
+    endIcon: ../assets/images/flag-checkered-solid.svg
     mealPlan:
       breakfast: true
       lunch: true
