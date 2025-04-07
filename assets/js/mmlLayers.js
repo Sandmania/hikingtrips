@@ -106,7 +106,7 @@
 
   L.tileLayer.mml_wmts = function (options) {
     var layer = options.layer || "taustakartta";
-    var url = "https://api.joun.in/nls/proxy?z={z}&y={y}&x={x}";
+    var url = "https://api.joun.in/nls_proxy?z={z}&y={y}&x={x}";
     return new L.TileLayer.MML_WMTS(url, options);
   };
 
