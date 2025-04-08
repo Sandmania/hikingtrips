@@ -1,0 +1,76 @@
+heading: Muotka 2025 - TrailTreader
+
+defaults:
+  tileLayer: "NLS Topographic map"
+  availableTileLayers:
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "NLS Topographic map"
+    - "NLS Ortophoto"
+  walkingSpeed: 3
+  trip:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    startIcon: ../assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+
+trip:
+  - gpx: planned_route/Jeageloaivi.gpx
+    startIcon: ../assets/images/circle-play-regular.svg
+    mealPlan:
+      breakfast: false
+      lunch: true
+      dinner: true
+      snacks: true
+  - gpx: planned_route/Stuorravzi.gpx
+  - gpx: planned_route/Stuorraskaidi_.gpx
+  #- gpx: planned_route/Urroaivi_.gpx
+  - gpx: planned_route/Urroaivi_kuarvi.gpx
+  - gpx: planned_route/Peltoj_rvi_.gpx
+  #- gpx: planned_route/Kuarvikozza.gpx
+  #  endIcon: null
+  #  startIcon: null
+  #  color: 'green'
+  #  opacity: 0.7
+  #  weight: 5
+  #  dashArray: '7, 7'
+  - gpx: planned_route/Peltoaivi_.gpx
+    endIcon: ../assets/images/flag-checkered-solid.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true
+
+photo_info:
+  cameraOffset:
+    realClock: 13.09
+    cameraClock: 14.02
+    substrackt: "53m"

@@ -225,7 +225,10 @@ function loadGPX(leg, showIcons, featureGroup, defaultOptions) {
     return new Promise((resolve) => {
         const gpxOptions = {
             async: true,
-            marker_options: getMarkerOptions(leg, showIcons, defaultOptions),
+            markers: getMarkerOptions(leg, showIcons, defaultOptions),
+            marker_options: {
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/pin-shadow.png'
+            },
             polyline_options: getPolylineOptions(leg, defaultOptions)
         };
 
@@ -240,9 +243,8 @@ function loadGPX(leg, showIcons, featureGroup, defaultOptions) {
 
 function getMarkerOptions(leg, showIcons, defaultOptions) {
     return {
-        startIconUrl: showIcons && leg.startIcon ? leg.startIcon : defaultOptions.startIcon,
-        endIconUrl: showIcons && leg.endIcon ? leg.endIcon : defaultOptions.endIcon,
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/pin-shadow.png'
+        startIcon: showIcons && (leg.startIcon !== undefined ? leg.startIcon : defaultOptions.startIcon),
+        endIcon: showIcons && (leg.endIcon !== undefined ? leg.endIcon : defaultOptions.endIcon),
     };
 }
 
