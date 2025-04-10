@@ -1,4 +1,5 @@
 let map;
+let layerControl;
 let globalConfiguration = {};
 // Feature groups for different route types
 let legFeatureGroup = L.featureGroup();
@@ -40,7 +41,7 @@ export function initMap(fullConfiguration) {
     // Add the default tile layer to the map
     defaultTileLayer.addTo(map);
 
-    L.control.layers(baseMaps).addTo(map);
+    layerControl = L.control.layers(baseMaps).addTo(map);
 
     // Event listener for baselayer change to handle CRS change
     map.on('baselayerchange', function (e) {
@@ -180,10 +181,13 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     console.log("Routes for type: ", routesForType);
     console.log("Feature group: ", featureGroup);
     console.log("Callback: ", callback);
-    if (routesForType === undefined) {
-        console.log("Routes for type " + routeType + " is undefined. Skipping.");
+    if (routesForType === undefined || routesForType.length === 0) {
+        console.log("Routes for type " + routeType + " is undefined or empty. Skipping.");
         return;
     }
+    // Add toggle checkbox for the feature group
+    layerControl.addOverlay(featureGroup, routeType);
+
     callback = callback || function(){};
     if (routeType !== "alternatives") {
         document.getElementById('info').innerHTML = '';
