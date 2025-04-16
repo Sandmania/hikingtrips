@@ -1,0 +1,112 @@
+body {
+    font-family: "Segoe UI", sans-serif;
+    padding: 2em;
+    background-color: #f5f5f5;
+  }
+.calendar {
+border-collapse: separate;
+border-spacing: 4px; /* space between cells */
+width: 100%;
+max-width: 700px;
+margin: 2rem auto;
+font-family: sans-serif;
+table-layout: fixed;
+background: white;
+box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+border-radius: 10px;
+padding: 10px;
+}
+
+.calendar th {
+background: #eee;
+padding: 10px 0;
+font-weight: 600;
+}
+
+.calendar td {
+padding: 0;
+vertical-align: top;
+padding: 4px 6px;
+border-radius: 6px;
+font-weight: bold;
+font-size: 0.9em;
+}
+
+.calendar td span {
+position: absolute;
+top: 5px;
+right: 5px;
+font-size: 0.8rem;
+font-weight: bold;
+color: #333;
+}
+
+/* Base coloring */
+td.empty { background-color: white; }
+.legend-color.nothing, td.nothing { background-color: #e6f9e6;}
+.legend-color.travel, td.travel { background-color: #a9d4f0; }
+.legend-color.stay, td.stay { background-color: #fbc288; }
+.legend-color.hike, td.hike { background-color: #9dc8b0; }
+
+/* Diagonal splits */
+.legend-color.travel-stay, .travel-stay {
+background: linear-gradient(135deg, #a9d4f0 50%, #fbc288 50%);
+}
+.stay-travel {
+background: linear-gradient(135deg, #fbc288 50%, #a9d4f0 50%);
+}
+.stay-hike {
+background: linear-gradient(135deg, #fbc288 50%, #9dc8b0 50%);
+}
+.hike-stay {
+background: linear-gradient(135deg, #9dc8b0 50%, #fbc288 50%);
+}
+.travel-hike {
+background: linear-gradient(135deg, #a9d4f0 50%, #9dc8b0 50%);
+}
+.hike-travel {
+background: linear-gradient(135deg, #9dc8b0 50%, #a9d4f0 50%);
+}
+
+/* Start/end context transitions */
+.nothing-travel { 
+background: linear-gradient(135deg, #e6f9e6 50%, #a9d4f0 50%);
+}
+.nothing-stay { 
+background: linear-gradient(135deg, #e6f9e6 50%, #fbc288 50%);
+}
+.nothing-hike { 
+background: linear-gradient(135deg, #e6f9e6 50%, #9dc8b0 50%);
+}
+.travel-nothing { 
+background: linear-gradient(135deg, #a9d4f0 50%, #e6f9e6 50%);
+}
+.stay-nothing { 
+background: linear-gradient(135deg, #fbc288 50%, #e6f9e6 50%);
+}
+.hike-nothing { 
+background: linear-gradient(135deg, #9dc8b0 50%, #e6f9e6 50%);
+}
+
+.legend {
+    max-width: 700px;
+    margin: 1em auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    font-size: 0.9em;
+    color: #2c3e50;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
