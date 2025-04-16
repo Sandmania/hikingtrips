@@ -170,10 +170,20 @@ function addRouteInformationToInfoDiv() {
         if (mealPlan.dinner) totalMealPlans.dinner++;
         if (mealPlan.snacks) totalMealPlans.snacks += Math.floor(leg.distance / speed);
         document.getElementById('info').innerHTML += `<p>Leg ${index + 1} length: ${leg.distance.toFixed(2)} km</p>`;
-        document.getElementById('info').innerHTML += `<p>Meal Plan for ${index + 1}: ${mealPlanDetails}</p>`;
+        document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
     });
+    const zeroDays = globalConfiguration.defaults.numberOfZeroDays;
+    for (let i = 0; i < zeroDays; i++) {
+        const mealPlan = globalConfiguration.defaults.zero.mealPlan;
+        const mealPlanDetails = calculateMealPlan(0, speed, mealPlan);
+        if (mealPlan.breakfast) totalMealPlans.breakfast++;
+        if (mealPlan.lunch) totalMealPlans.lunch++;
+        if (mealPlan.dinner) totalMealPlans.dinner++;
+        document.getElementById('info').innerHTML += `<p>Zero Day ${i + 1}</p>`;
+        document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
+    }
     document.getElementById('info').innerHTML += `<p>Total length: ${selectedTripConfiguration.totalDistance.toFixed(2)} km</p>`;
-    document.getElementById('info').innerHTML += `<p>Total Meal Plans: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
+    document.getElementById('info').innerHTML += `<p>Total Meals: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
 }
 
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, callback) {
@@ -200,13 +210,19 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     const loadAllRoutes = routesForType.map((leg, index) => {
         return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
-            console.log("Loaded route " + index + " with distance " + gpx.distance);
-            console.log(gpx + " " + gpx.distance);
+            const distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
+            // Use name from GPX file if available, otherwise use index + 1
+            const name = leg.name != null ? leg.name : gpx.loadedGpx.get_name() != null ? gpx.loadedGpx.get_name() : (index + 1);
+            console.log("Loaded route " + index + " with name " + name);
+            //console.log("Loaded route " + index + " with distance " + distance);
             // Display popup with route number and distance
             gpx.loadedGpx.eachLayer(layer => {
-                layer.bindPopup(`${index + 1}: ${gpx.distance.toFixed(2)} km`);
+                layer.bindPopup(`${name}: ${distance.toFixed(2)} km`);
             });
-            leg.distance = gpx.distance;
+            leg.distance = distance;
+            if (leg.name === undefined) {
+                leg.name = name;
+            }
             routesForType.totalDistance += leg.distance;
             if(routeType === "trip") {
                 selectedTripConfiguration = routesForType;
@@ -237,10 +253,8 @@ function loadGPX(leg, showIcons, featureGroup, defaultOptions) {
         };
 
         new L.GPX(leg.gpx, gpxOptions).on('loaded', function(e) {
-            const distance = e.target.get_distance() / 1000; // convert to km
-            console.log("Loaded GPX with distance: " + distance);
             featureGroup.addLayer(e.target);
-            resolve({loadedGpx: e.target, distance});
+            resolve({loadedGpx: e.target});
         });
     });
 }
