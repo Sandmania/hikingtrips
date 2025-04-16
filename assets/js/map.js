@@ -99,6 +99,27 @@ export function initMap(fullConfiguration) {
     });
 
     map.addControl(new toggleControl({ position: 'topright' }));
+
+    if (globalConfiguration.travel_info) {
+        console.log("Travel info is available. Adding calendar control.");
+        const calendarControl = L.Control.extend({
+            onAdd: function(map) {
+                var calendarButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control calendar-button');
+                calendarButton.innerHTML = '';
+                const rightContent = document.getElementById('calendar-container');
+                calendarButton.onclick = function() {
+                    if (rightContent.style.display === 'none' || rightContent.style.display === '') {
+                        rightContent.style.display = 'flex';
+                    } else {
+                        rightContent.style.display = 'none';
+                    }
+                };                
+                return calendarButton;
+            }
+        });
+
+        map.addControl(new calendarControl({ position: 'topright' }));
+    }
     
     return map;
 }
