@@ -82,29 +82,33 @@ export function initMap(fullConfiguration) {
     addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
 
     // Add custom control for toggling the overlay
-    const toggleControl = L.Control.extend({
+    const infoControl = L.Control.extend({
         onAdd: function(map) {
-            const button = L.DomUtil.create('button', 'leaflet-control-toggle');
-            button.innerHTML = 'Trip details';
+            const infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
+            // Don't propagate click events to the map, double clicking would zoom in
+            L.DomEvent.disableClickPropagation(infoButton);
+            infoButton.innerHTML = '';
             const rightContent = document.getElementById('right-content');
-            button.onclick = function() {
+            infoButton.onclick = function() {
                 if (rightContent.style.display === 'none' || rightContent.style.display === '') {
                     rightContent.style.display = 'flex';
                 } else {
                     rightContent.style.display = 'none';
                 }
             };
-            return button;
+            return infoButton;
         }
     });
 
-    map.addControl(new toggleControl({ position: 'topright' }));
+    map.addControl(new infoControl({ position: 'topright' }));
 
     if (globalConfiguration.travel_info) {
         console.log("Travel info is available. Adding calendar control.");
         const calendarControl = L.Control.extend({
             onAdd: function(map) {
                 var calendarButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control calendar-button');
+                // Don't propagate click events to the map, double clicking would zoom in
+                L.DomEvent.disableClickPropagation(calendarButton);
                 calendarButton.innerHTML = '';
                 const rightContent = document.getElementById('calendar-container');
                 calendarButton.onclick = function() {

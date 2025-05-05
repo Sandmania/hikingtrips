@@ -1,6 +1,9 @@
 export function renderTripCalendar(travelInfo) {
+  if (travelInfo) {
     const eventMap = buildEventMap(travelInfo);
+    console.log(eventMap)
     renderCalendar(2025, 7, eventMap);
+  }
 }
 
 function buildEventMap(travelInfo) {
@@ -99,6 +102,8 @@ function buildEventMap(travelInfo) {
     return eventMap;
   }
   
+
+
   function renderCalendar(year, month, eventMap) {
     const calendarEl = document.getElementById("calendar-container");
     calendarEl.innerHTML = "";
@@ -127,8 +132,9 @@ function buildEventMap(travelInfo) {
     }
   
     for (let day = 1; day <= daysInMonth; day++) {
-      const date = new Date(year, month - 1, day);
-      const iso = date.toISOString().split("T")[0];
+      const date = createDateWithTimezone(year, month -1, day)
+      const iso = date.toISOString().slice(0, 10)
+      //console.log("Iso date: ", iso);
       const cell = document.createElement("td");
       cell.innerText = day;
   
@@ -136,12 +142,14 @@ function buildEventMap(travelInfo) {
   
       const prevDate = new Date(date);
       prevDate.setDate(date.getDate() - 1);
-      const prevIso = prevDate.toISOString().split("T")[0];
+      const prevIso = prevDate.toISOString().slice(0, 10)
+      //console.log("Prev Iso date: ", prevIso);
       const prevEvents = eventMap[prevIso] || [];
   
       const nextDate = new Date(date);
       nextDate.setDate(date.getDate() + 1);
-      const nextIso = nextDate.toISOString().split("T")[0];
+      const nextIso = nextDate.toISOString().slice(0, 10)
+      //console.log("Next Iso date: ", nextIso);
       const nextEvents = eventMap[nextIso] || [];
   
       if (events.length === 1) {
@@ -170,5 +178,29 @@ function buildEventMap(travelInfo) {
       }
     }
   
-    calendarEl.appendChild(table);
+    const container2 = document.createElement("div");
+    container2.classList.add("calendar-container2");
+    container2.appendChild(table);
+    container2.insertAdjacentHTML("beforeend", calendarLegend);
+    calendarEl.appendChild(container2);
   }
+
+function createDateWithTimezone(year, month, day) {
+  // Create base date
+  const date = new Date(Date.UTC(year, month, day));
+  
+  // Adjust for timezone
+  const offsetHours = date.getTimezoneOffset() / 60;
+  const adjustedDate = new Date(date.getTime() + (Math.abs(offsetHours) * 60 * 60 * 1000));
+  
+  return adjustedDate;
+}
+  const calendarLegend = `
+<div class="legend">
+  <div class="legend-item"><div class="legend-color nothing"></div> Nothing</div>
+  <div class="legend-item"><div class="legend-color travel"></div> Travel</div>
+  <div class="legend-item"><div class="legend-color stay"></div> Stay</div>
+  <div class="legend-item"><div class="legend-color hike"></div> Hike</div>
+  <div class="legend-item"><div class="legend-color travel-stay"></div> Mixed</div>
+</div>
+  `;

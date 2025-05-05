@@ -93,51 +93,51 @@ travel_info:
     - train:
         from: JY
         to: TPE
-        outboundDate: "2025-07-03"
+        outboundDate: "2025-07-02"
         outboundTime: 19:15:00.000+03:00
-        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=JY&to=TPE&passengers[0][key]=df74ac8a-7082-44ab-abef-de30c6c1ee4a&passengers[0][type]=ADULT&passengers[1][key]=1f8b6f3e-f33c-4168-8b5b-a685a46f3921&passengers[1][type]=ADULT&outboundDate=2025-07-03
+        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=JY&to=TPE&passengers[0][key]=df74ac8a-7082-44ab-abef-de30c6c1ee4a&passengers[0][type]=ADULT&passengers[1][key]=1f8b6f3e-f33c-4168-8b5b-a685a46f3921&passengers[1][type]=ADULT&outboundDate=2025-07-02
     - train:
         from: TPE
         to: ROI
-        outboundDate: "2025-07-03"
+        outboundDate: "2025-07-02"
         outboundTime: 23:09:00.000+03:00
-        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=TPE&to=ROI&passengers[0][key]=78b27270-54af-41ef-922b-9ebea4a5f075&passengers[0][type]=ADULT&passengers[1][key]=30d94a33-448c-49be-ab5b-dc50bdc44427&passengers[1][type]=ADULT&outboundDate=2025-07-03&filters[0]=BED_CABIN
+        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=TPE&to=ROI&passengers[0][key]=78b27270-54af-41ef-922b-9ebea4a5f075&passengers[0][type]=ADULT&passengers[1][key]=30d94a33-448c-49be-ab5b-dc50bdc44427&passengers[1][type]=ADULT&outboundDate=2025-07-02&filters[0]=BED_CABIN
     - bus:
         from: p472
         to: s12140
-        outboundDate: "2025-07-04"
+        outboundDate: "2025-07-03"
         outboundTime: 11:45
-        url: https://liput.matkahuolto.fi/connectionlist?lang=fi&departurePlaceId=p472&arrivalPlaceId=s12140&departureDate=2025-07-04#breadcrumb
+        url: https://liput.matkahuolto.fi/connectionlist?lang=fi&departurePlaceId=p472&arrivalPlaceId=s12140&departureDate=2025-07-03#breadcrumb
     - accommodation:
         name: Hotel Guossi Karigasniemi
         url: https://guossi.com/
-        checkInDate: "2025-07-04"
-        checkOutDate: "2025-07-05"
+        checkInDate: "2025-07-03"
+        checkOutDate: "2025-07-04"
         checkInTime: 15:00
         checkOutTime: 12:00
   from:
     - accommodation:
         name: Muotkan Ruoktu
         url: https://www.muotkanruoktu.fi/
-        checkInDate: "2025-07-11"
-        checkOutDate: "2025-07-12"
+        checkInDate: "2025-07-10"
+        checkOutDate: "2025-07-11"
         checkInTime: 15:00
         checkOutTime: 12:00
     - bus:
         from: s1971 # Muotkan Ruoktu
         to: p472 # ROI
-        outboundDate: "2025-07-12"
+        outboundDate: "2025-07-11"
         outboundTime: 12:00 
-        url: https://liput.matkahuolto.fi/connectionlist?lang=fi&departurePlaceId=s1971&arrivalPlaceId=p472&departureDate=2025-07-12#breadcrumb
+        url: https://liput.matkahuolto.fi/connectionlist?lang=fi&departurePlaceId=s1971&arrivalPlaceId=p472&departureDate=2025-07-11#breadcrumb
     - train:
         from: ROI
         to: HKI
-        outboundDate: "2025-07-12"
+        outboundDate: "2025-07-11"
         outboundTime: 21:00:00.000+03:00
-        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=ROI&to=HKI&passengers[0][key]=a2b8f1d4-3c7e-4a9b-bc6f-0d1e2f3b5a6b&passengers[0][type]=ADULT&passengers[1][key]=a2b8f1d4-3c7e-4a9b-bc6f-0d1e2f3b5a6b&passengers[1][type]=ADULT&outboundDate=2025-07-12
+        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=ROI&to=HKI&passengers[0][key]=a2b8f1d4-3c7e-4a9b-bc6f-0d1e2f3b5a6b&passengers[0][type]=ADULT&passengers[1][key]=a2b8f1d4-3c7e-4a9b-bc6f-0d1e2f3b5a6b&passengers[1][type]=ADULT&outboundDate=2025-07-11
     - train:
         from: HKI
         to: JY
-        outboundDate: "2025-07-13"
+        outboundDate: "2025-07-12"
         outboundTime: 10:00:00.000+03:00
-        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=HKI&to=JY&passengers[0][key]=2c768f69-7bc3-4a2e-9498-21bccdf959c7&passengers[0][type]=ADULT&passengers[1][key]=2d624db3-bc45-42cd-88d6-a32f314f78f5&passengers[1][type]=ADULT&outboundDate=2025-07-13
+        url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=HKI&to=JY&passengers[0][key]=2c768f69-7bc3-4a2e-9498-21bccdf959c7&passengers[0][type]=ADULT&passengers[1][key]=2d624db3-bc45-42cd-88d6-a32f314f78f5&passengers[1][type]=ADULT&outboundDate=2025-07-12
