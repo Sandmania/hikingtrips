@@ -75,8 +75,8 @@ function extractEventsFromDirection(directionArray) {
   const events = [];
 
   for (const segment of directionArray) {
-    if (segment.train || segment.bus) {
-      const transport = segment.train || segment.bus;
+    if (segment.transportation) {
+      const transport = segment.transportation;
       events.push({
         date: transport.outboundDate,
         time: transport.outboundTime?.slice(0, 5),
@@ -86,8 +86,7 @@ function extractEventsFromDirection(directionArray) {
     } else if (segment.accommodation) {
       const acc = segment.accommodation;
 
-      // In 'to' use checkIn & checkOut as stay
-      // In 'from' use checkIn & checkOut as stay too
+      // Add check-in and check-out as stay events
       events.push({
         date: acc.checkInDate,
         time: acc.checkInTime,
@@ -125,6 +124,13 @@ function getCellClass(events, prevEvents, nextEvents) {
   return "";
 }
 
+function getEventsForAdjacentDate(eventMap, baseDate, offset) {
+  const adjacentDate = new Date(baseDate);
+  adjacentDate.setDate(baseDate.getDate() + offset);
+  const iso = adjacentDate.toISOString().slice(0, 10);
+  return eventMap[iso] || [];
+}
+
 function renderCalendar(year, month, eventMap) {
   const calendarEl = document.getElementById("calendar-container");
   calendarEl.innerHTML = "";
@@ -143,40 +149,17 @@ function renderCalendar(year, month, eventMap) {
   });
   table.appendChild(headerRow);
 
-  let row = document.createElement("tr");
-
-  // Empty cells before the first day
-  for (let i = 0; i < firstDayOfWeek; i++) {
-    const emptyCell = document.createElement("td");
-    emptyCell.classList.add("empty");
-    row.appendChild(emptyCell);
-  }
+  let row = createEmptyCells(firstDayOfWeek);
 
   for (let day = 1; day <= daysInMonth; day++) {
     const date = createDateWithTimezone(year, month - 1, day);
     const iso = date.toISOString().slice(0, 10);
-    const cell = document.createElement("td");
-    cell.innerText = day;
 
     const events = eventMap[iso] || [];
+    const prevEvents = getEventsForAdjacentDate(eventMap, date, -1);
+    const nextEvents = getEventsForAdjacentDate(eventMap, date, 1);
 
-    const prevDate = new Date(date);
-    prevDate.setDate(date.getDate() - 1);
-    const prevIso = prevDate.toISOString().slice(0, 10);
-    const prevEvents = eventMap[prevIso] || [];
-
-    const nextDate = new Date(date);
-    nextDate.setDate(date.getDate() + 1);
-    const nextIso = nextDate.toISOString().slice(0, 10);
-    const nextEvents = eventMap[nextIso] || [];
-
-    // Use the helper function to determine the cell class
-    const cellClass = getCellClass(events, prevEvents, nextEvents);
-    if (cellClass) {
-      cell.classList.add(cellClass);
-    }
-
-    cell.classList.add("date-cell");
+    const cell = createCalendarCell(day, events, prevEvents, nextEvents);
     row.appendChild(cell);
 
     if ((firstDayOfWeek + day) % 7 === 0 || day === daysInMonth) {
@@ -192,6 +175,19 @@ function renderCalendar(year, month, eventMap) {
   calendarEl.appendChild(container2);
 }
 
+function createCalendarCell(day, events, prevEvents, nextEvents) {
+  const cell = document.createElement("td");
+  cell.innerText = day;
+
+  const cellClass = getCellClass(events, prevEvents, nextEvents);
+  if (cellClass) {
+    cell.classList.add(cellClass);
+  }
+
+  cell.classList.add("date-cell");
+  return cell;
+}
+
 function createDateWithTimezone(year, month, day) {
   // Create base date
   const date = new Date(Date.UTC(year, month, day));
@@ -202,6 +198,17 @@ function createDateWithTimezone(year, month, day) {
   
   return adjustedDate;
 }
+
+function createEmptyCells(count) {
+  const row = document.createElement("tr");
+  for (let i = 0; i < count; i++) {
+    const emptyCell = document.createElement("td");
+    emptyCell.classList.add("empty");
+    row.appendChild(emptyCell);
+  }
+  return row;
+}
+
 const calendarLegend = `
 <div class="legend">
   <div class="legend-item"><div class="legend-color nothing"></div> Nothing</div>

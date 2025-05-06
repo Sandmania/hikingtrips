@@ -90,19 +90,22 @@ photo_info:
 
 travel_info:
   to:
-    - train:
+    - transportation:
+        type: train
         from: JY
         to: TPE
         outboundDate: "2025-07-02"
         outboundTime: 19:15:00.000+03:00
         url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=JY&to=TPE&passengers[0][key]=df74ac8a-7082-44ab-abef-de30c6c1ee4a&passengers[0][type]=ADULT&passengers[1][key]=1f8b6f3e-f33c-4168-8b5b-a685a46f3921&passengers[1][type]=ADULT&outboundDate=2025-07-02
-    - train:
+    - transportation:
+        type: train
         from: TPE
         to: ROI
         outboundDate: "2025-07-02"
         outboundTime: 23:09:00.000+03:00
         url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=TPE&to=ROI&passengers[0][key]=78b27270-54af-41ef-922b-9ebea4a5f075&passengers[0][type]=ADULT&passengers[1][key]=30d94a33-448c-49be-ab5b-dc50bdc44427&passengers[1][type]=ADULT&outboundDate=2025-07-02&filters[0]=BED_CABIN
-    - bus:
+    - transportation:
+        type: bus
         from: p472
         to: s12140
         outboundDate: "2025-07-03"
@@ -123,19 +126,22 @@ travel_info:
         checkOutDate: "2025-07-11"
         checkInTime: 15:00
         checkOutTime: 12:00
-    - bus:
+    - transportation:
+        type: bus
         from: s1971 # Muotkan Ruoktu
         to: p472 # ROI
         outboundDate: "2025-07-11"
-        outboundTime: 12:00 
+        outboundTime: 12:00
         url: https://liput.matkahuolto.fi/connectionlist?lang=fi&departurePlaceId=s1971&arrivalPlaceId=p472&departureDate=2025-07-11#breadcrumb
-    - train:
+    - transportation:
+        type: train
         from: ROI
         to: HKI
         outboundDate: "2025-07-11"
         outboundTime: 21:00:00.000+03:00
         url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=ROI&to=HKI&passengers[0][key]=a2b8f1d4-3c7e-4a9b-bc6f-0d1e2f3b5a6b&passengers[0][type]=ADULT&passengers[1][key]=a2b8f1d4-3c7e-4a9b-bc6f-0d1e2f3b5a6b&passengers[1][type]=ADULT&outboundDate=2025-07-11
-    - train:
+    - transportation:
+        type: train
         from: HKI
         to: JY
         outboundDate: "2025-07-12"

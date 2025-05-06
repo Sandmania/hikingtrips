@@ -63,6 +63,36 @@ trip:
       dinner: false
       snacks: true
 
+travel_info:
+  to:
+    - transportation:
+        type: car-pool
+        from: Jyväskylä
+        to: ???
+        outboundDate: "2025-07-18"
+        outboundTime: 13:00
+    - accommodation:
+        name: Lakanamajoitus
+        url: ???
+        checkInDate: "2025-07-18"
+        checkOutDate: "2025-07-19"
+        checkInTime: 15:00
+        checkOutTime: 12:00
+  from:
+    - transportation:
+        type: car-pool
+        from: Suorva
+        to: ???
+        outboundDate: "2025-07-26"
+        outboundTime: 15:00
+    - accommodation:
+        name: Lakanamajoitus
+        url: ???
+        checkInDate: "2025-07-26"
+        checkOutDate: "2025-07-27"
+        checkInTime: 15:00
+        checkOutTime: 12:00
+
 photo_info:
   cameraOffset:
     realClock: 13.09
