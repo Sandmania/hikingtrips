@@ -77,7 +77,25 @@ travel_info:
         checkInDate: "2025-07-18"
         checkOutDate: "2025-07-19"
         checkInTime: 15:00
-        checkOutTime: 12:00
+        checkOutTime: 08:00
+    - transportation:
+        type: car-pool
+        from: ???
+        to: Suorva
+        outboundDate: "2025-07-19"
+        outboundTime: 09:00
+    - transportation:
+        type: bus
+        from: Suorva
+        to: Ritsem
+        outboundDate: "2025-07-19"
+        outboundTime: 10:00
+    - transportation:
+        type: boat
+        from: Ritsem
+        to: Akkajaure
+        outboundDate: "2025-07-19"
+        outboundTime: 11:00
   from:
     - transportation:
         type: car-pool
@@ -92,6 +110,12 @@ travel_info:
         checkOutDate: "2025-07-27"
         checkInTime: 15:00
         checkOutTime: 12:00
+    - transportation:
+        type: car-pool
+        from: ???
+        to: Jyväskylä
+        outboundDate: "2025-07-27"
+        outboundTime: 15:00
 
 photo_info:
   cameraOffset:

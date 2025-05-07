@@ -59,9 +59,9 @@ function buildEventMap(travelInfo) {
     if (!eventMap[evt.date]) {
       eventMap[evt.date] = [];
     }
-    if (!eventMap[evt.date].includes(evt.type)) {
+    //if (!eventMap[evt.date].includes(evt.type)) {
       eventMap[evt.date].push(evt.type);
-    }
+   //}
   }
 
   return eventMap;
@@ -103,25 +103,6 @@ function extractEventsFromDirection(directionArray) {
   }
 
   return events;
-}
-
-function getCellClass(events, prevEvents, nextEvents) {
-  if (events.length === 1) {
-    const type = events[0];
-    if (!prevEvents.length) {
-      return `nothing-${type}`;
-    } else if (!nextEvents.length) {
-      return `${type}-nothing`;
-    } else {
-      return type;
-    }
-  } else if (events.length === 2) {
-    const [a, b] = events;
-    return `${a}-${b}`;
-  } else if (events.length === 0) {
-    return "nothing";
-  }
-  return "";
 }
 
 function getEventsForAdjacentDate(eventMap, baseDate, offset) {
@@ -179,13 +160,46 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
   const cell = document.createElement("td");
   cell.innerText = day;
 
-  const cellClass = getCellClass(events, prevEvents, nextEvents);
-  if (cellClass) {
-    cell.classList.add(cellClass);
+  if (events.length === 1) {
+    // Single event: Add "nothing" color if previous or next day has no events
+    const eventColor = getEventColor(events[0]);
+    const gradientStops = [];
+
+    if (!prevEvents.length) {
+      gradientStops.push(`${getEventColor("nothing")} 0% 50%`);
+    }
+    gradientStops.push(`${eventColor} ${!prevEvents.length ? "50%" : "0%"} ${!nextEvents.length ? "50%" : "100%"}`);
+    if (!nextEvents.length) {
+      gradientStops.push(`${getEventColor("nothing")} 50% 100%`);
+    }
+
+    cell.style.background = `linear-gradient(135deg, ${gradientStops.join(", ")})`;
+  } else if (events.length > 1) {
+    // Multiple events: Dynamically calculate gradient
+    const gradientStops = events
+      .map((event, index) => {
+        const start = (index / events.length) * 100;
+        const end = ((index + 1) / events.length) * 100;
+        return `${getEventColor(event)} ${start}% ${end}%`;
+      })
+      .join(", ");
+    cell.style.background = `linear-gradient(135deg, ${gradientStops})`;
+  } else {
+    // No events: Use "nothing" class
+    cell.classList.add("nothing");
   }
 
   cell.classList.add("date-cell");
   return cell;
+}
+
+function getEventColor(event) {
+  const colors = {
+    travel: "#6BA9E6",
+    stay: "#F7B74A",
+    hike: "#79CC1F",
+  };
+  return colors[event] || "#D8F3DC";
 }
 
 function createDateWithTimezone(year, month, day) {

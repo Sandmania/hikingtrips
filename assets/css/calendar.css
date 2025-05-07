@@ -50,49 +50,13 @@ color: #333;
 
 /* Base coloring */
 td.empty { background-color: white; }
-.legend-color.nothing, td.nothing { background-color: #e6f9e6;}
-.legend-color.travel, td.travel { background-color: #a9d4f0; }
-.legend-color.stay, td.stay { background-color: #fbc288; }
-.legend-color.hike, td.hike { background-color: #9dc8b0; }
+.legend-color.nothing, td.nothing { background-color: #D8F3DC; }
+.legend-color.travel, td.travel { background-color: #6BA9E6; }
+.legend-color.stay, td.stay { background-color: #F7B74A; }
+.legend-color.hike, td.hike { background-color: #79CC1F; }
 
-/* Diagonal splits */
 .legend-color.travel-stay, .travel-stay {
-background: linear-gradient(135deg, #a9d4f0 50%, #fbc288 50%);
-}
-.stay-travel {
-background: linear-gradient(135deg, #fbc288 50%, #a9d4f0 50%);
-}
-.stay-hike {
-background: linear-gradient(135deg, #fbc288 50%, #9dc8b0 50%);
-}
-.hike-stay {
-background: linear-gradient(135deg, #9dc8b0 50%, #fbc288 50%);
-}
-.travel-hike {
-background: linear-gradient(135deg, #a9d4f0 50%, #9dc8b0 50%);
-}
-.hike-travel {
-background: linear-gradient(135deg, #9dc8b0 50%, #a9d4f0 50%);
-}
-
-/* Start/end context transitions */
-.nothing-travel { 
-background: linear-gradient(135deg, #e6f9e6 50%, #a9d4f0 50%);
-}
-.nothing-stay { 
-background: linear-gradient(135deg, #e6f9e6 50%, #fbc288 50%);
-}
-.nothing-hike { 
-background: linear-gradient(135deg, #e6f9e6 50%, #9dc8b0 50%);
-}
-.travel-nothing { 
-background: linear-gradient(135deg, #a9d4f0 50%, #e6f9e6 50%);
-}
-.stay-nothing { 
-background: linear-gradient(135deg, #fbc288 50%, #e6f9e6 50%);
-}
-.hike-nothing { 
-background: linear-gradient(135deg, #9dc8b0 50%, #e6f9e6 50%);
+  background: linear-gradient(135deg, #6BA9E6 50%, #F7B74A 50%);
 }
 
 .legend {
