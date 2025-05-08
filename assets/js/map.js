@@ -194,7 +194,11 @@ function addRouteInformationToInfoDiv() {
         if (mealPlan.lunch) totalMealPlans.lunch++;
         if (mealPlan.dinner) totalMealPlans.dinner++;
         if (mealPlan.snacks) totalMealPlans.snacks += Math.floor(leg.distance / speed);
-        document.getElementById('info').innerHTML += `<p>Leg ${index + 1} length: ${leg.distance.toFixed(2)} km</p>`;
+        let elevationInfo = '';
+        if (leg.elevationGain || leg.elevationLoss) {
+            elevationInfo = ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
+        }
+        document.getElementById('info').innerHTML += `<p>Leg ${index + 1}: ${leg.distance.toFixed(2)} km${elevationInfo}</p>`;
         document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
     });
     const zeroDays = globalConfiguration.defaults.numberOfZeroDays;
@@ -220,8 +224,14 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
         console.log("Routes for type " + routeType + " is undefined or empty. Skipping.");
         return;
     }
-    // Add toggle checkbox for the feature group
-    layerControl.addOverlay(featureGroup, routeType);
+    
+    // Check if there already is a toggle. 
+    // This is here because updateMapWithAlternatives duplicates theses.
+    // Perhaps there should be a better way to toggle alternatives.
+    if (!layerControl._layers.some(layer => layer.name === routeType)) {
+        // Add toggle checkbox for the feature group
+        layerControl.addOverlay(featureGroup, routeType);
+    }
 
     callback = callback || function(){};
     if (routeType !== "alternatives") {
@@ -230,24 +240,37 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     }
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
-    let totalLengtOfRoutes = 0;
+    
     routesForType.totalDistance = 0;
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     const loadAllRoutes = routesForType.map((leg, index) => {
         return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
-            const distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
+            
+            try {
+                if (gpx.loadedGpx.get_elevation_data()) {
+                    leg.elevationGain = Math.round(gpx.loadedGpx.get_elevation_gain());
+                    leg.elevationLoss = Math.round(gpx.loadedGpx.get_elevation_loss());
+                }
+            } catch (error) {
+                // console.warn("Error retrieving elevation data:", error);
+            }
             // Use name from GPX file if available, otherwise use index + 1
             const name = leg.name != null ? leg.name : gpx.loadedGpx.get_name() != null ? gpx.loadedGpx.get_name() : (index + 1);
-            console.log("Loaded route " + index + " with name " + name);
-            //console.log("Loaded route " + index + " with distance " + distance);
-            // Display popup with route number and distance
-            gpx.loadedGpx.eachLayer(layer => {
-                layer.bindPopup(`${name}: ${distance.toFixed(2)} km`);
-            });
-            leg.distance = distance;
             if (leg.name === undefined) {
                 leg.name = name;
             }
+            console.log("Loaded route " + index + " with name " + name);
+            //console.log("Loaded route " + index + " with distance " + distance);
+            // Display popup with route number and distance
+            const distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
+            leg.distance = distance;
+            gpx.loadedGpx.eachLayer(layer => {
+                let popupContent = `${name}: ${distance.toFixed(2)} km`;
+                if (leg.elevationGain || leg.elevationLoss) {
+                    popupContent += ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
+                }
+                layer.bindPopup(popupContent);
+            });
             routesForType.totalDistance += leg.distance;
             if(routeType === "trip") {
                 selectedTripConfiguration = routesForType;
