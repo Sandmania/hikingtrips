@@ -6,24 +6,6 @@ export function renderTripCalendar(travelInfo) {
   }
 }
 
-function calculateHikeDates(travelInfo) {
-  const toCheckoutDates = travelInfo.to
-    .filter(e => e.accommodation)
-    .map(e => new Date(e.accommodation.checkOutDate));
-
-  const fromCheckinDates = travelInfo.from
-    .filter(e => e.accommodation)
-    .map(e => new Date(e.accommodation.checkInDate));
-
-  if (toCheckoutDates.length && fromCheckinDates.length) {
-    const hikeStart = new Date(Math.max(...toCheckoutDates.map(d => d.getTime())));
-    const hikeEnd = new Date(Math.min(...fromCheckinDates.map(d => d.getTime())));
-    return { hikeStart, hikeEnd };
-  }
-
-  return { hikeStart: null, hikeEnd: null };
-}
-
 function buildEventMap(travelInfo) {
   const allEvents = [];
 
@@ -70,10 +52,6 @@ function buildEventMap(travelInfo) {
   return eventMap;
 }
 
-function parseDateTime(dateStr, timeStr = '00:00') {
-  return new Date(`${dateStr}T${timeStr}`);
-}
-
 function extractEventsFromDirection(directionArray) {
   const events = [];
 
@@ -106,6 +84,28 @@ function extractEventsFromDirection(directionArray) {
   }
 
   return events;
+}
+
+function parseDateTime(dateStr, timeStr = '00:00') {
+  return new Date(`${dateStr}T${timeStr}`);
+}
+
+function calculateHikeDates(travelInfo) {
+  const toCheckoutDates = travelInfo.to
+    .filter(e => e.accommodation)
+    .map(e => new Date(e.accommodation.checkOutDate));
+
+  const fromCheckinDates = travelInfo.from
+    .filter(e => e.accommodation)
+    .map(e => new Date(e.accommodation.checkInDate));
+
+  if (toCheckoutDates.length && fromCheckinDates.length) {
+    const hikeStart = new Date(Math.max(...toCheckoutDates.map(d => d.getTime())));
+    const hikeEnd = new Date(Math.min(...fromCheckinDates.map(d => d.getTime())));
+    return { hikeStart, hikeEnd };
+  }
+
+  return { hikeStart: null, hikeEnd: null };
 }
 
 function getEventsForAdjacentDate(eventMap, baseDate, offset) {
