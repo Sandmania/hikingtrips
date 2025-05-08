@@ -22,3 +22,15 @@ Examples:
 https://kartena.github.io/Proj4Leaflet/
 Just take a look at the source and fix the API url as this page doesn't currently work (using old api endpoint)
 https://kartena.github.io/Proj4Leaflet/examples/wmts/
+
+## Route planning
+
+### Draw route
+Whole world
+https://caltopo.com/map.html
+
+Finland
+https://retkikartta.fi/
+
+### Add elevation profile
+https://www.gpsvisualizer.com/elevation

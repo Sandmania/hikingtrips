@@ -35,6 +35,9 @@ function buildEventMap(travelInfo) {
   const { hikeStart, hikeEnd } = calculateHikeDates(travelInfo);
 
   // 3. Insert hike events into the flat event list
+  // TODO FIXME: Hike events have a hardcoded time of 13:00
+  // This is because accommodation check-in is usually at 15:00
+  // and check-out is usually at 12:00, so 13:00 sits between those
   if (hikeStart && hikeEnd && hikeStart < hikeEnd) {
     const dateCursor = new Date(hikeStart);
     while (dateCursor <= hikeEnd) {
@@ -160,21 +163,17 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
   const cell = document.createElement("td");
   cell.innerText = day;
 
-  if (events.length === 1) {
-    // Single event: Add "nothing" color if previous or next day has no events
-    const eventColor = getEventColor(events[0]);
-    const gradientStops = [];
+  // Add "nothing" as the first event if there are no previous events
+  if (!prevEvents.length) {
+    events = ["nothing", ...events];
+  }
 
-    if (!prevEvents.length) {
-      gradientStops.push(`${getEventColor("nothing")} 0% 50%`);
-    }
-    gradientStops.push(`${eventColor} ${!prevEvents.length ? "50%" : "0%"} ${!nextEvents.length ? "50%" : "100%"}`);
-    if (!nextEvents.length) {
-      gradientStops.push(`${getEventColor("nothing")} 50% 100%`);
-    }
+  // Add "nothing" as the last event if there are no next events
+  if (!nextEvents.length) {
+    events = [...events, "nothing"];
+  }
 
-    cell.style.background = `linear-gradient(135deg, ${gradientStops.join(", ")})`;
-  } else if (events.length > 1) {
+  if (events.length > 1) {
     // Multiple events: Dynamically calculate gradient
     const gradientStops = events
       .map((event, index) => {
@@ -184,6 +183,9 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
       })
       .join(", ");
     cell.style.background = `linear-gradient(135deg, ${gradientStops})`;
+  } else if (events.length === 1) {
+    // Single event: Use the event type as the class
+    cell.classList.add(events[0]);
   } else {
     // No events: Use "nothing" class
     cell.classList.add("nothing");
@@ -196,7 +198,7 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
 function getEventColor(event) {
   const colors = {
     travel: "#6BA9E6",
-    stay: "#F7B74A",
+    stay: "#F5A623",
     hike: "#79CC1F",
   };
   return colors[event] || "#D8F3DC";
