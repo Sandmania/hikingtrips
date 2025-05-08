@@ -144,7 +144,8 @@ function initializeBaseMaps(config) {
             attribution: 'National Land Survey of Finland, Ortophoto'
         }),
         "Lantmäteriet": new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-            maxZoom: 9,
+            maxZoom: 12,
+            maxNativeZoom: 9,
             attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
         })
     };
@@ -172,7 +173,7 @@ function setCRSBasedOnTileLayer(tileLayerName) {
             '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
             {
                 resolutions: [
-                    4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8
+                    4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1
                 ],
                 origin: [-1200000.000000, 8500000.000000],
                 bounds: L.bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000])
@@ -394,7 +395,6 @@ export function updateMapWithAlternatives() {
     legFeatureGroup.clearLayers();
 
     addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, addRouteInformationToInfoDiv);
-    map.fitBounds(legFeatureGroup.getBounds());
 }
 
 /**
