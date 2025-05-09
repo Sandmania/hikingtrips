@@ -44,9 +44,11 @@ function buildEventMap(travelInfo) {
     if (!eventMap[evt.date]) {
       eventMap[evt.date] = [];
     }
-    //if (!eventMap[evt.date].includes(evt.type)) {
+    // Avoid duplicate back-to-back events, this makes it visually cleaner
+    const lastEventType = eventMap[evt.date][eventMap[evt.date].length - 1];
+    if (lastEventType !== evt.type) {
       eventMap[evt.date].push(evt.type);
-   //}
+    }
   }
 
   return eventMap;
@@ -182,7 +184,7 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
         return `${getEventColor(event)} ${start}% ${end}%`;
       })
       .join(", ");
-    cell.style.background = `linear-gradient(135deg, ${gradientStops})`;
+    cell.style.background = `linear-gradient(115deg, ${gradientStops})`;
   } else if (events.length === 1) {
     // Single event: Use the event type as the class
     cell.classList.add(events[0]);
