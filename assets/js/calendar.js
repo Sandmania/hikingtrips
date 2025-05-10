@@ -17,9 +17,6 @@ function buildEventMap(travelInfo) {
   const { hikeStart, hikeEnd } = calculateHikeDates(travelInfo);
 
   // 3. Insert hike events into the flat event list
-  // TODO FIXME: Hike events have a hardcoded time of 13:00
-  // This is because accommodation check-in is usually at 15:00
-  // and check-out is usually at 12:00, so 13:00 sits between those
   if (hikeStart && hikeEnd && hikeStart < hikeEnd) {
     const dateCursor = new Date(hikeStart);
     while (dateCursor <= hikeEnd) {
@@ -37,18 +34,15 @@ function buildEventMap(travelInfo) {
   // 4. Sort all events by datetime
   allEvents.sort((a, b) => a.isoDateTime - b.isoDateTime);
 
-  // 5. Build eventMap with arrays preserving order
+  // 5. Build eventMap with arrays of full event objects
   const eventMap = {};
 
   for (const evt of allEvents) {
     if (!eventMap[evt.date]) {
       eventMap[evt.date] = [];
     }
-    // Avoid duplicate back-to-back events, this makes it visually cleaner
-    const lastEventType = eventMap[evt.date][eventMap[evt.date].length - 1];
-    if (lastEventType !== evt.type) {
-      eventMap[evt.date].push(evt.type);
-    }
+    // Add all events without filtering duplicates
+    eventMap[evt.date].push(evt);
   }
 
   return eventMap;
@@ -64,6 +58,10 @@ function extractEventsFromDirection(directionArray) {
         date: transport.outboundDate,
         time: transport.outboundTime?.slice(0, 5),
         type: 'travel',
+        vehicle: transport.type,
+        from: transport.from,
+        to: transport.to,
+        url: transport.url,
         isoDateTime: parseDateTime(transport.outboundDate, transport.outboundTime?.slice(0, 5)),
       });
     } else if (segment.accommodation) {
@@ -74,13 +72,17 @@ function extractEventsFromDirection(directionArray) {
         date: acc.checkInDate,
         time: acc.checkInTime,
         type: 'stay',
-        isoDateTime: parseDateTime(acc.checkInDate, acc.checkInTime),
+        name: acc.name,
+        url: acc.url,
+        isoDateTime: parseDateTime(acc.outboundDate, acc.outboundTime?.slice(0, 5)),
       });
       events.push({
         date: acc.checkOutDate,
         time: acc.checkOutTime,
         type: 'stay',
-        isoDateTime: parseDateTime(acc.checkOutDate, acc.checkOutTime),
+        name: acc.name,
+        url: acc.url,
+        isoDateTime: parseDateTime(acc.outboundDate, acc.outboundTime?.slice(0, 5)),
       });
     }
   }
@@ -165,35 +167,40 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
   const cell = document.createElement("td");
   cell.innerText = day;
 
-  // Add "nothing" as the first event if there are no previous events
-  if (!prevEvents.length) {
-    events = ["nothing", ...events];
-  }
-
-  // Add "nothing" as the last event if there are no next events
-  if (!nextEvents.length) {
-    events = [...events, "nothing"];
+  // Add "nothing" as the first and last event only if:
+  // - There are no previous events
+  // - There are no next events
+  // - The current day has at least one event
+  if (!prevEvents.length && !nextEvents.length && events.length > 0) {
+    events = [{ type: "nothing" }, ...events, { type: "nothing" }];
   }
 
   if (events.length > 1) {
-    // Multiple events: Dynamically calculate gradient
+    // Multiple events: Dynamically calculate gradient, skipping back-to-back duplicates
     const gradientStops = events
-      .map((event, index) => {
-        const start = (index / events.length) * 100;
-        const end = ((index + 1) / events.length) * 100;
-        return `${getEventColor(event)} ${start}% ${end}%`;
+      .filter((event, index, arr) => index === 0 || event.type !== arr[index - 1].type) // Skip duplicates
+      .map((event, index, filteredEvents) => {
+        const start = (index / filteredEvents.length) * 100;
+        const end = ((index + 1) / filteredEvents.length) * 100;
+        return `${getEventColor(event.type)} ${start}% ${end}%`;
       })
       .join(", ");
     cell.style.background = `linear-gradient(115deg, ${gradientStops})`;
   } else if (events.length === 1) {
     // Single event: Use the event type as the class
-    cell.classList.add(events[0]);
+    cell.classList.add(events[0].type);
   } else {
     // No events: Use "nothing" class
     cell.classList.add("nothing");
   }
 
   cell.classList.add("date-cell");
+
+  // Attach event listeners for tooltip
+  cell.addEventListener("mouseover", (e) => showEventTooltip(e, day, events));
+  cell.addEventListener("mouseout", hideEventTooltip);
+  cell.addEventListener("click", (e) => toggleEventTooltip(e, day, events));
+
   return cell;
 }
 
@@ -236,3 +243,97 @@ const calendarLegend = `
   <div class="legend-item"><div class="legend-color travel-stay"></div> Mixed</div>
 </div>
   `;
+
+function showEventTooltip(event, day, events) {
+  // Skip showing tooltip if all events are "nothing"
+  if (events.length === 0 || (events.length === 1 && events[0].type === "nothing")) {
+    return;
+  }
+
+  const tooltip = document.getElementById("event-tooltip");
+  tooltip.innerHTML = generateEventDetailsHTML(day, events);
+
+  // Set initial position near the mouse pointer
+  tooltip.style.left = `${event.pageX + 10}px`;
+  tooltip.style.top = `${event.pageY + 10}px`;
+
+  // Make the tooltip visible to calculate its dimensions
+  tooltip.classList.remove("hidden");
+  tooltip.classList.add("visible");
+
+  // Get tooltip dimensions and viewport dimensions
+  const tooltipRect = tooltip.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+
+  // Adjust position if the tooltip goes outside the viewport
+  let adjustedLeft = event.pageX + 10;
+  let adjustedTop = event.pageY + 10;
+
+  if (tooltipRect.right > viewportWidth) {
+    adjustedLeft = event.pageX - tooltipRect.width - 10; // Move to the left
+  }
+  if (tooltipRect.bottom > viewportHeight) {
+    adjustedTop = event.pageY - tooltipRect.height - 10; // Move above
+  }
+  if (tooltipRect.left < 0) {
+    adjustedLeft = 10; // Align to the left edge of the viewport
+  }
+  if (tooltipRect.top < 0) {
+    adjustedTop = 10; // Align to the top edge of the viewport
+  }
+
+  // Apply adjusted position
+  tooltip.style.left = `${adjustedLeft}px`;
+  tooltip.style.top = `${adjustedTop}px`;
+}
+
+function hideEventTooltip() {
+  const tooltip = document.getElementById("event-tooltip");
+  tooltip.classList.remove("visible");
+  tooltip.classList.add("hidden");
+}
+
+function toggleEventTooltip(event, day, events) {
+  // Skip toggling tooltip if all events are "nothing"
+  if (events.length === 0) {
+    return;
+  }
+
+  const tooltip = document.getElementById("event-tooltip");
+  if (tooltip.classList.contains("visible")) {
+    hideEventTooltip();
+  } else {
+    showEventTooltip(event, day, events);
+  }
+}
+
+function generateEventDetailsHTML(day, events) {
+  const eventDetails = events
+    .map((event) => {
+      const time = event.time ? `<strong>${event.time}</strong>` : "Time not specified";
+      const type = capitalizeFirstLetter(event.type);
+      const fromTo = event.from && event.to ? `<div><strong>From:</strong> ${event.from} <strong>To:</strong> ${event.to}</div>` : "";
+      const location = event.name ? `<div><strong>Location:</strong> ${event.name}</div>` : "";
+      const link = event.url
+        ? `<div><a href="${event.url}" target="_blank" style="color: #2980b9; text-decoration: none;">View Details</a></div>`
+        : "";
+
+      return `
+        <li style="margin-bottom: 10px;">
+          <div><strong>${type}</strong></div>
+          <div>${time}</div>
+          ${fromTo}
+          ${location}
+          ${link}
+        </li>
+      `;
+    })
+    .join("");
+
+  return `<strong>${day}</strong><br><ul style="list-style: none; padding: 0;">${eventDetails}</ul>`;
+}
+
+function capitalizeFirstLetter(string) {
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
