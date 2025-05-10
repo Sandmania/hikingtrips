@@ -74,7 +74,7 @@ function extractEventsFromDirection(directionArray) {
         type: 'stay',
         name: acc.name,
         url: acc.url,
-        isoDateTime: parseDateTime(acc.outboundDate, acc.outboundTime?.slice(0, 5)),
+        isoDateTime: parseDateTime(acc.checkInDate, acc.checkInTime?.slice(0, 5)),
       });
       events.push({
         date: acc.checkOutDate,
@@ -82,7 +82,7 @@ function extractEventsFromDirection(directionArray) {
         type: 'stay',
         name: acc.name,
         url: acc.url,
-        isoDateTime: parseDateTime(acc.outboundDate, acc.outboundTime?.slice(0, 5)),
+        isoDateTime: parseDateTime(acc.checkOutDate, acc.checkOutTime?.slice(0, 5)),
       });
     }
   }
@@ -171,8 +171,13 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
   // - There are no previous events
   // - There are no next events
   // - The current day has at least one event
-  if (!prevEvents.length && !nextEvents.length && events.length > 0) {
-    events = [{ type: "nothing" }, ...events, { type: "nothing" }];
+  if(events.length > 0) {
+    if (!prevEvents.length) {
+      events = ["nothing", ...events];
+    }
+    if (!nextEvents.length) {
+      events = [...events, "nothing"];
+    }
   }
 
   if (events.length > 1) {
@@ -245,8 +250,7 @@ const calendarLegend = `
   `;
 
 function showEventTooltip(event, day, events) {
-  // Skip showing tooltip if all events are "nothing"
-  if (events.length === 0 || (events.length === 1 && events[0].type === "nothing")) {
+  if (events.length === 0) {
     return;
   }
 
@@ -310,6 +314,7 @@ function toggleEventTooltip(event, day, events) {
 
 function generateEventDetailsHTML(day, events) {
   const eventDetails = events
+    .filter((event) => event !== "nothing")
     .map((event) => {
       const time = event.time ? `<strong>${event.time}</strong>` : "Time not specified";
       const type = capitalizeFirstLetter(event.type);
