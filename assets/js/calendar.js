@@ -147,7 +147,7 @@ function renderCalendar(year, month, eventMap) {
     const prevEvents = getEventsForAdjacentDate(eventMap, date, -1);
     const nextEvents = getEventsForAdjacentDate(eventMap, date, 1);
 
-    const cell = createCalendarCell(day, events, prevEvents, nextEvents);
+    const cell = createCalendarCell(date, events, prevEvents, nextEvents);
     row.appendChild(cell);
 
     if ((firstDayOfWeek + day) % 7 === 0 || day === daysInMonth) {
@@ -163,15 +163,14 @@ function renderCalendar(year, month, eventMap) {
   calendarEl.appendChild(container2);
 }
 
-function createCalendarCell(day, events, prevEvents, nextEvents) {
+function createCalendarCell(date, events, prevEvents, nextEvents) {
   const cell = document.createElement("td");
-  cell.innerText = day;
+
+  cell.innerText = date.getDate();
+  cell.dataset.date = date.toISOString().slice(0, 10); // Add full date as a data attribute
 
   // Add "nothing" as the first and last event only if:
-  // - There are no previous events
-  // - There are no next events
-  // - The current day has at least one event
-  if(events.length > 0) {
+  if (events.length > 0) {
     if (!prevEvents.length) {
       events = ["nothing", ...events];
     }
@@ -181,9 +180,8 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
   }
 
   if (events.length > 1) {
-    // Multiple events: Dynamically calculate gradient, skipping back-to-back duplicates
     const gradientStops = events
-      .filter((event, index, arr) => index === 0 || event.type !== arr[index - 1].type) // Skip duplicates
+      .filter((event, index, arr) => index === 0 || event.type !== arr[index - 1].type)
       .map((event, index, filteredEvents) => {
         const start = (index / filteredEvents.length) * 100;
         const end = ((index + 1) / filteredEvents.length) * 100;
@@ -192,19 +190,17 @@ function createCalendarCell(day, events, prevEvents, nextEvents) {
       .join(", ");
     cell.style.background = `linear-gradient(115deg, ${gradientStops})`;
   } else if (events.length === 1) {
-    // Single event: Use the event type as the class
     cell.classList.add(events[0].type);
   } else {
-    // No events: Use "nothing" class
     cell.classList.add("nothing");
   }
 
   cell.classList.add("date-cell");
 
   // Attach event listeners for tooltip
-  cell.addEventListener("mouseover", (e) => showEventTooltip(e, day, events));
+  cell.addEventListener("mouseover", (e) => showEventTooltip(e, date, events));
   cell.addEventListener("mouseout", hideEventTooltip);
-  cell.addEventListener("click", (e) => toggleEventTooltip(e, day, events));
+  cell.addEventListener("click", (e) => toggleEventTooltip(e, date, events));
 
   return cell;
 }
@@ -255,7 +251,10 @@ function showEventTooltip(event, day, events) {
   }
 
   const tooltip = document.getElementById("event-tooltip");
-  tooltip.innerHTML = generateEventDetailsHTML(day, events);
+
+  // Create a Date object for the current day
+  const currentDate = new Date(event.target.dataset.date); // Assuming the cell has a `data-date` attribute
+  tooltip.innerHTML = generateEventDetailsHTML(currentDate, events);
 
   // Set initial position near the mouse pointer
   tooltip.style.left = `${event.pageX + 10}px`;
@@ -265,29 +264,27 @@ function showEventTooltip(event, day, events) {
   tooltip.classList.remove("hidden");
   tooltip.classList.add("visible");
 
-  // Get tooltip dimensions and viewport dimensions
+  // Adjust position if the tooltip goes outside the viewport
   const tooltipRect = tooltip.getBoundingClientRect();
   const viewportWidth = window.innerWidth;
   const viewportHeight = window.innerHeight;
 
-  // Adjust position if the tooltip goes outside the viewport
   let adjustedLeft = event.pageX + 10;
   let adjustedTop = event.pageY + 10;
 
   if (tooltipRect.right > viewportWidth) {
-    adjustedLeft = event.pageX - tooltipRect.width - 10; // Move to the left
+    adjustedLeft = event.pageX - tooltipRect.width - 10;
   }
   if (tooltipRect.bottom > viewportHeight) {
-    adjustedTop = event.pageY - tooltipRect.height - 10; // Move above
+    adjustedTop = event.pageY - tooltipRect.height - 10;
   }
   if (tooltipRect.left < 0) {
-    adjustedLeft = 10; // Align to the left edge of the viewport
+    adjustedLeft = 10;
   }
   if (tooltipRect.top < 0) {
-    adjustedTop = 10; // Align to the top edge of the viewport
+    adjustedTop = 10;
   }
 
-  // Apply adjusted position
   tooltip.style.left = `${adjustedLeft}px`;
   tooltip.style.top = `${adjustedTop}px`;
 }
@@ -312,31 +309,41 @@ function toggleEventTooltip(event, day, events) {
   }
 }
 
-function generateEventDetailsHTML(day, events) {
+function generateEventDetailsHTML(date, events) {
+  const formattedDate = formatDate(date); // Format the date as "day.month."
+
   const eventDetails = events
     .filter((event) => event !== "nothing")
     .map((event) => {
-      const time = event.time ? `<strong>${event.time}</strong>` : "Time not specified";
-      const type = capitalizeFirstLetter(event.type);
+      const time = event.time ? `<div><strong>Time:</strong> ${event.time}</div>` : `<div><strong>Time:</strong> Not specified</div>`;
+      const type = `<div><strong>Type:</strong> <span style="color: ${getEventColor(event.type)};">${capitalizeFirstLetter(event.type)}</span></div>`;
       const fromTo = event.from && event.to ? `<div><strong>From:</strong> ${event.from} <strong>To:</strong> ${event.to}</div>` : "";
       const location = event.name ? `<div><strong>Location:</strong> ${event.name}</div>` : "";
-      const link = event.url
-        ? `<div><a href="${event.url}" target="_blank" style="color: #2980b9; text-decoration: none;">View Details</a></div>`
-        : "";
 
       return `
-        <li style="margin-bottom: 10px;">
-          <div><strong>${type}</strong></div>
-          <div>${time}</div>
+        <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+          ${type}
+          ${time}
           ${fromTo}
           ${location}
-          ${link}
-        </li>
+        </div>
       `;
     })
     .join("");
 
-  return `<strong>${day}</strong><br><ul style="list-style: none; padding: 0;">${eventDetails}</ul>`;
+  return `
+    <div style="font-family: Arial, sans-serif; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: white; max-width: 300px;">
+      <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">${formattedDate}</div>
+      ${eventDetails || "<div>No events for this day.</div>"}
+    </div>
+  `;
+}
+
+// Helper function to format the date as "day.month."
+function formatDate(date) {
+  const day = date.getDate();
+  const month = date.getMonth() + 1; // Months are zero-based
+  return `${day}.${month}.`;
 }
 
 function capitalizeFirstLetter(string) {

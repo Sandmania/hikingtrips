@@ -117,7 +117,7 @@ export function initMap(fullConfiguration) {
                     } else {
                         rightContent.style.display = 'none';
                     }
-                };                
+                };
                 return calendarButton;
             }
         });
