@@ -1,4 +1,5 @@
 let map;
+let layerControl;
 let globalConfiguration = {};
 // Feature groups for different route types
 let legFeatureGroup = L.featureGroup();
@@ -40,7 +41,7 @@ export function initMap(fullConfiguration) {
     // Add the default tile layer to the map
     defaultTileLayer.addTo(map);
 
-    L.control.layers(baseMaps).addTo(map);
+    layerControl = L.control.layers(baseMaps).addTo(map);
 
     // Event listener for baselayer change to handle CRS change
     map.on('baselayerchange', function (e) {
@@ -81,23 +82,48 @@ export function initMap(fullConfiguration) {
     addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
 
     // Add custom control for toggling the overlay
-    const toggleControl = L.Control.extend({
+    const infoControl = L.Control.extend({
         onAdd: function(map) {
-            const button = L.DomUtil.create('button', 'leaflet-control-toggle');
-            button.innerHTML = 'Trip details';
+            const infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
+            // Don't propagate click events to the map, double clicking would zoom in
+            L.DomEvent.disableClickPropagation(infoButton);
+            infoButton.innerHTML = '';
             const rightContent = document.getElementById('right-content');
-            button.onclick = function() {
+            infoButton.onclick = function() {
                 if (rightContent.style.display === 'none' || rightContent.style.display === '') {
                     rightContent.style.display = 'flex';
                 } else {
                     rightContent.style.display = 'none';
                 }
             };
-            return button;
+            return infoButton;
         }
     });
 
-    map.addControl(new toggleControl({ position: 'topright' }));
+    map.addControl(new infoControl({ position: 'topright' }));
+
+    if (globalConfiguration.travel_info) {
+        console.log("Travel info is available. Adding calendar control.");
+        const calendarControl = L.Control.extend({
+            onAdd: function(map) {
+                var calendarButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control calendar-button');
+                // Don't propagate click events to the map, double clicking would zoom in
+                L.DomEvent.disableClickPropagation(calendarButton);
+                calendarButton.innerHTML = '';
+                const rightContent = document.getElementById('calendar-container');
+                calendarButton.onclick = function() {
+                    if (rightContent.style.display === 'none' || rightContent.style.display === '') {
+                        rightContent.style.display = 'flex';
+                    } else {
+                        rightContent.style.display = 'none';
+                    }
+                };
+                return calendarButton;
+            }
+        });
+
+        map.addControl(new calendarControl({ position: 'topright' }));
+    }
     
     return map;
 }
@@ -113,12 +139,13 @@ function initializeBaseMaps(config) {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }),
-        "NLS Ortophoto": L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva/{z}/{x}/{y}.jpg', {
+        "NLS Ortophoto": L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva_3067/{z}/{x}/{y}.jpg', {
             maxZoom: 19,
             attribution: 'National Land Survey of Finland, Ortophoto'
-        }),
+        }),                              
         "Lantmäteriet": new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-            maxZoom: 9,
+            maxZoom: 17,
+            maxNativeZoom: 14,
             attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
         })
     };
@@ -137,20 +164,9 @@ function initializeBaseMaps(config) {
 }
 
 function setCRSBasedOnTileLayer(tileLayerName) {
-    if (tileLayerName === 'NLS Topographic map') {
+    if (tileLayerName === 'NLS Topographic map' || tileLayerName === 'NLS Ortophoto') {
         console.log("Set CRS to 3067");
         map.options.crs = L.TileLayer.MML.get3067Proj();
-    } else if (tileLayerName === 'Lantmäteriet') {
-        console.log("Set CRS to 3006");
-        map.options.crs = new L.Proj.CRS('EPSG:3006',
-            '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
-            {
-                resolutions: [
-                    4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8
-                ],
-                origin: [-1200000.000000, 8500000.000000],
-                bounds: L.bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000])
-            });
     } else {
         console.log("Set CRS to EPSG3857");
         map.options.crs = L.CRS.EPSG3857;
@@ -168,11 +184,25 @@ function addRouteInformationToInfoDiv() {
         if (mealPlan.lunch) totalMealPlans.lunch++;
         if (mealPlan.dinner) totalMealPlans.dinner++;
         if (mealPlan.snacks) totalMealPlans.snacks += Math.floor(leg.distance / speed);
-        document.getElementById('info').innerHTML += `<p>Leg ${index + 1} length: ${leg.distance.toFixed(2)} km</p>`;
-        document.getElementById('info').innerHTML += `<p>Meal Plan for ${index + 1}: ${mealPlanDetails}</p>`;
+        let elevationInfo = '';
+        if (leg.elevationGain || leg.elevationLoss) {
+            elevationInfo = ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
+        }
+        document.getElementById('info').innerHTML += `<p>Leg ${index + 1}: ${leg.distance.toFixed(2)} km${elevationInfo}</p>`;
+        document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
     });
+    const zeroDays = globalConfiguration.defaults.numberOfZeroDays;
+    for (let i = 0; i < zeroDays; i++) {
+        const mealPlan = globalConfiguration.defaults.zero.mealPlan;
+        const mealPlanDetails = calculateMealPlan(0, speed, mealPlan);
+        if (mealPlan.breakfast) totalMealPlans.breakfast++;
+        if (mealPlan.lunch) totalMealPlans.lunch++;
+        if (mealPlan.dinner) totalMealPlans.dinner++;
+        document.getElementById('info').innerHTML += `<p>Zero Day ${i + 1}</p>`;
+        document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
+    }
     document.getElementById('info').innerHTML += `<p>Total length: ${selectedTripConfiguration.totalDistance.toFixed(2)} km</p>`;
-    document.getElementById('info').innerHTML += `<p>Total Meal Plans: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
+    document.getElementById('info').innerHTML += `<p>Total Meals: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
 }
 
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, callback) {
@@ -180,10 +210,19 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     console.log("Routes for type: ", routesForType);
     console.log("Feature group: ", featureGroup);
     console.log("Callback: ", callback);
-    if (routesForType === undefined) {
-        console.log("Routes for type " + routeType + " is undefined. Skipping.");
+    if (routesForType === undefined || routesForType.length === 0) {
+        console.log("Routes for type " + routeType + " is undefined or empty. Skipping.");
         return;
     }
+    
+    // Check if there already is a toggle. 
+    // This is here because updateMapWithAlternatives duplicates theses.
+    // Perhaps there should be a better way to toggle alternatives.
+    if (!layerControl._layers.some(layer => layer.name === routeType)) {
+        // Add toggle checkbox for the feature group
+        layerControl.addOverlay(featureGroup, routeType);
+    }
+
     callback = callback || function(){};
     if (routeType !== "alternatives") {
         document.getElementById('info').innerHTML = '';
@@ -191,18 +230,37 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     }
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
-    let totalLengtOfRoutes = 0;
+    
     routesForType.totalDistance = 0;
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     const loadAllRoutes = routesForType.map((leg, index) => {
         return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
-            console.log("Loaded route " + index + " with distance " + gpx.distance);
-            console.log(gpx + " " + gpx.distance);
+            
+            try {
+                if (gpx.loadedGpx.get_elevation_data()) {
+                    leg.elevationGain = Math.round(gpx.loadedGpx.get_elevation_gain());
+                    leg.elevationLoss = Math.round(gpx.loadedGpx.get_elevation_loss());
+                }
+            } catch (error) {
+                // console.warn("Error retrieving elevation data:", error);
+            }
+            // Use name from GPX file if available, otherwise use index + 1
+            const name = leg.name != null ? leg.name : gpx.loadedGpx.get_name() != null ? gpx.loadedGpx.get_name() : (index + 1);
+            if (leg.name === undefined) {
+                leg.name = name;
+            }
+            console.log("Loaded route " + index + " with name " + name);
+            //console.log("Loaded route " + index + " with distance " + distance);
             // Display popup with route number and distance
+            const distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
+            leg.distance = distance;
             gpx.loadedGpx.eachLayer(layer => {
-                layer.bindPopup(`${index + 1}: ${gpx.distance.toFixed(2)} km`);
+                let popupContent = `${name}: ${distance.toFixed(2)} km`;
+                if (leg.elevationGain || leg.elevationLoss) {
+                    popupContent += ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
+                }
+                layer.bindPopup(popupContent);
             });
-            leg.distance = gpx.distance;
             routesForType.totalDistance += leg.distance;
             if(routeType === "trip") {
                 selectedTripConfiguration = routesForType;
@@ -225,24 +283,24 @@ function loadGPX(leg, showIcons, featureGroup, defaultOptions) {
     return new Promise((resolve) => {
         const gpxOptions = {
             async: true,
-            marker_options: getMarkerOptions(leg, showIcons, defaultOptions),
+            markers: getMarkerOptions(leg, showIcons, defaultOptions),
+            marker_options: {
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/pin-shadow.png'
+            },
             polyline_options: getPolylineOptions(leg, defaultOptions)
         };
 
         new L.GPX(leg.gpx, gpxOptions).on('loaded', function(e) {
-            const distance = e.target.get_distance() / 1000; // convert to km
-            console.log("Loaded GPX with distance: " + distance);
             featureGroup.addLayer(e.target);
-            resolve({loadedGpx: e.target, distance});
+            resolve({loadedGpx: e.target});
         });
     });
 }
 
 function getMarkerOptions(leg, showIcons, defaultOptions) {
     return {
-        startIconUrl: showIcons && leg.startIcon ? leg.startIcon : defaultOptions.startIcon,
-        endIconUrl: showIcons && leg.endIcon ? leg.endIcon : defaultOptions.endIcon,
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/pin-shadow.png'
+        startIcon: showIcons && (leg.startIcon !== undefined ? leg.startIcon : defaultOptions.startIcon),
+        endIcon: showIcons && (leg.endIcon !== undefined ? leg.endIcon : defaultOptions.endIcon),
     };
 }
 
@@ -326,7 +384,6 @@ export function updateMapWithAlternatives() {
     legFeatureGroup.clearLayers();
 
     addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, addRouteInformationToInfoDiv);
-    map.fitBounds(legFeatureGroup.getBounds());
 }
 
 /**

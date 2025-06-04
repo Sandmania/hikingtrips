@@ -22,3 +22,36 @@ Examples:
 https://kartena.github.io/Proj4Leaflet/
 Just take a look at the source and fix the API url as this page doesn't currently work (using old api endpoint)
 https://kartena.github.io/Proj4Leaflet/examples/wmts/
+
+## Route planning
+
+### Draw route
+Whole world
+https://caltopo.com/map.html
+
+Finland
+https://retkikartta.fi/
+
+
+Get map trace from openstreetmap relation or way
+
+https://overpass-turbo.eu/
+
+rel(1019948); out geom;
+
+OR
+
+way(762977045); out geom;
+
+Hit Run
+
+-> Export -> GPX
+
+### Add elevation profile
+https://www.gpsvisualizer.com/elevation
+
+## Developing
+
+Plain Vanilla https://plainvanillaweb.com/index.html
+
+

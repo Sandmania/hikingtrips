@@ -1,6 +1,7 @@
 heading: Sarek 2025 - TrailTreader
 
 defaults:
+  numberOfZeroDays: 1
   tileLayer: Lantmäteriet
   availableTileLayers:
     - "OpenTopoMap"
@@ -39,29 +40,89 @@ defaults:
       lunch: false
       dinner: false
       snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true      
 
 trip:
   - gpx: planned_route/day1_ele.gpx
     startIcon: ../assets/images/circle-play-regular.svg
     mealPlan:
       breakfast: false
-      lunch: true
+      lunch: true # Lunch on the road or at Ritsem?
       dinner: true
       snacks: true
   - gpx: planned_route/day2_ele.gpx
   - gpx: planned_route/day3_ele.gpx
     alternatives:
-    - gpx: planned_route/day3_alt.gpx
-      name: alternative route 1 for leg 3
+    - gpx: planned_route/day3_alt_ele.gpx
+      name: Alt route for leg 3
   - gpx: planned_route/day4_ele.gpx
-  - gpx: planned_route/day5_ele.gpx
+  - gpx: planned_route/day5_new_ele.gpx
   - gpx: planned_route/day6_ele.gpx
     endIcon: ../assets/images/flag-checkered-solid.svg
     mealPlan:
       breakfast: true
       lunch: true
-      dinner: false
+      dinner: false # Dinner on the road or at Suorva?
       snacks: true
+
+travel_info:
+  to:
+    - transportation:
+        type: car-pool
+        from: Jyväskylä
+        to: ???
+        outboundDate: "2025-07-18"
+        outboundTime: 13:00
+    - accommodation:
+        name: Lakanamajoitus
+        url: ???
+        checkInDate: "2025-07-18"
+        checkOutDate: "2025-07-19"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+    - transportation:
+        type: car-pool
+        from: ???
+        to: Suorva
+        outboundDate: "2025-07-19"
+        outboundTime: 09:00
+    - transportation:
+        type: bus
+        from: Suorva
+        to: Ritsem
+        outboundDate: "2025-07-19"
+        outboundTime: 10:00
+    - transportation:
+        type: boat
+        from: Ritsem
+        to: Akkajaure
+        outboundDate: "2025-07-19"
+        outboundTime: 11:00
+  from:
+    - transportation:
+        type: car-pool
+        from: Suorva
+        to: ???
+        outboundDate: "2025-07-26"
+        outboundTime: 15:00
+    - accommodation:
+        name: Lakanamajoitus
+        url: ???
+        checkInDate: "2025-07-26"
+        checkOutDate: "2025-07-27"
+        checkInTime: 15:00
+        checkOutTime: 12:00
+    - transportation:
+        type: car-pool
+        from: ???
+        to: Jyväskylä
+        outboundDate: "2025-07-27"
+        outboundTime: 15:00
 
 photo_info:
   cameraOffset:

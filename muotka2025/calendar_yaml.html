@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Travel Calendar</title>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+  <link href="../assets/css/calendar.css" rel="stylesheet" />
+</head>
+<body>
+
+<h2>July 2025</h2>
+<div id="calendar-container"></div>
+
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-color nothing"></div> Nothing</div>
+  <div class="legend-item"><div class="legend-color travel"></div> Travel</div>
+  <div class="legend-item"><div class="legend-color stay"></div> Stay</div>
+  <div class="legend-item"><div class="legend-color hike"></div> Hike</div>
+  <div class="legend-item"><div class="legend-color travel-stay"></div> Mixed</div>
+</div>
+
+
+<script type="module">
+        import { renderTripCalendar } from '../assets/js/calendar.js';
+
+async function loadYAMLConfig(url) {
+    const response = await fetch(url);
+    const yamlText = await response.text();
+    return jsyaml.load(yamlText);
+}
+
+
+        const configurationFileName = 'trip_config.yaml'
+        loadYAMLConfig(configurationFileName).then((config) => {
+            renderTripCalendar(config.travel_info)
+            //const eventMap = buildEventMap(config.travel_info);
+            //renderCalendar(2025, 7, eventMap);
+        });
+</script>
+
+</body>
+</html>

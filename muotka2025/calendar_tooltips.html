@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Travel Calendar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+      background: #f4f4f4;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 1rem;
+    }
+
+    table {
+      border-collapse: separate;
+      border-spacing: 6px;
+      width: 100%;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    th {
+      text-align: center;
+      padding: 0.5rem;
+    }
+
+    td {
+      width: 40px;
+      height: 40px;
+      text-align: center;
+      vertical-align: middle;
+      background-color: #d4edda; /* default green */
+      border-radius: 6px;
+      cursor: default;
+    }
+
+    .day-nothing { background-color: #d4edda; } /* light green */
+    .day-travel { background-color: #a9d4f0; }
+    .day-stay { background-color: #fbc288; }
+    .day-hike { background-color: #9dc8b0; }
+
+    .day-travel-stay {
+      background: linear-gradient(135deg, #a9d4f0 50%, #fbc288 50%);
+    }
+
+    .day-stay-travel {
+      background: linear-gradient(135deg, #fbc288 50%, #a9d4f0 50%);
+    }
+
+    .day-stay-hike {
+      background: linear-gradient(135deg, #fbc288 50%, #9dc8b0 50%);
+    }
+
+    .day-hike-stay {
+      background: linear-gradient(135deg, #9dc8b0 50%, #fbc288 50%);
+    }
+
+    .day-travel-hike {
+      background: linear-gradient(135deg, #a9d4f0 50%, #9dc8b0 50%);
+    }
+
+    .day-hike-travel {
+      background: linear-gradient(135deg, #9dc8b0 50%, #a9d4f0 50%);
+    }
+
+    .day-travel-stay-hike {
+      background: linear-gradient(to bottom right, #a9d4f0 33%, #fbc288 33% 66%, #9dc8b0 66%);
+    }
+
+    .legend {
+      margin-top: 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="calendar"></div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-color" style="background:#a9d4f0"></div>Travel</div>
+  <div class="legend-item"><div class="legend-color" style="background:#fbc288"></div>Stay</div>
+  <div class="legend-item"><div class="legend-color" style="background:#9dc8b0"></div>Hike</div>
+</div>
+
+<script>
+  const travel_info = {
+    to: [
+      { train: {
+          from: "JY", to: "TPE", outboundDate: "2025-07-03", outboundTime: "19:15:00.000+03:00"
+        }},
+      { train: {
+          from: "TPE", to: "ROI", outboundDate: "2025-07-03", outboundTime: "23:09:00.000+03:00"
+        }},
+      { bus: {
+          from: "p472", to: "s12140", outboundDate: "2025-07-04", outboundTime: "11:45"
+        }},
+      { accommodation: {
+          name: "Hotel Guossi Karigasniemi", url: "https://guossi.com/",
+          checkInDate: "2025-07-04", checkOutDate: "2025-07-05",
+          checkInTime: "15:00", checkOutTime: "12:00"
+        }}
+    ],
+    from: [
+      { accommodation: {
+          name: "Muotkan Ruoktu", url: "https://www.muotkanruoktu.fi/",
+          checkInDate: "2025-07-11", checkOutDate: "2025-07-12",
+          checkInTime: "15:00", checkOutTime: "12:00"
+        }},
+      { bus: {
+          from: "s1971", to: "p472", outboundDate: "2025-07-12", outboundTime: "12:00"
+        }},
+      { train: {
+          from: "ROI", to: "HKI", outboundDate: "2025-07-12", outboundTime: "21:00:00.000+03:00"
+        }},
+      { train: {
+          from: "HKI", to: "JY", outboundDate: "2025-07-13", outboundTime: "10:00:00.000+03:00"
+        }}
+    ]
+  };
+
+  function formatDate(date) {
+    return date.toISOString().split("T")[0];
+  }
+
+  function capitalize(word) {
+    return word.charAt(0).toUpperCase() + word.slice(1);
+  }
+
+  function buildEventMap(config) {
+    const eventMap = {};
+    const addEvent = (dateStr, type, description, isoDateTime) => {
+      if (!eventMap[dateStr]) eventMap[dateStr] = [];
+      eventMap[dateStr].push({ type, description, isoDateTime });
+    };
+
+    for (const dir of ['to', 'from']) {
+      for (const segment of config[dir]) {
+        if (segment.train || segment.bus) {
+          const t = segment.train || segment.bus;
+          const date = t.outboundDate;
+          const time = t.outboundTime || "00:00";
+          const iso = new Date(`${date}T${time}`);
+          const desc = `${capitalize(t.from)} → ${capitalize(t.to)} (${time})`;
+          addEvent(date, 'travel', desc, iso);
+        } else if (segment.accommodation) {
+          const acc = segment.accommodation;
+          const inDate = acc.checkInDate;
+          const outDate = acc.checkOutDate;
+          addEvent(inDate, 'stay', `Check-in: ${acc.name} (${acc.checkInTime})`, new Date(`${inDate}T${acc.checkInTime}`));
+          addEvent(outDate, 'stay', `Check-out: ${acc.name} (${acc.checkOutTime})`, new Date(`${outDate}T${acc.checkOutTime}`));
+        }
+      }
+    }
+
+    // Hiking
+    const toDates = config.to
+      .filter(e => e.accommodation)
+      .map(e => e.accommodation.checkOutDate);
+    const fromDates = config.from
+      .filter(e => e.accommodation)
+      .map(e => e.accommodation.checkInDate);
+    const hikeStart = new Date(Math.max(...toDates.map(d => new Date(d).getTime())));
+    const hikeEnd = new Date(Math.min(...fromDates.map(d => new Date(d).getTime())));
+
+    for (let d = new Date(hikeStart); d <= hikeEnd; d.setDate(d.getDate() + 1)) {
+      const dateStr = formatDate(d);
+      addEvent(dateStr, 'hike', 'Hiking', new Date(dateStr));
+    }
+
+    for (const date in eventMap) {
+      eventMap[date].sort((a, b) => a.isoDateTime - b.isoDateTime);
+    }
+
+    return eventMap;
+  }
+
+  function renderCalendar(year, month, eventMap) {
+    const container = document.getElementById("calendar");
+    container.innerHTML = "";
+
+    const monthName = new Date(year, month - 1).toLocaleString("default", { month: "long" });
+    const title = document.createElement("h2");
+    title.textContent = `${monthName} ${year}`;
+    container.appendChild(title);
+
+    const table = document.createElement("table");
+    const headerRow = document.createElement("tr");
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(day => {
+      const th = document.createElement("th");
+      th.textContent = day;
+      headerRow.appendChild(th);
+    });
+    table.appendChild(headerRow);
+
+    const daysInMonth = new Date(year, month, 0).getDate();
+    let firstDay = new Date(year, month - 1, 1).getDay();
+    firstDay = (firstDay + 6) % 7;
+
+    let row = document.createElement("tr");
+    for (let i = 0; i < firstDay; i++) {
+      row.appendChild(document.createElement("td"));
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month - 1, day);
+      const dateStr = formatDate(date);
+      const td = document.createElement("td");
+      td.textContent = day;
+
+      if (eventMap[dateStr]) {
+        const events = eventMap[dateStr];
+        const types = events.map(e => e.type);
+        const className = `day-${types.join("-")}`;
+        td.className = className;
+
+        td.title = events.map(e => `• ${capitalize(e.type)}: ${e.description}`).join("\n");
+      } else {
+        td.className = 'day-nothing';
+      }
+
+      row.appendChild(td);
+      if ((firstDay + day) % 7 === 0 || day === daysInMonth) {
+        table.appendChild(row);
+        row = document.createElement("tr");
+      }
+    }
+
+    container.appendChild(table);
+  }
+
+  const eventMap = buildEventMap(travel_info);
+  renderCalendar(2025, 7, eventMap); // July only
+</script>
+</body>
+</html>
