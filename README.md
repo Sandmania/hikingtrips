@@ -32,9 +32,26 @@ https://caltopo.com/map.html
 Finland
 https://retkikartta.fi/
 
+
+Get map trace from openstreetmap relation or way
+
+https://overpass-turbo.eu/
+
+rel(1019948); out geom;
+
+OR
+
+way(762977045); out geom;
+
+Hit Run
+
+-> Export -> GPX
+
 ### Add elevation profile
 https://www.gpsvisualizer.com/elevation
 
 ## Developing
 
 Plain Vanilla https://plainvanillaweb.com/index.html
+
+

@@ -139,13 +139,13 @@ function initializeBaseMaps(config) {
             maxZoom: 19,
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         }),
-        "NLS Ortophoto": L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva/{z}/{x}/{y}.jpg', {
+        "NLS Ortophoto": L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva_3067/{z}/{x}/{y}.jpg', {
             maxZoom: 19,
             attribution: 'National Land Survey of Finland, Ortophoto'
-        }),
+        }),                              
         "Lantmäteriet": new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-            maxZoom: 12,
-            maxNativeZoom: 9,
+            maxZoom: 17,
+            maxNativeZoom: 14,
             attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
         })
     };
@@ -164,20 +164,9 @@ function initializeBaseMaps(config) {
 }
 
 function setCRSBasedOnTileLayer(tileLayerName) {
-    if (tileLayerName === 'NLS Topographic map') {
+    if (tileLayerName === 'NLS Topographic map' || tileLayerName === 'NLS Ortophoto') {
         console.log("Set CRS to 3067");
         map.options.crs = L.TileLayer.MML.get3067Proj();
-    } else if (tileLayerName === 'Lantmäteriet') {
-        console.log("Set CRS to 3006");
-        map.options.crs = new L.Proj.CRS('EPSG:3006',
-            '+proj=utm +zone=33 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs',
-            {
-                resolutions: [
-                    4096, 2048, 1024, 512, 256, 128, 64, 32, 16, 8, 4, 2, 1
-                ],
-                origin: [-1200000.000000, 8500000.000000],
-                bounds: L.bounds([-1200000.000000, 8500000.000000], [4305696.000000, 2994304.000000])
-            });
     } else {
         console.log("Set CRS to EPSG3857");
         map.options.crs = L.CRS.EPSG3857;

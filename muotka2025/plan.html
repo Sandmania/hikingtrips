@@ -19,6 +19,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
     <script src="../assets/js/proj4-compressed.js"></script>
     <script src="../assets/js/proj4leaflet.js"></script>
+    <script src="../assets/components/packDetails/PackDetails.js"></script>
 </head>
 
 <body>
@@ -32,6 +33,7 @@
         <div id="calendar-container"></div>
         <div id="event-tooltip" class="event-tooltip hidden"></div>
         <div id="pack-container"></div>
+        <tt-pack-details data-url="lighterpack.csv"></tt-pack-details>
     </div>
     <script type="module">
         import { loadYAMLConfig, initMap, updateMapWithAlternatives } from '../assets/js/map.js';

@@ -1,0 +1,109 @@
+#toggleButton {
+  position: absolute;
+  top: 180px;
+  right: 10px;
+  z-index: 1000;
+  background: #007BFF;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.2em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#toggleButton:hover {
+  background: #0056b3;
+}
+
+#details {
+  position: relative;
+  z-index: 999;
+  background: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  /* Scroll only details div, not whole page*/
+  max-height: 100vh;
+  overflow-y: auto;
+}
+
+#details.hidden {
+  display: none;
+}
+
+/* Table container for horizontal scrolling on mobile */
+.table-container {
+  overflow-x: auto;
+  margin: 0 auto;
+  max-width: 100%;
+  padding-bottom: 15px;
+}
+
+/* Table layout improvements */
+table {
+  width: 90%; /* Default width */
+  max-width: 800px; /* Maximum width */
+  min-width: 400px; /* Minimum width */
+  margin: 0 auto; /* Center the table */
+  border-collapse: collapse;
+  table-layout: fixed; /* Fix column widths */
+}
+
+/* Define column widths */
+colgroup col:nth-child(1) {
+  width: 40%; /* Item Name column */
+}
+
+colgroup col:nth-child(2) {
+  width: 40%; /* Details column */
+}
+
+colgroup col:nth-child(3) {
+  width: 20%; /* Total Weight column */
+}
+
+/* Table header styling */
+th, td {
+  border: 1px solid #ccc;
+  padding: 8px;
+  text-align: left;
+  word-wrap: break-word; /* Prevent overflow in fixed layout */
+}
+
+th {
+  background-color: #f4f4f4;
+}
+
+/* Style the table caption */
+caption {
+  font-weight: bold;
+  text-align: left;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+}
+
+/* Responsive table adjustments */
+@media (max-width: 600px) {
+  table {
+    width: 100%; /* Allow table to shrink on small screens */
+  }
+
+  th, td {
+    font-size: 0.9em; /* Reduce font size for smaller screens */
+  }
+}
+
+.category {
+  margin-bottom: 20px;
+}
+
+.grand-total {
+  font-weight: bold;
+  font-size: 1.2em;
+}
