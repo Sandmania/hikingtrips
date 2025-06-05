@@ -3,7 +3,7 @@ class PackDetails extends HTMLElement {
     super();
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="/assets/components/packDetails/PackDetails.css">
+      <link rel="stylesheet" href="../assets/components/packDetails/PackDetails.css">
       <button id="toggleButton">🔽</button>
       <div id="details" class="hidden">
         <slot></slot>
