@@ -4,6 +4,7 @@ defaults:
   numberOfZeroDays: 1
   tileLayer: Lantmäteriet
   availableTileLayers:
+    - "Esri World Imagery"
     - "OpenTopoMap"
     - "OpenStreetMap"
     - "Lantmäteriet"
@@ -57,12 +58,13 @@ trip:
       snacks: true
   - gpx: planned_route/day2_ele.gpx
   - gpx: planned_route/day3_ele.gpx
-    alternatives:
-    - gpx: planned_route/day3_alt_ele.gpx
-      name: Alt route for leg 3
   - gpx: planned_route/day4_ele.gpx
-  - gpx: planned_route/day5_new_ele.gpx
+    alternatives:
+    - gpx: planned_route/day4_alt_ele.gpx
+      name: Alt route for leg 4
+  - gpx: planned_route/day5_ele.gpx
   - gpx: planned_route/day6_ele.gpx
+  - gpx: planned_route/day7_ele.gpx
     endIcon: ../assets/images/flag-checkered-solid.svg
     mealPlan:
       breakfast: true
@@ -75,19 +77,19 @@ travel_info:
     - transportation:
         type: car-pool
         from: Jyväskylä
-        to: ???
+        to: Gällivare
         outboundDate: "2025-07-18"
-        outboundTime: 13:00
+        outboundTime: 10:00
     - accommodation:
-        name: Lakanamajoitus
-        url: ???
+        name: Scandic Gällivare
+        url: https://www.scandichotels.com/fi/hotellit/scandic-gallivare
         checkInDate: "2025-07-18"
         checkOutDate: "2025-07-19"
         checkInTime: 15:00
         checkOutTime: 08:00
     - transportation:
         type: car-pool
-        from: ???
+        from: Gällivare
         to: Suorva
         outboundDate: "2025-07-19"
         outboundTime: 09:00
@@ -96,7 +98,7 @@ travel_info:
         from: Suorva
         to: Ritsem
         outboundDate: "2025-07-19"
-        outboundTime: 10:00
+        outboundTime: 11:30
     - transportation:
         type: boat
         from: Ritsem
@@ -107,22 +109,22 @@ travel_info:
     - transportation:
         type: car-pool
         from: Suorva
-        to: ???
+        to: Gällivare
         outboundDate: "2025-07-26"
         outboundTime: 15:00
     - accommodation:
-        name: Lakanamajoitus
-        url: ???
+        name: Scandic Gällivare
+        url: https://www.scandichotels.com/fi/hotellit/scandic-gallivare
         checkInDate: "2025-07-26"
         checkOutDate: "2025-07-27"
         checkInTime: 15:00
-        checkOutTime: 12:00
+        checkOutTime: 08:00
     - transportation:
         type: car-pool
-        from: ???
+        from: Gällivare
         to: Jyväskylä
         outboundDate: "2025-07-27"
-        outboundTime: 15:00
+        outboundTime: 09:00
 
 photo_info:
   cameraOffset:

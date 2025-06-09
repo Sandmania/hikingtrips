@@ -5,6 +5,7 @@ defaults:
   numberOfZeroDays: 1
   tileLayer: "NLS Topographic map"
   availableTileLayers:
+    - "Esri World Imagery"
     - "OpenTopoMap"
     - "OpenStreetMap"
     - "NLS Topographic map"
