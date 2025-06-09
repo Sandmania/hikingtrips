@@ -9,7 +9,7 @@ defaults:
     - "OpenTopoMap"
     - "OpenStreetMap"
     - "NLS Topographic map"
-    - "NLS Ortophoto"
+    #- "NLS Ortophoto"
   trip:
     color: 'black'
     opacity: 0.7
@@ -50,7 +50,7 @@ defaults:
       snacks: true
 
 trip:
-  - gpx: planned_route/Jeageloaivi.gpx
+  - gpx: planned_route/Jeageloaivi_ele.gpx
     name: Day 1
     startIcon: ../assets/images/circle-play-regular.svg
     mealPlan:
@@ -58,23 +58,19 @@ trip:
       lunch: true
       dinner: true
       snacks: true
-  - gpx: planned_route/Stuorravzi.gpx
+  - gpx: planned_route/Stuorravzi_ele.gpx
     name: Day 2
-  - gpx: planned_route/Stuorraskaidi_.gpx
+  - gpx: planned_route/Stuorraskaidi_ele.gpx
     name: Day 3
-  #- gpx: planned_route/Urroaivi_.gpx
-  - gpx: planned_route/Urroaivi_kuarvi.gpx
+  - gpx: planned_route/Urroaivi_kuarvi_ele.gpx
     name: Day 4
-  - gpx: planned_route/Peltoj_rvi_.gpx
+    alternatives:
+    - gpx: planned_route/Alt_ele.gpx
+      name: Alt route for leg 4, skips leg 5 too
+      skips: [5]
+  - gpx: planned_route/Peltoj_rvi_ele.gpx
     name: Day 5
-  #- gpx: planned_route/Kuarvikozza.gpx
-  #  endIcon: null
-  #  startIcon: null
-  #  color: 'green'
-  #  opacity: 0.7
-  #  weight: 5
-  #  dashArray: '7, 7'
-  - gpx: planned_route/Peltoaivi_.gpx
+  - gpx: planned_route/Peltoaivi_ele.gpx
     name: Day 6
     endIcon: ../assets/images/flag-checkered-solid.svg
     mealPlan:
@@ -82,6 +78,9 @@ trip:
       lunch: true
       dinner: false
       snacks: true
+
+evacuation:
+  - gpx: planned_route/Evac_ele.gpx
 
 photo_info:
   cameraOffset:
