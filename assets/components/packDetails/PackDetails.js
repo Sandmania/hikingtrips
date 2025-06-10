@@ -4,7 +4,7 @@ class PackDetails extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.innerHTML = `
       <link rel="stylesheet" href="../assets/components/packDetails/PackDetails.css">
-      <button id="toggleButton">🔽</button>
+      <button id="toggleButton"></button>
       <div id="details" class="hidden">
         <slot></slot>
         <div id="output"></div>
@@ -28,7 +28,7 @@ class PackDetails extends HTMLElement {
 
   toggleDetails() {
     const isHidden = this.details.classList.toggle('hidden');
-    this.toggleButton.textContent = isHidden ? '🔽' : '🔼'; // Update the icon
+    //this.toggleButton.textContent = isHidden ? '🔽' : '🔼'; // Update the icon
   }
 
   async loadCsv(url) {
