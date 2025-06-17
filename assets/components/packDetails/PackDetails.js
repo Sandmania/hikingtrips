@@ -28,7 +28,6 @@ class PackDetails extends HTMLElement {
 
   toggleDetails() {
     const isHidden = this.details.classList.toggle('hidden');
-    //this.toggleButton.textContent = isHidden ? '🔽' : '🔼'; // Update the icon
   }
 
   async loadCsv(url) {
@@ -100,28 +99,14 @@ class PackDetails extends HTMLElement {
       const items = categorizedItems[category];
       let categoryTotalWeight = 0;
 
-      // Create a scrollable container for the table
-      const tableContainer = document.createElement('div');
-      tableContainer.classList.add('table-container');
+      const categoryDiv = document.createElement('div');
+      categoryDiv.classList.add('category');
 
-      const table = document.createElement('table');
+      const categoryTitle = document.createElement('div');
+      categoryTitle.classList.add('category-title');
+      categoryTitle.textContent = category;
+      categoryDiv.appendChild(categoryTitle);
 
-      // Define column widths
-      const colgroup = document.createElement('colgroup');
-      colgroup.innerHTML = `
-        <col>
-        <col>
-        <col>
-        <col>
-      `;
-      table.appendChild(colgroup);
-
-      // Use the caption as the category header
-      const caption = document.createElement('caption');
-      caption.textContent = category;
-      table.appendChild(caption);
-
-      const tbody = document.createElement('tbody');
       items.forEach(item => {
         const qty = parseFloat(item.qty) || 0;
         const weight = parseFloat(item.weight) || 0;
@@ -136,40 +121,27 @@ class PackDetails extends HTMLElement {
           consumableWeight += totalWeight;
         }
 
-        const row1 = document.createElement('tr');
-        row1.classList.add('item-main');
-        row1.innerHTML = `
-          <td colspan="2">${item['Item Name']}</td>
-          <td colspan="2">${totalWeight.toFixed()} ${item.unit[0]}</td>
-        `;
+        const itemDiv = document.createElement('div');
+        itemDiv.classList.add('item');
 
-        const row2 = document.createElement('tr');
-        row2.classList.add('item-detail');
-        row2.innerHTML = `
-          <td colspan="2">${item.desc || ''}</td>
-          <td colspan="2">${
-            qty > 1 ? `${qty} x ${weight} ${item.unit[0]}` : ''
-          }</td>
+        itemDiv.innerHTML = `
+          <div class="item-row">
+            <div class="item-name">${item['Item Name']}</div>
+            <div class="item-desc">${item.desc || ''}</div>
+            <div class="item-qty">${qty} x ${weight} ${item.unit[0]}</div>
+            <div class="item-weight">${totalWeight.toFixed()} g</div>
+          </div>
         `;
-
-        tbody.appendChild(row1);
-        tbody.appendChild(row2);
+        categoryDiv.appendChild(itemDiv);
       });
-      table.appendChild(tbody);
 
-      const categoryTotalRow = document.createElement('tfoot');
-      categoryTotalRow.innerHTML = `
-        <tr>
-          <td colspan="2"></td>
-          <td><strong>${categoryTotalWeight.toFixed()} g</strong></td>
-        </tr>
-      `;
-      table.appendChild(categoryTotalRow);
+      const catTotalDiv = document.createElement('div');
+      catTotalDiv.classList.add('category-total');
+      catTotalDiv.textContent = `${categoryTotalWeight.toFixed()} g`;
+      categoryDiv.appendChild(catTotalDiv);
 
       grandTotalWeight += categoryTotalWeight;
-
-      tableContainer.appendChild(table);
-      output.appendChild(tableContainer);
+      output.appendChild(categoryDiv);
     });
 
     const grandTotalDiv = document.createElement('div');
