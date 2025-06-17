@@ -1,4 +1,6 @@
 class PackDetails extends HTMLElement {
+  static observedAttributes = ['csvurl'];
+
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
@@ -17,12 +19,18 @@ class PackDetails extends HTMLElement {
     this.toggleButton.addEventListener('click', () => this.toggleDetails());
   }
 
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'csvurl' && newValue) {
+      this.loadCsv(newValue);
+    }
+  }
+
   connectedCallback() {
-    const csvUrl = this.getAttribute('data-url'); // Get the CSV URL from the component's attribute
+    const csvUrl = this.getAttribute('csvurl');
     if (csvUrl) {
       this.loadCsv(csvUrl);
     } else {
-      console.error('No CSV URL provided. Add a "data-url" attribute to the component.');
+      console.error('No CSV URL provided.');
     }
   }
 

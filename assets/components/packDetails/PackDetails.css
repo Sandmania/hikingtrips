@@ -21,7 +21,7 @@
   font-size: 14px;
   max-width: 800px;
   /* Scroll only details div, not whole page*/
-  max-height: 100vh;
+  max-height: 96vh;
   overflow-y: auto;
 }
 
