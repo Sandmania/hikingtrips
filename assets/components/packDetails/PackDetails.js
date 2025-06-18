@@ -152,26 +152,43 @@ class PackDetails extends HTMLElement {
       output.appendChild(categoryDiv);
     });
 
-    const grandTotalDiv = document.createElement('div');
-    grandTotalDiv.classList.add('grand-total');
-    grandTotalDiv.textContent = `Grand Total Weight: ${grandTotalWeight.toFixed()}`;
-    output.appendChild(grandTotalDiv);
+    // Calculate weights
+    const baseWeight = grandTotalWeight - wornWeight - consumableWeight;
+    const carriedWeight = baseWeight + consumableWeight;
 
-    const wornDiv = document.createElement('div');
-    wornDiv.classList.add('worn-weight');
-    wornDiv.textContent = `Worn Weight: ${wornWeight.toFixed()}`;
-    output.appendChild(wornDiv);
+    // Create summary elements in the requested order
+    const summaryFragment = document.createDocumentFragment();
+
+    const baseDiv = document.createElement('div');
+    baseDiv.classList.add('base-weight');
+    baseDiv.innerHTML = `<strong>Base Weight: ${baseWeight.toFixed()} g</strong>`;
+    summaryFragment.appendChild(baseDiv);
 
     const consumableDiv = document.createElement('div');
     consumableDiv.classList.add('consumable-weight');
-    consumableDiv.textContent = `Consumable Weight: ${consumableWeight.toFixed()}`;
-    output.appendChild(consumableDiv);
+    consumableDiv.textContent = `Consumable Weight: ${consumableWeight.toFixed()} g`;
+    summaryFragment.appendChild(consumableDiv);
 
-    const baseWeight = grandTotalWeight - wornWeight - consumableWeight;
-    const baseDiv = document.createElement('div');
-    baseDiv.classList.add('base-weight');
-    baseDiv.textContent = `Base Weight: ${baseWeight.toFixed()}`;
-    output.appendChild(baseDiv);
+    const carriedDiv = document.createElement('div');
+    carriedDiv.classList.add('carried-weight');
+    carriedDiv.textContent = `Carried Weight: ${carriedWeight.toFixed()} g`;
+    summaryFragment.appendChild(carriedDiv);
+
+    const wornDiv = document.createElement('div');
+    wornDiv.classList.add('worn-weight');
+    wornDiv.textContent = `Worn Weight: ${wornWeight.toFixed()} g`;
+    summaryFragment.appendChild(wornDiv);
+
+    const grandTotalDiv = document.createElement('div');
+    grandTotalDiv.classList.add('grand-total');
+    grandTotalDiv.textContent = `Grand Total Weight: ${grandTotalWeight.toFixed()} g`;
+    //summaryFragment.appendChild(grandTotalDiv);
+
+    // Prepend summary to output
+    const summaryContainer = document.createElement('div');
+    summaryContainer.classList.add('summary-container');
+    summaryContainer.appendChild(summaryFragment);
+    output.prepend(summaryContainer);
   }
 }
 
