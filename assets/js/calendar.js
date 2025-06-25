@@ -23,9 +23,9 @@ function buildEventMap(travelInfo) {
       const dateStr = dateCursor.toISOString().slice(0, 10);
       allEvents.push({
         date: dateStr,
-        time: '13:00',
+        time: '13:30',
         type: 'hike',
-        isoDateTime: parseDateTime(dateStr, '13:00'),
+        isoDateTime: parseDateTime(dateStr, '13:30'),
       });
       dateCursor.setDate(dateCursor.getDate() + 1);
     }

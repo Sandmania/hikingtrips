@@ -56,14 +56,33 @@ trip:
       lunch: true # Lunch on the road or at Ritsem?
       dinner: true
       snacks: true
+    description: >
+      Bussi ja laivamatkojen jälkeen toiselle matkapäivälle suunnitellaan maltillinen muutamien kilometrien kävely.
   - gpx: planned_route/day2_ele.gpx
+    description: >
+      Ensimmäinen kokonainen vaelluspäivä kuljetaan merkittyä polkua kohti Kisurisstugornaa ja Sarekin rajaa.
   - gpx: planned_route/day3_ele.gpx
+    description: >
+      Lähes koko päivän käytössä on polku, ja maasto on helpohkoa.
+      Vaativia kahlauksia ei ole ja hyvällä suunnistamisella voidaan välttää Sarekille tyypilliset ilkeäkulkuiset suot ja pajukot
   - gpx: planned_route/day4_ele.gpx
+    description: >
+      Tämä helppo ja hieno reitti kulkee Ruohtesvággen laaksoa pitkin. 
+      Laaksossa kulkee selkeä polku, eikä matkalle osu erityisen pahoja kahlauksia.
     alternatives:
     - gpx: planned_route/day4_alt_ele.gpx
       name: Alt route for leg 4
+      description: >
+        Jos sääikkuna sallii, niin tämä vaihtoehto on tarjolla. Mutta vain hyväkuntoisille grammanviilaajille.
+        Tämä todella hieno “travese” reitti kulkee usean huipun kautta, käyden korkeimmillaan 1804 metrissä.
+        Nousumetrejä tässä reittivaihtoehdossa tulee noin 1200 m.
+        Nelinkontin tälläkään reitillä ei kuitenkaan tarvitse mennä, eikä kyseessä ole kiipeilyreitti.
   - gpx: planned_route/day5_ele.gpx
+    description: >
+      Päivänä kuljetaan Skárjásta Bierikjärven maisemiin.
   - gpx: planned_route/day6_ele.gpx
+    description: >
+      Tämän päivän aikana siirrytään Sarekista Stora Sjöfalletin kansallispuistoon.
   - gpx: planned_route/day7_ele.gpx
     endIcon: ../assets/images/flag-checkered-solid.svg
     mealPlan:
@@ -71,25 +90,27 @@ trip:
       lunch: true
       dinner: false # Dinner on the road or at Suorva?
       snacks: true
+    description: >
+      Viimeisenä vaelluspäivänä kävellään takaisin Suorvan padolle, hypätään autoihin ja ajetaan lakanamajoitukseen.
 
 travel_info:
   to:
     - transportation:
         type: car-pool
         from: Jyväskylä
-        to: Gällivare
+        to: Kalix
         outboundDate: "2025-07-18"
         outboundTime: 10:00
     - accommodation:
-        name: Scandic Gällivare
+        name: Hotell Valhall
         url: https://www.scandichotels.com/fi/hotellit/scandic-gallivare
         checkInDate: "2025-07-18"
         checkOutDate: "2025-07-19"
         checkInTime: 15:00
-        checkOutTime: 08:00
+        checkOutTime: 06:00
     - transportation:
         type: car-pool
-        from: Gällivare
+        from: Kalix
         to: Suorva
         outboundDate: "2025-07-19"
         outboundTime: 09:00
@@ -104,7 +125,7 @@ travel_info:
         from: Ritsem
         to: Akkajaure
         outboundDate: "2025-07-19"
-        outboundTime: 11:00
+        outboundTime: 13:10
   from:
     - transportation:
         type: car-pool
@@ -118,13 +139,13 @@ travel_info:
         checkInDate: "2025-07-26"
         checkOutDate: "2025-07-27"
         checkInTime: 15:00
-        checkOutTime: 08:00
+        checkOutTime: 06:00
     - transportation:
         type: car-pool
         from: Gällivare
         to: Jyväskylä
         outboundDate: "2025-07-27"
-        outboundTime: 09:00
+        outboundTime: 07:00
 
 photo_info:
   cameraOffset:

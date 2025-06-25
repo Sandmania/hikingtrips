@@ -58,18 +58,42 @@ trip:
       lunch: true
       dinner: true
       snacks: true
+    description: >
+      Lähdemme hotelli Guossilta kohti Sulaojaa joko taksilla tai bussilla.
+      Karigasniementieltä lähdemme kävelemään etelään hiekkakuopalle johtavaa tietä.
+      Tieltä jatkamme kartassa näkyvää uraa yli Karigasjoen ja kohti tunturiylänköä.
+      Yöpaikkaa etsimme jostain Vudnjosjohkan ja Jaegeloaijávrin tuntumasta.
   - gpx: planned_route/Stuorravzi_ele.gpx
     name: Day 2
+    description: >
+      Kierrämme Duolba Jeageloaivin länsipuolelta, päätyen karttaan merkitylle uralle.
+      Seuraamme uraa, mutta ennen Stuorrávžia käännymme ylängöllä kohti itää, ylittäen Stuorrávžin kohdasta missä poroaita ja ura jatkuvat etelään.
+      Yövymme todennäköisesti Stuorraskáidilla, jonkin Rátnojohkaan laskevan uoman läheisyydessä.
   - gpx: planned_route/Stuorraskaidi_ele.gpx
     name: Day 3
+    description: >
+      Seuraamme uraa ja ylitämme Rátnojohkan, Stuorroaivin ja Čeavrájohkan alkulähteet.
+      Tästä länteen Čeavrájohoaivin takainen poroerotusaita isoine mönkijäurinee on mahdollinen evakuoitumisereitti.
+      Ylitämme Urroaivin ja Kiellajoen. Saatamme yöpyä jo jossain Kiellajoen läheisyydessä.
+      Uran ja Kiellajoen risteyksestä, Piekanaäytsin ja Soarvegielaksen pohjoispuolelta kohti Peltoaivia menee meidän lyhennetty reittimme. Tätä reittiä käytämme mikäli sille on jostain syystä tarvertta.
+      Ötökkätilanteen niin vaatiessa, nousemme korkeammalle tästä uran ja Kiellajoen risteyksestä, etsien virtaavaa vettä ja yövymme siinä.
   - gpx: planned_route/Urroaivi_kuarvi_ele.gpx
     name: Day 4
+    description: >
+      Jatkamme uraa läpi Piekanaäytsin kohti Kuárvikozzâa. Sään salliessa huiputamme Kuárvikozzân.
+      Kuárvikozzân jälkeen käännymme koiliseen kohti Peltojärven eteläistä hiekkarantaa.
+      Olemme varanneet matkalle yhden varapäivän, saatamme yöpyä jossain jo ennen Peltojärveä jos varapäivää ei ole vielä käytetty.
     alternatives:
     - gpx: planned_route/Alt_ele.gpx
       name: Alt route for leg 4, skips leg 5 too
       skips: [5]
+      description: >
+        Lyhennetty reitti jos sitä tarvitaan.
   - gpx: planned_route/Peltoj_rvi_ele.gpx
     name: Day 5
+    description: >
+      Peltojärven rannoilta lähdemme nousemaan Peltoaiville.
+      Kuljemme tunturissa ja yövymme todennäköisesti nimettömän järven (350.5 mpy) rannalla, Soavveljávrrečopman lounaispuolella.
   - gpx: planned_route/Peltoaivi_ele.gpx
     name: Day 6
     endIcon: ../assets/images/flag-checkered-solid.svg
@@ -78,6 +102,8 @@ trip:
       lunch: true
       dinner: false
       snacks: true
+    description: >
+      Laskeudumme leiripaikasta Peltojoen länsipuolelle. Seuraamme joen viereistä uraa Muotkanruoktuun.
 
 evacuation:
   - gpx: planned_route/Evac_ele.gpx
