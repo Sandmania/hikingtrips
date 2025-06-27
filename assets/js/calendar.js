@@ -1,8 +1,23 @@
 export function renderTripCalendar(travelInfo) {
   if (travelInfo) {
     const eventMap = buildEventMap(travelInfo);
-    console.log(eventMap)
-    renderCalendar(2025, 7, eventMap);
+    console.log(eventMap);
+
+    // Get the first date from eventMap keys (sorted by buildEventMap)
+    const firstDateStr = Object.keys(eventMap)[0];
+    let year, month;
+    if (firstDateStr) {
+      const firstDate = new Date(firstDateStr);
+      year = firstDate.getFullYear();
+      month = firstDate.getMonth() + 1;
+    } else {
+      // fallback to current month/year
+      const now = new Date();
+      year = now.getFullYear();
+      month = now.getMonth() + 1;
+    }
+
+    renderCalendar(year, month, eventMap);
   }
 }
 
