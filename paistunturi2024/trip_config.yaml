@@ -109,3 +109,70 @@ photo_info:
     realClock: 13.09
     cameraClock: 14.02
     substrackt: "53m"
+
+travel_info:
+  to:
+    - transportation:
+        type: train
+        from: JY
+        to: TPE
+        outboundDate: "2024-08-11"
+        outboundTime: 21:14:00.000+03:00
+    - transportation:
+        type: train
+        from: TPE
+        to: ROI
+        outboundDate: "2024-08-11"
+        outboundTime: 23:09:00.000+03:00
+    - transportation:
+        type: bus
+        from: p472
+        to: s12140
+        outboundDate: "2024-08-12"
+        outboundTime: 11:20
+    - accommodation:
+        name: Hotel Guossi Karigasniemi
+        url: https://guossi.com/
+        checkInDate: "2024-08-12"
+        checkOutDate: "2024-08-13"
+        checkInTime: 15:00
+        checkOutTime: 12:00
+  from:
+    - accommodation:
+        name: Hotel Utsjoki
+        url: https://www.hotelutsjoki.fi/
+        checkInDate: "2024-08-22"
+        checkOutDate: "2024-08-23"
+        checkInTime: 15:00
+        checkOutTime: 12:00
+    - transportation:
+        type: bus
+        from: Utsjoki
+        to: Inari
+        outboundDate: "2024-08-23"
+        outboundTime: 09:40        
+    - accommodation:
+        name: Wilderness Hotel Juutua
+        url: https://wildernesshotels.fi/wilderness-hotel-juutua/
+        checkInDate: "2024-08-23"
+        checkOutDate: "2024-08-24"
+        checkInTime: 15:00
+        checkOutTime: 12:00
+    - transportation:
+        type: bus
+        from: Inari
+        to: p472 # ROI
+        outboundDate: "2024-08-24"
+        outboundTime: 12:10
+    - transportation:
+        type: train
+        from: ROI
+        to: HKI
+        outboundDate: "2024-08-24"
+        outboundTime: 20:57:00.000+03:00
+    - transportation:
+        type: train
+        from: HKI
+        to: JY
+        outboundDate: "2024-08-25"
+        outboundTime: 10:00:00.000+03:00
