@@ -1,7 +1,7 @@
 Item Name,Category,desc,qty,weight,unit,url,price,worn,consumable
 "Tent: Fly, Inner & bag",Shelter,"Fjällräven Abisko Shape 3 (bag 84g, 1768g inner + fly)",1,1852,gram,https://www.fjallraven.com/eu/en-gb/bags-gear/tents-sleeping-bags/tents/abisko-shape-3/,0,,
 Raincover,Pack,Bergans,1,119,gram,,0,,
-Osprey Exos 58,Pack,"Blue, Large, older model",1,1.3,kilogram,,0,,
+Osprey Exos 58,Pack,"Blue, Large, older model",1,1300,gram,,0,,
 Strap Pocket,Pack,Tread Lite Gear Cuben Fiber Roll Top Dry Bag,1,23,gram,,0,,
 Strap Pocket,Pack,Tread Lite Gear Cuben Fiber /w zipper,1,14,gram,,0,,
 Sleeping bag,Sleep,Rab Mythic 400,1,684,gram,,0,,
@@ -97,7 +97,7 @@ Shirt,Worn,"Columbia, Long Sleeve, Button up",1,196,gram,,0,Worn,
 Snack bars,Food & drinks,"Assortment of different kinds, 30pcs, total weight",1,1065,gram,,0,,Consumable
 Water,Food & drinks,Max carry about 2l,1,2000,gram,,0,,Consumable
 Candy,Food & drinks,Malaco Sirkus Aakkoset,1,344,gram,,0,,Consumable
-Lunch,Food & drinks,10 lunches for two,1,2.8,kilogram,,0,,Consumable
-Breakfast,Food & drinks,5 breakfast for two,1,1.3,kilogram,,0,,Consumable
+Lunch,Food & drinks,10 lunches for two,1,2800,gram,,0,,Consumable
+Breakfast,Food & drinks,5 breakfast for two,1,1300,gram,,0,,Consumable
 Instant coffee,Food & drinks,For two,1,6,gram,,0,,Consumable
 Whisky,Food & drinks,"Glen Moray Port Cask Finish Single Malt, around 330ml",1,330,gram,,0,,Consumable

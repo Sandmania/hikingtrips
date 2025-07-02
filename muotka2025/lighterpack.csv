@@ -1,5 +1,5 @@
 Item Name,Category,desc,qty,weight,unit,url,price,worn,consumable
-"Tent: Fly, Inner & bag",Shelter,"Fjällräven Abisko Shape 3 (bag 84g, 1768g inner + fly)",1,1852,gram,,0,,
+"Tent: Fly, Inner & bag",Shelter,"Fjällräven Abisko Shape 3 (bag 84g, 1768g inner + fly)",1,1852,gram,https://www.fjallraven.com/eu/en-gb/bags-gear/tents-sleeping-bags/tents/abisko-shape-3/,0,,
 Raincover,Pack,Bergans,1,119,gram,,0,,
 Osprey Exos 58,Pack,"Blue, Large, older model",1,1300,gram,,0,,
 Strap Pocket,Pack,Tread Lite Gear Cuben Fiber Roll Top Dry Bag,1,23,gram,,0,,
@@ -11,9 +11,10 @@ Drybag for sleeping bag,Sleep,"Exped Fold Drybag UL (Small, 5l)",1,18,gram,,0,,
 Stove,Cooking & hydration,Alpkit Koro,1,134,gram,https://www.alpkit.com/products/koro,0,,
 Pot,Cooking & hydration,"TOAKS Titanium 1300ml, /w pouch",1,160,gram,,0,,
 Cup,Cooking & hydration,Foldacup,1,24,gram,https://www.wildo.se/products/the-orignal-fold-a-cup/,0,,
+Food Bowl,Cooking & hydration,"Big Fold-A-Cup, for breakfast mostly",2,46,gram,,0,,
 Windscreen,Cooking & hydration,DIY Aluminium,1,22,gram,,0,,
 Empty 230g gas canister,Cooking & hydration,,1,160,gram,,0,,
-Gas per gram,Cooking & hydration,When taking previously used gas canister that still has some gas,122,1,gram,,0,,Consumable
+Gas,Cooking & hydration,,1,230,gram,,0,,Consumable
 Hydration pack,Cooking & hydration,Hydrapak Shape Shift Reversible 3l,1,154,gram,https://hydrapak.com/products/shape-shift-3-liter,0,,
 Spoon,Cooking & hydration,Tread Lite Gear MKII,1,7,gram,https://www.treadlitegear.co.uk/tread-lite-gear-set-of-2-mkii-ultralight-coffee-or-eating-spoons-63g-each-210-p.asp,0,,
 Empty 330ml plastic bottle,Cooking & hydration,"When not empty, contains whisky",1,20,gram,,0,,
@@ -23,17 +24,18 @@ Merino Pants 3/4,Packed clothes,"Ortovox Merino Ultra 105 Short Pants, size larg
 Merino long sleeve,Packed clothes,"Ortovox Merino Ultra 105 Long Sleeve, size large",1,146,gram,https://www.ortovox.com/fi-en/shop/men/p51453-functional-underwear-long-105-ultra-long-sleeve-m,0,,
 Merino hat,Packed clothes,"Buff merino hat, yellow-ish",1,20,gram,,0,,
 Neck gaiter thingy,Packed clothes,"AKA day-time-night-time, Doubles as blindfold when sleeping ",1,34,gram,,0,,
+Gloves,Packed clothes,"Black Diamond, Deploy Wind Hood Gloves, size L",1,48,gram,https://web.archive.org/web/20250621093912/https://blackdiamondequipment.com/products/deploy-wind-hood-gloves?country=US,0,,
 Boxers,Packed clothes,"The Other Danish Guy Globetrotter Boxer, size large",1,73,gram,,0,,
-Gloves,Packed clothes,OR Surge Sensor Gloves,1,34,gram,,0,,
 Liner socks,Packed clothes,Lorpen,1,46,gram,,0,,
 Merino top socks,Packed clothes,Falke,1,76,gram,,0,,
+Sleep socks,Packed clothes,"Merino, rainbow",1,35,gram,,0,,
 Down jacket,Packed clothes,Haglöfs LIM Essens,1,170,gram,,0,,
 Fleece,Packed clothes,"Kuiu, Peloton 97 Fleece Zip-T, size M",1,149,gram,,0,,
 Shell jacket,Packed clothes,Montbell Storm Chaser (Size Large),1,313,gram,,0,,
 Shell pants,Packed clothes,Haglöfs LIM Full Zip,1,220,gram,,0,,
 Camp / wading shoes,Packed clothes,Vivobarefoot Ultra II,1,342,gram,https://vivobarefoot.fi/Vivobarefoot-SS15+Ultra+II+Mens+Black+Red-1858292.html,0,,
 Drybag,Packed clothes,"Exped Fold Drybag UL (Medium, 8l)",1,21,gram,,0,,
-Phone,Electronics,Google Pixel 5,1,149,gram,,0,,
+Phone,Electronics,Google Pixel 9 (201g) /w case (29g),1,230,gram,,0,,
 WP case for phone,Electronics,Loksak,1,7,gram,,0,,
 Charger,Electronics,"Sony, 5V 1500mA",1,30,gram,,0,,
 Charger cable,Electronics,usb - micro-usb,1,12,gram,,0,,
@@ -42,24 +44,22 @@ Headphones,Electronics,Less likely to be punched in the face while watching Netf
 Headphone splitter,Electronics,Netflix with the wifey when traveling to location,1,6,gram,,0,,
 USB-C 3.5mm DAC adapter,Electronics,Maxonar,1,6,gram,,0,,
 Camera,Electronics,Sony RX100 III,1,290,gram,,0,,
-Light,Electronics,Petzl e+lite,1,28,gram,,0,,
 Watch,Electronics,Suunto Ambit 3 Peak,1,85,gram,,0,Worn,
-Powerbank,Electronics,"Nitecore NB10000, rev2",1,152,gram,,0,,
 Satellite communicator,Electronics,Garmin inReach MINI 2 /w Carabiner (carabiner weighs 13g),1,113,gram,,0,,
 Weather data logger,Electronics,Kestrel Drop D2 /w karabiner,1,44,gram,,0,,
 Multitool,Utility & misc,Leatherman Squirt PS4 (Not TSA approved!),1,58,gram,,0,,
 Knife,Utility & misc,Mora Eldris,1,78,gram,,0,,
 Compass,Utility & misc,Suunto,1,30,gram,,0,,
-Map,Utility & misc,"Karttakeskus, Utsjoki-Kevo-Paistunturi. Waterproof.",1,39,gram,,0,,
+Map,Utility & misc,"Calazo, Muotkatunturit & Kaamasjoki 1:60000 ISBN 978-91-89079-03-8",1,40,gram,,0,,
 Matches and lighter,Utility & misc,In ziplock bag,1,24,gram,,0,,
 Headnet,Utility & misc,Sea to summit,1,24,gram,,0,,
 Sit pad 2.0,Utility & misc,"DIY, larger than previous",1,38,gram,,0,,
 Clothes line,Utility & misc,"4m dyneema cord, hardware from MSR dry line kit",1,20,gram,,0,,
 Wallet,Utility & misc,"CC, ID, some cash",1,19,gram,,0,,
-Key,Utility & misc,To home,1,10,gram,,0,,
+Key 2.0,Utility & misc,"Key 8g, key ring 2.5g, SIM tool 0.5g",1,11,gram,,0,,
 Pen,Utility & misc,"Kiasma, short & skinny",1,10,gram,,0,,
-Notebook,Utility & misc,"A7, 40 pages",1,26,gram,,0,,
-Sunglasses,Utility & misc,Magnetic clip-on glasses (6.6g) and case (33.7g) ,1,40,gram,,0,,
+Spiral notebook,Utility & misc,"A7, 40 pages",1,26,gram,,0,,
+Sunglasses,Utility & misc," Magnetic clip-on glasses (6.6g), microfiber pouch (5.8g) and 3D printed case (25g)",1,37,gram,,0,,
 Wound dressing,FAK,"5x7,2cm, Sorbact secure",4,2.5,gram,,0,,
 Wound Closure Strips,FAK,"3M Steri-Strip 6x75mm, 3 strips",2,1.5,gram,,0,,
 Wound dressing,FAK,Mepitel one,2,3.5,gram,,0,,
@@ -74,6 +74,7 @@ Alcohol wipe,FAK,Leukoplast,10,1,gram,,0,,
 Bandaid,FAK,"Cut-to-size, about 20x5cm",1,5,gram,,0,,
 Medical Tape,FAK,"Fixomull Transparent, 10x10cm",4,2,gram,,0,,
 Resin Salve for Wound Treatment,FAK,Abilar 10% 20g,1,26,gram,,0,,
+Blister plaster,FAK,Salvequick,4,2,gram,,0,,
 Duct tape,Ditty bag,Few meters rolled on a pencil,1,11,gram,,0,,
 Repair tape,Ditty bag,McNett Tenacious Tape,1,7,gram,,0,,
 NeoAir Repair,Ditty bag,,1,6,gram,,0,,
@@ -85,7 +86,8 @@ Spare ladderlock,Ditty bag,"Sea to Summit, 1 Pin, 20mm",1,6,gram,https://seatosu
 Zip ties,Ditty bag,3x,1,1,gram,,0,,
 Towel,Ditty bag,"S2S Airlite L, 45 x 108cm (w/o pouch)",1,47,gram,,0,,
 Trowel,Ditty bag,The Deuce #2,1,17,gram,,0,,
-Toiletpaper,Ditty bag,"3ply, 150 sheets",1,85,gram,,0,,Consumable
+Toiletpaper,Ditty bag,"3ply, 150 sheets",1,85,gram,,0,,
+Super Glue 1gram,Ditty bag,"Loctite, /w nozzle, inside toothbrush head cover",1,5,gram,,0,,
 Pants,Worn,"Montane Terra Pack, Size Large, without belt",1,258,gram,,0,Worn,
 Shoes,Worn,Meindl Bernina 2 (Size 45),1,1632,gram,,0,Worn,
 Boxers,Worn,Under Armour Original Boxerjock 6",1,80,gram,,0,Worn,
@@ -94,10 +96,10 @@ Top socks,Worn,"Smartwool, Hike Light Crew",1,88,gram,,0,Worn,
 Trekking poles,Worn,"Komperdell, Explorer Compact Power Lock Trekking Poles",1,464,gram,,0,Worn,
 Cap,Worn,Patagonia Airshed,1,60,gram,,0,Worn,
 Shirt,Worn,"Columbia, Long Sleeve, Button up",1,196,gram,,0,Worn,
-Snack bars,Food & drinks,"Assortment of different kinds, 30pcs, total weight",1,1065,gram,,0,,Consumable
-Water,Food & drinks,Max carry about 2l,1,2000,gram,,0,,Consumable
-Candy,Food & drinks,Malaco Sirkus Aakkoset,1,344,gram,,0,,Consumable
-Lunch,Food & drinks,10 lunches for two,1,2800,gram,,0,,Consumable
-Breakfast,Food & drinks,5 breakfast for two,1,1300,gram,,0,,Consumable
-Instant coffee,Food & drinks,For two,1,6,gram,,0,,Consumable
-Whisky,Food & drinks,"Glen Moray Port Cask Finish Single Malt, around 330ml",1,330,gram,,0,,Consumable
+Water,Food & drinks,Max carry about 2l,0,2000,gram,,0,,Consumable
+Snackbars Muotka,Food & drinks,26x,1,973,gram,,0,,Consumable
+Breakfast Muotka,Food & drinks,3x2 Porridge: 337g Granola: 275g Trek'N Eat NRG-5 Emergency Food Ration bar x6: 342g Wheat germ: 69g Cranberry & lingonberry powder: 49g,1,1072,gram,,0,,Consumable
+Lunches Muotka,Food & drinks,7x2,1,1963,gram,,0,,Consumable
+Candy Muotka,Food & drinks,Sirkus Aakkoset,1,345,gram,,0,,Consumable
+Whisky Muotka,Food & drinks,"Jura Red Wine Cask Finish Single Malt, 330ml",1,330,gram,,0,,Consumable
+Celebratory Booze,Food & drinks,"Kyrö Malt, Rye Whisky, 50ml. E.g. for summiting.",1,57,gram,,0,,Consumable
