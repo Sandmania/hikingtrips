@@ -50,6 +50,25 @@ Hit Run
 ### Add elevation profile
 https://www.gpsvisualizer.com/elevation
 
+
+## Creating actual route
+
+Match photo timestamps to track timestamps:
+
+```
+../../trailtreader/tools/createPhotoTrack.sh /Users/sandman/personal/code/hikingtrips/muotka2025/photos actual_route
+```
+
+Combine __tracks__ to a single gpx file.
+```
+ ../../trailtreader/tools/combineGpx.sh /Users/sandman/personal/code/hikingtrips/muotka2025/actual_route/suuntoapp-Trekking-2025-07-04T08-09-18Z-track.gpx /Users/sandman/personal/code/hikingtrips/muotka2025/actual_route/suuntoapp-Trekking-2025-07-05T06-55-33Z-track.gpx /Users/sandman/personal/code/hikingtrips/muotka2025/actual_route/suuntoapp-Trekking-2025-07-06T06-33-39Z-track.gpx /Users/sandman/personal/code/hikingtrips/muotka2025/actual_route/suuntoapp-Trekking-2025-07-07T08-18-50Z-track.gpx /Users/sandman/personal/code/hikingtrips/muotka2025/actual_route/suuntoapp-Trekking-2025-07-08T06-31-06Z-track.gpx /Users/sandman/personal/code/hikingtrips/muotka2025/actual_route/suuntoapp-Trekking-2025-07-09T07-27-42Z-track.gpx /Users/sandman/personal/code/hikingtrips/muotka2025/actual_route/suuntoapp-Trekking-2025-07-10T06-32-42Z-track.gpx
+ ```
+
+Create photo thumbnails
+```
+sips -s formatOptions 95 --resampleWidth 580 *.jpeg --out thumbs
+```
+
 ## Developing
 
 Plain Vanilla https://plainvanillaweb.com/index.html
