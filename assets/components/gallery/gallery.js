@@ -30,10 +30,17 @@ class PhotoGallery extends HTMLElement {
   }
 
   async loadImages() {
+    // Try directory listing approach. Will not work in s3, for example.
     try {
       const [thumbs, full] = await Promise.all([
-        fetch(`${this.thumbsPath}/`).then(r => r.text()),
-        fetch(`${this.photosPath}/`).then(r => r.text()),
+        fetch(`${this.thumbsPath}/`).then(r => {
+          if (!r.ok) throw new Error('Thumbs directory listing failed');
+          return r.text();
+        }),
+        fetch(`${this.photosPath}/`).then(r => {
+          if (!r.ok) throw new Error('Photos directory listing failed');
+          return r.text();
+        }),
       ]);
 
       const parseFilenames = html => {
@@ -50,9 +57,25 @@ class PhotoGallery extends HTMLElement {
         thumb: `${this.thumbsPath}/${name}`,
         full: `${this.photosPath}/${name}`,
       }));
+
+      if (this.images.length > 0) return;
+      throw new Error('No images found in directory listing');
     } catch (err) {
-      console.error('Error loading image list:', err);
-      this.shadowRoot.querySelector('.gallery').innerHTML = `<p>Error loading gallery.</p>`;
+      // Fallback: Try loading from photos.json
+      try {
+        const resp = await fetch(`${this.photosPath}/photos.json`);
+        if (!resp.ok) throw new Error('photos.json not found');
+        const files = await resp.json();
+
+        this.images = files.map(name => ({
+          name,
+          thumb: `${this.thumbsPath}/${name}`,
+          full: `${this.photosPath}/${name}`,
+        }));
+      } catch (jsonErr) {
+        console.error('Error loading image list:', err, jsonErr);
+        this.shadowRoot.querySelector('.gallery').innerHTML = `<p>Error loading gallery.</p>`;
+      }
     }
   }
 
