@@ -47,6 +47,9 @@ export function initMap(fullConfiguration) {
         setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
     } else {
         layerControl = L.control.layers(baseMaps).addTo(map);
+        map.addLayer(legFeatureGroup);    
+        map.addLayer(evacuationFeatureGroup);
+        map.addLayer(alternativeFeatureGroup);
     }
     // --- end elevation control ---
 
@@ -74,10 +77,6 @@ export function initMap(fullConfiguration) {
             }
         });
     });
-    
-    map.addLayer(legFeatureGroup);
-    map.addLayer(evacuationFeatureGroup);
-    map.addLayer(alternativeFeatureGroup);
 
     generateAlternativeCheckboxes(globalConfiguration);
 
@@ -88,7 +87,7 @@ export function initMap(fullConfiguration) {
     routeType = "alternatives";
     addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
 
-    // Add custom control for toggling the overlay
+    // Add custom control for toggling the plan info overlay
     const infoControl = L.Control.extend({
         onAdd: function(map) {
             const infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
@@ -143,19 +142,24 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
     const elevationControl = L.control.elevation({
         position: "topright",
         edgeScale: false,
-        theme: "steelblue-theme",
+        theme: "magenta-theme",
         collapsed: true,
         detached: true,
         elevationDiv: "#elevation-div",
         slope: "summary",
         followMarker: false,
-        downloadLink: false
+        downloadLink: false,
+        distanceMarkers: false,
+        edgeScale: false,
+        hotline: false
     }).addTo(map);
 
     // Add to layer control as overlay
-    layerControl = L.control.layers(baseMaps, {
-        "Actual Route": actualRouteLayer
-    }).addTo(map);
+    layerControl = L.control.layers(
+        baseMaps,
+        { "Actual Route": actualRouteLayer },
+        { position: 'topleft' }
+    ).addTo(map);
 
     // Listen for overlay add/remove events
     map.on('overlayadd', function(e) {

@@ -35,7 +35,9 @@ defaults:
       lunch: false
       dinner: false
       snacks: false
-    
+
+actualRoute:
+  gpx: actual_route/combined.gpx    
 trip:
   - gpx: planned_route/leg1.gpx
     startIcon: /assets/images/circle-play-regular.svg
