@@ -5,6 +5,7 @@ let globalConfiguration = {};
 let legFeatureGroup = L.featureGroup();
 let evacuationFeatureGroup = L.featureGroup();
 let alternativeFeatureGroup = L.featureGroup();
+let actualRouteLayer = L.featureGroup();
 
 let totalMealPlans = {
     breakfast: 0,
@@ -41,7 +42,13 @@ export function initMap(fullConfiguration) {
     // Add the default tile layer to the map
     defaultTileLayer.addTo(map);
 
-    layerControl = L.control.layers(baseMaps).addTo(map);
+    // --- Add elevation control and actual route layer if GPX exists ---
+    if (globalConfiguration.actualRoute && globalConfiguration.actualRoute.gpx) {
+        setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
+    } else {
+        layerControl = L.control.layers(baseMaps).addTo(map);
+    }
+    // --- end elevation control ---
 
     // Event listener for baselayer change to handle CRS change
     map.on('baselayerchange', function (e) {
@@ -126,6 +133,45 @@ export function initMap(fullConfiguration) {
     }
     
     return map;
+}
+
+function setupActualRouteElevation(map, baseMaps, gpxPath) {
+    
+    actualRouteLayer = L.featureGroup();
+
+    // Initialize elevation control
+    const elevationControl = L.control.elevation({
+        position: "topright",
+        edgeScale: false,
+        theme: "steelblue-theme",
+        collapsed: true,
+        detached: true,
+        elevationDiv: "#elevation-div",
+        slope: "summary",
+        followMarker: false,
+        downloadLink: false
+    }).addTo(map);
+
+    // Add to layer control as overlay
+    layerControl = L.control.layers(baseMaps, {
+        "Actual Route": actualRouteLayer
+    }).addTo(map);
+
+    // Listen for overlay add/remove events
+    map.on('overlayadd', function(e) {
+        if (e.layer === actualRouteLayer) {
+            elevationControl.clear();
+            elevationControl.load(gpxPath);
+        }
+    });
+    map.on('overlayremove', function(e) {
+        if (e.layer === actualRouteLayer) {
+            elevationControl.clear();
+        }
+    });
+
+    // Add the actual route by default
+    map.addLayer(actualRouteLayer);
 }
 
 function initializeBaseMaps(config) {

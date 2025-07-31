@@ -49,6 +49,8 @@ defaults:
       dinner: true
       snacks: true
 
+actualRoute:
+  gpx: actual_route/combined.gpx
 trip:
   - gpx: planned_route/Jeageloaivi_ele.gpx
     name: Day 1
