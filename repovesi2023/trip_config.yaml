@@ -1,0 +1,98 @@
+heading: Repovesi 2023 - TrailTreader
+
+defaults:
+  walkingSpeed: 3
+  numberOfZeroDays: 1
+  tileLayer: "NLS Topographic map"
+  availableTileLayers:
+    - "Esri World Imagery"
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "NLS Topographic map"
+  trip:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    startIcon: ../assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+
+actualRoute:
+  gpx: actual_route/combined.gpx
+
+travel_info:
+  to:
+    - transportation:
+        type: train # IC 143
+        from: Jväskylä
+        to: Pieksämäki
+        outboundDate: "2023-06-22"
+        outboundTime: 13:43:00.000+03:00
+    - transportation:
+        type: train # IC 68
+        from: Pieksämäki
+        to: Hillosensalmi (Repovesi)
+        outboundDate: "2023-06-22"
+        outboundTime: 15:20:00.000+03:00
+    - transportation:
+        type: bus
+        from: Hillosensalmi
+        to: Repovesi
+        outboundDate: "2023-06-22"
+        outboundTime: 17:15 # Guestimate
+  from:
+    - transportation:
+        type: bus
+        from: Repovesi
+        to: Hillosensalmi
+        outboundDate: "2023-06-25"
+        outboundTime: 09:00 # Guestimate
+    - transportation:
+        type: train # IC 63
+        from: Hillosensalmi (Repovesi)
+        to: Pieksämäki
+        outboundDate: "2023-06-25"
+        outboundTime: 10:14:00.000+03:00
+    - transportation:
+        type: train # IC 144
+        from: Pieksämäki
+        to: Jyväskylä
+        outboundDate: "2023-06-25"
+        outboundTime: 12:20:00.000+03:00
+
+photo_info:
+  cameraOffset:
+    realClock: 13.09
+    cameraClock: 14.02
+    substrackt: "53m"
