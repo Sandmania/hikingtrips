@@ -110,12 +110,6 @@ trip:
 evacuation:
   - gpx: planned_route/Evac_ele.gpx
 
-photo_info:
-  cameraOffset:
-    realClock: 13.09
-    cameraClock: 14.02
-    substrackt: "53m"
-
 travel_info:
   to:
     - transportation:
