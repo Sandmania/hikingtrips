@@ -140,6 +140,7 @@ export function initMap(fullConfiguration) {
 
 function setupActualRouteElevation(map, baseMaps, gpxPath) {
     actualRouteLayer = L.featureGroup();
+    let actualRouteLayerAdded = false;
 
     // Ensure the default base map is added
     const defaultTileLayerName = globalConfiguration.defaults.tileLayer || "OpenTopoMap";
@@ -182,6 +183,7 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
             });
             if (!map.hasLayer(actualRouteLayer)) {
                 actualRouteLayer.addTo(map);
+                actualRouteLayerAdded = true;
             }
         }
     );
@@ -189,8 +191,12 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
 
     map.on('overlayadd', function(e) {
         if (e.layer === actualRouteLayer) {
-            elevationControl.clear();
-            elevationControl.load(gpxPath);
+            // Prevent duplicate add on initial load
+            if (actualRouteLayerAdded) {
+                elevationControl.clear();
+                elevationControl.load(gpxPath);
+            }
+            actualRouteLayerAdded = true;
         }
     });
     map.on('overlayremove', function(e) {
