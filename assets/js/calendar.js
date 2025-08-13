@@ -29,18 +29,25 @@ function buildEventMap(travelInfo) {
   allEvents.push(...extractEventsFromDirection(travelInfo.from));
 
   // 2. Compute hike start/end dates
-  const { hikeStart, hikeEnd } = calculateHikeDates(travelInfo);
+  const { hikeStart, hikeEnd } = calculateHikeDateTimes(travelInfo);
 
   // 3. Insert hike events into the flat event list
   if (hikeStart && hikeEnd && hikeStart < hikeEnd) {
-    const dateCursor = new Date(hikeStart);
-    while (dateCursor <= hikeEnd) {
-      const dateStr = dateCursor.toISOString().slice(0, 10);
+    let dateCursor = new Date(hikeStart);
+    const endDateStr = getLocalIsoDate(hikeEnd);
+    while (getLocalIsoDate(dateCursor) <= endDateStr) {
+      const dateStr = getLocalIsoDate(dateCursor);
+      let time = "09:00";
+      if (dateStr === getLocalIsoDate(hikeStart)) {
+        time = getLocalIsoTime(addMinutes(hikeStart, 15));
+      } else if (dateStr === getLocalIsoDate(hikeEnd)) {
+        time = getLocalIsoTime(addMinutes(hikeEnd, -120));
+      }
       allEvents.push({
         date: dateStr,
-        time: '13:30',
-        type: 'hike',
-        isoDateTime: parseDateTime(dateStr, '13:30'),
+        time,
+        type: "hike",
+        isoDateTime: parseDateTime(dateStr, time),
       });
       dateCursor.setDate(dateCursor.getDate() + 1);
     }
@@ -109,22 +116,65 @@ function parseDateTime(dateStr, timeStr = '00:00') {
   return new Date(`${dateStr}T${timeStr}`);
 }
 
-function calculateHikeDates(travelInfo) {
-  const toCheckoutDates = travelInfo.to
-    .filter(e => e.accommodation)
-    .map(e => new Date(e.accommodation.checkOutDate));
-
-  const fromCheckinDates = travelInfo.from
-    .filter(e => e.accommodation)
-    .map(e => new Date(e.accommodation.checkInDate));
-
-  if (toCheckoutDates.length && fromCheckinDates.length) {
-    const hikeStart = new Date(Math.max(...toCheckoutDates.map(d => d.getTime())));
-    const hikeEnd = new Date(Math.min(...fromCheckinDates.map(d => d.getTime())));
-    return { hikeStart, hikeEnd };
+function calculateHikeDateTimes(travelInfo) {
+  function getDateTime(obj, dateKey, timeKey) {
+    const date = obj[dateKey];
+    const time = obj[timeKey] ? obj[timeKey].slice(0, 5) : "00:00";
+    return new Date(`${date}T${time}`);
   }
 
-  return { hikeStart: null, hikeEnd: null };
+  // Flatten all events with date+time from 'to'
+  const toEvents = travelInfo.to.flatMap(e => {
+    if (e.transportation) {
+      return [{
+        date: e.transportation.outboundDate,
+        time: e.transportation.outboundTime,
+        obj: e
+      }];
+    }
+    if (e.accommodation) {
+      return [{
+        date: e.accommodation.checkOutDate,
+        time: e.accommodation.checkOutTime,
+        obj: e
+      }];
+    }
+    return [];
+  }).filter(e => e.date);
+
+  // Flatten all events with date+time from 'from'
+  const fromEvents = travelInfo.from.flatMap(e => {
+    if (e.transportation) {
+      return [{
+        date: e.transportation.outboundDate,
+        time: e.transportation.outboundTime,
+        obj: e
+      }];
+    }
+    if (e.accommodation) {
+      return [{
+        date: e.accommodation.checkInDate,
+        time: e.accommodation.checkInTime,
+        obj: e
+      }];
+    }
+    return [];
+  }).filter(e => e.date);
+
+  // Find the last 'to' event by datetime
+  const lastTo = toEvents.length
+    ? toEvents.reduce((a, b) => getDateTime(a, "date", "time") > getDateTime(b, "date", "time") ? a : b)
+    : null;
+
+  // Find the first 'from' event by datetime
+  const firstFrom = fromEvents.length
+    ? fromEvents.reduce((a, b) => getDateTime(a, "date", "time") < getDateTime(b, "date", "time") ? a : b)
+    : null;
+
+  const hikeStart = lastTo ? getDateTime(lastTo, "date", "time") : null;
+  const hikeEnd = firstFrom ? getDateTime(firstFrom, "date", "time") : null;
+
+  return { hikeStart, hikeEnd };
 }
 
 function getEventsForAdjacentDate(eventMap, baseDate, offset) {
@@ -363,4 +413,21 @@ function formatDate(date) {
 
 function capitalizeFirstLetter(string) {
   return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
+function getLocalIsoTime(date) {
+  return String(date.getHours()).padStart(2, '0') +
+    ':' + String(date.getMinutes()).padStart(2, '0');
+}
+
+function getLocalIsoDate(date) {
+  return date.getFullYear() +
+    '-' + String(date.getMonth() + 1).padStart(2, '0') +
+    '-' + String(date.getDate()).padStart(2, '0');
+}
+
+function addMinutes(date, minutes) {
+  const newDate = new Date(date);
+  newDate.setMinutes(newDate.getMinutes() + minutes);
+  return newDate;
 }

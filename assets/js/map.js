@@ -42,6 +42,7 @@ export function initMap(fullConfiguration) {
     // Add the default tile layer to the map
     defaultTileLayer.addTo(map);
 
+    //layerControl = L.control.layers(baseMaps).addTo(map);
     // --- Add elevation control and actual route layer if GPX exists ---
     if (globalConfiguration.actualRoute && globalConfiguration.actualRoute.gpx) {
         setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
@@ -87,26 +88,29 @@ export function initMap(fullConfiguration) {
     routeType = "alternatives";
     addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
 
-    // Add custom control for toggling the plan info overlay
-    const infoControl = L.Control.extend({
-        onAdd: function(map) {
-            const infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
-            // Don't propagate click events to the map, double clicking would zoom in
-            L.DomEvent.disableClickPropagation(infoButton);
-            infoButton.innerHTML = '';
-            const rightContent = document.getElementById('right-content');
-            infoButton.onclick = function() {
-                if (rightContent.style.display === 'none' || rightContent.style.display === '') {
-                    rightContent.style.display = 'flex';
-                } else {
-                    rightContent.style.display = 'none';
-                }
-            };
-            return infoButton;
-        }
-    });
 
-    map.addControl(new infoControl({ position: 'topright' }));
+    // Add custom control for toggling the plan info overlay
+    if(globalConfiguration.trip) {
+        const infoControl = L.Control.extend({
+            onAdd: function(map) {
+                const infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
+                // Don't propagate click events to the map, double clicking would zoom in
+                L.DomEvent.disableClickPropagation(infoButton);
+                infoButton.innerHTML = '';
+                const rightContent = document.getElementById('right-content');
+                infoButton.onclick = function() {
+                    if (rightContent.style.display === 'none' || rightContent.style.display === '') {
+                        rightContent.style.display = 'flex';
+                    } else {
+                        rightContent.style.display = 'none';
+                    }
+                };
+                return infoButton;
+            }
+        });
+
+        map.addControl(new infoControl({ position: 'topright' }));
+    }
 
     if (globalConfiguration.travel_info) {
         console.log("Travel info is available. Adding calendar control.");
@@ -135,12 +139,18 @@ export function initMap(fullConfiguration) {
 }
 
 function setupActualRouteElevation(map, baseMaps, gpxPath) {
-    
     actualRouteLayer = L.featureGroup();
+    let actualRouteLayerAdded = false;
+
+    // Ensure the default base map is added
+    const defaultTileLayerName = globalConfiguration.defaults.tileLayer || "OpenTopoMap";
+    const defaultTileLayer = baseMaps[defaultTileLayerName] || baseMaps["OpenTopoMap"];
+    if (!map.hasLayer(defaultTileLayer)) {
+        defaultTileLayer.addTo(map);
+    }
 
     // Initialize elevation control
     const elevationControl = L.control.elevation({
-        position: "topright",
         edgeScale: false,
         theme: "magenta-theme",
         collapsed: true,
@@ -161,11 +171,32 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
         { position: 'topleft' }
     ).addTo(map);
 
-    // Listen for overlay add/remove events
+    elevationControl.on('eledata_loaded', 
+        ({ layer, name }) => {
+            layer.eachLayer((trkseg) => {
+                if (trkseg.feature.geometry.type !== "Point") {
+                    actualRouteLayer.addLayer(trkseg);
+                } else {
+                    // TODO if sym == Photo add to photo layer so that photo icons can be toggled
+                    //console.log(trkseg.feature.properties.sym)
+                }
+            });
+            if (!map.hasLayer(actualRouteLayer)) {
+                actualRouteLayer.addTo(map);
+                actualRouteLayerAdded = true;
+            }
+        }
+    );
+    elevationControl.load(gpxPath);
+
     map.on('overlayadd', function(e) {
         if (e.layer === actualRouteLayer) {
-            elevationControl.clear();
-            elevationControl.load(gpxPath);
+            // Prevent duplicate add on initial load
+            if (actualRouteLayerAdded) {
+                elevationControl.clear();
+                elevationControl.load(gpxPath);
+            }
+            actualRouteLayerAdded = true;
         }
     });
     map.on('overlayremove', function(e) {
@@ -173,9 +204,6 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
             elevationControl.clear();
         }
     });
-
-    // Add the actual route by default
-    map.addLayer(actualRouteLayer);
 }
 
 function initializeBaseMaps(config) {
@@ -391,6 +419,12 @@ function calculateMealPlan(distance, speed, mealPlan) {
 
 function generateAlternativeCheckboxes(config) {
     const alternativeRoutesDiv = document.getElementById('alternative-routes');
+
+    if (!config.trip || !Array.isArray(config.trip)) {
+        console.warn("No trip configuration found. Skipping alternative checkboxes.");
+        return;
+    }
+
     config.trip.forEach((leg, legIndex) => {
         if (leg.alternatives) {
             leg.alternatives.forEach((alt, altIndex) => {
@@ -446,6 +480,12 @@ export function updateMapWithAlternatives() {
  */
 function gatherAllAlternatives(config) {
     const alternatives = [];
+
+    if (!config.trip || !Array.isArray(config.trip)) {
+        console.warn("No trip configuration found. Skipping gatherAllAlternatives.");
+        return;
+    }
+
     config.trip.forEach((leg, legIndex) => {
         if (leg.alternatives) {
             leg.alternatives.forEach((alt, altIndex) => {
