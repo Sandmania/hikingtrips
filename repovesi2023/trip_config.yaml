@@ -92,7 +92,4 @@ travel_info:
         outboundTime: 12:20:00.000+03:00
 
 photo_info:
-  cameraOffset:
-    realClock: 13.09
-    cameraClock: 14.02
-    substrackt: "53m"
+  cameraOffset: +0345
