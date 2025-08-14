@@ -177,8 +177,17 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
                 if (trkseg.feature.geometry.type !== "Point") {
                     actualRouteLayer.addLayer(trkseg);
                 } else {
-                    // TODO if sym == Photo add to photo layer so that photo icons can be toggled
-                    //console.log(trkseg.feature.properties.sym)
+                    // If sym == Photo, add to photoLayer so that photo icons can be toggled
+                    if (trkseg.feature.properties.sym === "Photo") {
+                        if (!map.photoLayer) {
+                            map.photoLayer = L.featureGroup().addTo(map);
+                            // Add to layer control if not already present
+                            if (layerControl && !layerControl._layers.some(layer => layer.name === "Photos")) {
+                                layerControl.addOverlay(map.photoLayer, "Photos");
+                            }
+                        }
+                        map.photoLayer.addLayer(trkseg);
+                    }
                 }
             });
             if (!map.hasLayer(actualRouteLayer)) {
