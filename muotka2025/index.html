@@ -19,17 +19,19 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
     <script src="../assets/js/proj4-compressed.js"></script>
     <script src="../assets/js/proj4leaflet.js"></script>
-    <script src="../assets/components/packDetails/PackDetails.js"></script>
 
     <!-- leaflet-elevation -->
-    <link rel="stylesheet" href="https://unpkg.com/@raruto/leaflet-elevation/dist/leaflet-elevation.css" />
-    <script src="https://unpkg.com/@raruto/leaflet-elevation/dist/leaflet-elevation.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.js" integrity="sha256-Z/FTYiiAVwGeE4rl3LpmVN6p5KlulJ64thKUoneYMwk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.css" integrity="sha256-Cw03qt3zMjRIGpKLc1iqjUVAvLauJYvyxTBTiISfCmQ=" crossorigin="anonymous">
+    
+    <script src="../assets/components/packDetails/PackDetails.js"></script>
 </head>
 
 <body>
     <div id="content">
         <div id="map">
         </div>
+        <div id="elevation-div"></div>
         <div id="right-content">
             <div id="info"></div>
             <div id="alternative-routes"></div>
@@ -38,7 +40,7 @@
         <div id="event-tooltip" class="event-tooltip hidden"></div>
         <div id="pack-container"></div>
         
-        <tt-pack-details csvUrl="Paistunturi_2024.csv"></tt-pack-details>
+        <tt-pack-details csvUrl="lighterpack.csv"></tt-pack-details>
     </div>
     <script type="module">
         import { loadYAMLConfig, initMap, updateMapWithAlternatives } from '../assets/js/map.js';

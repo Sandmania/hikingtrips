@@ -1,8 +1,14 @@
 heading: TrailTreader - Paistunturi 2024
 
 defaults:
-  tileLayer: NLS Topographic map
   walkingSpeed: 3
+  numberOfZeroDays: 1
+  tileLayer: "NLS Topographic map"
+  availableTileLayers:
+    - "Esri World Imagery"
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "NLS Topographic map"
   trip:
     color: 'black'
     opacity: 0.7
@@ -35,6 +41,12 @@ defaults:
       lunch: false
       dinner: false
       snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
 
 actualRoute:
   gpx: actual_route/combined.gpx    
