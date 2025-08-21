@@ -123,6 +123,7 @@ photo_info:
     realClock: 13.09
     cameraClock: 14.02
     substrackt: "53m"
+  galleryUrl: gallery.html
 
 travel_info:
   to:

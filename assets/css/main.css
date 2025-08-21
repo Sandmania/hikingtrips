@@ -80,3 +80,18 @@ body {
 .image-grid img:hover {
     transform: scale(1.05);
 }
+
+.leaflet-control.pack-details-button {
+  cursor: pointer;
+  height: 48px;
+  width: 48px;
+  background-color: white;
+  background-image: url('../images/Backpack-Luggage--Streamline-Atlas.svg');
+}
+
+.leaflet-control.gallery-button {
+    height: 48px;
+    width: 48px;
+    background-color: white;
+    background-image: url('../images/camera-outline.svg');
+}

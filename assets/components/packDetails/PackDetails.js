@@ -6,17 +6,11 @@ class PackDetails extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this.shadowRoot.innerHTML = `
       <link rel="stylesheet" href="../assets/components/packDetails/PackDetails.css">
-      <button id="toggleButton"></button>
       <div id="details" class="hidden">
         <slot></slot>
         <div id="output"></div>
       </div>
     `;
-
-    this.toggleButton = this.shadowRoot.querySelector('#toggleButton');
-    this.details = this.shadowRoot.querySelector('#details');
-
-    this.toggleButton.addEventListener('click', () => this.toggleDetails());
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
@@ -32,10 +26,20 @@ class PackDetails extends HTMLElement {
     } else {
       console.error('No CSV URL provided.');
     }
+    // Listen for the custom event
+    this._toggleListener = () => this.toggleDetails();
+    document.addEventListener('toggle-pack-details', this._toggleListener);
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('toggle-pack-details', this._toggleListener);
   }
 
   toggleDetails() {
-    const isHidden = this.details.classList.toggle('hidden');
+    const details = this.shadowRoot.querySelector('#details');
+    if (details) {
+      details.classList.toggle('hidden');
+    }
   }
 
   async loadCsv(url) {

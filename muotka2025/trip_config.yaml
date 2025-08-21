@@ -169,3 +169,6 @@ travel_info:
         outboundDate: "2025-07-12"
         outboundTime: 10:00:00.000+03:00
         url: https://www.vr.fi/kertalippu-menomatkan-hakutulokset?from=HKI&to=JY&passengers[0][key]=2c768f69-7bc3-4a2e-9498-21bccdf959c7&passengers[0][type]=ADULT&passengers[1][key]=2d624db3-bc45-42cd-88d6-a32f314f78f5&passengers[1][type]=ADULT&outboundDate=2025-07-12
+
+photo_info:
+  galleryUrl: gallery.html

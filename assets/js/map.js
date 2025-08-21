@@ -135,7 +135,24 @@ export function initMap(fullConfiguration) {
         map.addControl(new calendarControl({ position: 'topright' }));
     }
 
-        // --- Add gallery control button ---
+    if (document.querySelector('tt-pack-details')) {
+        const packDetailsControl = L.Control.extend({
+            onAdd: function(map) {
+                const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control pack-details-button');
+                L.DomEvent.disableClickPropagation(btn);
+                btn.title = "Show/Hide Pack Details";
+                btn.onclick = function() {
+                    document.dispatchEvent(new CustomEvent('toggle-pack-details'));
+                };
+                return btn;
+            }
+        });
+
+        map.addControl(new packDetailsControl({ position: 'topright' }));
+    }
+
+    // --- Add gallery control button ---
+    if (globalConfiguration.photo_info && globalConfiguration.photo_info.galleryUrl) {
         const galleryControl = L.Control.extend({
             onAdd: function(map) {
                 const galleryButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control gallery-button');
@@ -143,13 +160,14 @@ export function initMap(fullConfiguration) {
                 galleryButton.innerHTML = '';
                 galleryButton.title = "Open Gallery";
                 galleryButton.onclick = function() {
-                    window.open('gallery.html', '_blank');
+                    window.open(globalConfiguration.photo_info.galleryUrl, '_blank');
                 };
                 return galleryButton;
             }
         });
 
         map.addControl(new galleryControl({ position: 'topright' }));
+    }
     
     return map;
 }

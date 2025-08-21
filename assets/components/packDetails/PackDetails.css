@@ -1,15 +1,3 @@
-#toggleButton {
-  position: absolute;
-  top: 126px;
-  right: 10px;
-  z-index: 1000;
-  cursor: pointer;
-  height: 48px;
-  width: 48px;
-  background-color: white;
-  background-image: url('../../images/Backpack-Luggage--Streamline-Atlas.svg');
-}
-
 #details {
   position: absolute;
   top: 10px;
