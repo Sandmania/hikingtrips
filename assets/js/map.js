@@ -134,6 +134,22 @@ export function initMap(fullConfiguration) {
 
         map.addControl(new calendarControl({ position: 'topright' }));
     }
+
+        // --- Add gallery control button ---
+        const galleryControl = L.Control.extend({
+            onAdd: function(map) {
+                const galleryButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control gallery-button');
+                L.DomEvent.disableClickPropagation(galleryButton);
+                galleryButton.innerHTML = '';
+                galleryButton.title = "Open Gallery";
+                galleryButton.onclick = function() {
+                    window.open('gallery.html', '_blank');
+                };
+                return galleryButton;
+            }
+        });
+
+        map.addControl(new galleryControl({ position: 'topright' }));
     
     return map;
 }

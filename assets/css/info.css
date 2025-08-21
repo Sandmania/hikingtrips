@@ -5,6 +5,13 @@
     background-image: url('../images/info.svg');
 }
 
+.leaflet-control.gallery-button {
+    height: 48px;
+    width: 48px;
+    background-color: white;
+    background-image: url('../images/camera.svg');
+}
+
 #right-content {
     display: none; /* Initially hidden */
     flex-direction: column;
