@@ -36,9 +36,6 @@ export function initMap(fullConfiguration) {
     const defaultTileLayerName = globalConfiguration.defaults.tileLayer || "OpenTopoMap";
     const defaultTileLayer = baseMaps[defaultTileLayerName] || OpenTopoMap;
 
-    // Set the CRS based on the tile layer
-    setCRSBasedOnTileLayer(defaultTileLayerName);
-
     // Add the default tile layer to the map
     defaultTileLayer.addTo(map);
 
@@ -53,31 +50,6 @@ export function initMap(fullConfiguration) {
         map.addLayer(alternativeFeatureGroup);
     }
     // --- end elevation control ---
-
-    // Event listener for baselayer change to handle CRS change
-    map.on('baselayerchange', function (e) {
-        console.log("baselayerchange event name " + e.name)
-        var center = map.getCenter();
-        var zoom = map.getZoom();
-        var currentLayers = [];
-
-        map.eachLayer(function (layer) {
-            currentLayers.push(layer);
-        });
-
-        // Set new CRS if necessary
-        setCRSBasedOnTileLayer(e.name);
-
-        map.setView(center, zoom);
-        e.layer.addTo(map);
-
-        // Re-add other layers if necessary
-        currentLayers.forEach(function (layer) {
-            if (layer !== e.layer) {
-                map.addLayer(layer);
-            }
-        });
-    });
 
     generateAlternativeCheckboxes(globalConfiguration);
 
@@ -254,7 +226,12 @@ function initializeBaseMaps(config) {
         "Esri World Imagery": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
             attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
         }),
-        "NLS Topographic map": L.tileLayer.mml_wmts({ layer: "maastokartta" }),
+        "NLS Topographic map": L.tileLayer('https://api.joun.in/nls_proxy?z={z}&y={y}&x={x}', {
+            maxZoom: 15,
+            attribution:
+                '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
+                "target=new>Maanmittauslaitos</a>"
+        }),
         "OpenTopoMap": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
             maxZoom: 17,
             attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors'
@@ -285,16 +262,6 @@ function initializeBaseMaps(config) {
     }
 
     return allBaseMaps;
-}
-
-function setCRSBasedOnTileLayer(tileLayerName) {
-    if (tileLayerName === 'NLS Topographic map' || tileLayerName === 'NLS Ortophoto') {
-        console.log("Set CRS to 3067");
-        map.options.crs = L.TileLayer.MML.get3067Proj();
-    } else {
-        console.log("Set CRS to EPSG3857");
-        map.options.crs = L.CRS.EPSG3857;
-    }
 }
 
 function addRouteInformationToInfoDiv() {
