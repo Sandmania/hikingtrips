@@ -23,6 +23,13 @@ https://kartena.github.io/Proj4Leaflet/
 Just take a look at the source and fix the API url as this page doesn't currently work (using old api endpoint)
 https://kartena.github.io/Proj4Leaflet/examples/wmts/
 
+## Kartverket
+
+https://www.kartverket.no/api-og-data
+
+
+https://github.com/kartverket/example-clients
+
 ## Route planning
 
 ### Draw route

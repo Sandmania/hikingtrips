@@ -248,6 +248,11 @@ function initializeBaseMaps(config) {
             maxZoom: 17,
             maxNativeZoom: 14,
             attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
+        }),
+        "Kartverket": new L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+            attribution: '&copy; <a href="http://kartverket.no">Kartverket</a>',
+            maxZoom: 18,
+            tileSize: 256
         })
     };
 
