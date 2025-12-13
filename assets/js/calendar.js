@@ -194,6 +194,17 @@ function renderCalendar(year, month, eventMap) {
 
   const table = document.createElement("table");
   table.classList.add("calendar");
+
+  // Add caption for month and year
+  const monthNames = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+  ];
+  const caption = document.createElement("caption");
+  caption.classList.add("calendar-header");
+  caption.textContent = `${monthNames[month - 1]}, ${year}`;
+  table.appendChild(caption);
+
   const headerRow = document.createElement("tr");
   ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach(day => {
     const th = document.createElement("th");

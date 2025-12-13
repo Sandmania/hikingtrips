@@ -14,7 +14,6 @@
   font-family: sans-serif;
 }
 .calendar {
-    
 border-collapse: separate;
 border-spacing: 4px;
 width: 100%;
@@ -22,6 +21,12 @@ max-width: 420px;
 min-width: 330px;
 table-layout: fixed;
 padding: 10px;
+padding-top: 0px;
+}
+
+.calendar-header {
+  font-weight: 600;
+  padding-top: 10px;
 }
 
 .calendar th {
