@@ -10,13 +10,8 @@
     }
   },
   "glyphs" : "https://api.joun.in/glyphs/{fontstack}/{range}",
-  "layers" : [ {
-    "id" : "background",
-    "type" : "background",
-    "paint" : {
-      "background-color" : "#dceacc"
-    }
-  }, {
+  "layers" : [
+  {
     "id" : "maasto_alue",
     "type" : "fill",
     "source" : "taustakartta",
