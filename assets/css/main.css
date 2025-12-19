@@ -20,6 +20,10 @@ body {
     flex: 1;
 }
 
+.mapboxgl-map {
+    z-index: 500; /* Display mapbox vector maps on top of raster maps */
+}
+
 #elevation-div,
 .leaflet-control-elevation {
     width: 100%;

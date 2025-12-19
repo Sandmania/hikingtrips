@@ -1,0 +1,141 @@
+heading: Moskángáisi 2026 - TrailTreader
+
+defaults:
+  numberOfZeroDays: 1
+  tileLayer: FiSeNo Composite
+  availableTileLayers:
+    - "Esri World Imagery"
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "FiSeNo Composite"
+    - "Lantmäteriet"
+    - "Kartverket"
+    - "NLS Topographic map"
+    - "NLS Vector tiles"
+  walkingSpeed: 3
+  trip:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    startIcon: ../assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true      
+
+trip:
+  - gpx: planned_route/Goldahytta.gpx
+    startIcon: ../assets/images/circle-play-regular.svg
+    mealPlan:
+      breakfast: false
+      lunch: true # Lunch on the road or at Ritsem?
+      dinner: true
+      snacks: true
+    description: >
+      
+  - gpx: planned_route/Gappohytta.gpx
+    description: >
+
+  - gpx: planned_route/Rostahytta_ele.gpx
+    description: >
+
+  - gpx: planned_route/P_ltsastugan.gpx
+    description: >
+
+  - gpx: planned_route/Golddaluokta.gpx
+    endIcon: ../assets/images/flag-checkered-solid.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true
+    description: >
+      
+travel_info:
+  to:
+    - transportation:
+        type: train
+        from: JY
+        to: TPE
+        outboundDate: "2026-07-11"
+        outboundTime: 21:14:00.000+03:00
+    - transportation:
+        type: train
+        from: TPE
+        to: KLI
+        outboundDate: "2026-07-11"
+        outboundTime: 23:09:00.000+03:00
+    - transportation:
+        type: bus
+        from: Kolari
+        to: Kilpisjärvi
+        outboundDate: "2026-07-12"
+        outboundTime: 11:20
+    - accommodation:
+        name: Somewhere
+        url: 
+        checkInDate: "2026-07-12"
+        checkOutDate: "2026-07-13"
+        checkInTime: 15:00
+        checkOutTime: 12:00
+  from:
+    - accommodation:
+        name: Somewhere
+        url:
+        checkInDate: "2026-07-19"
+        checkOutDate: "2026-07-20"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+    - transportation:
+        type: bus
+        from: Kilpisjärvi
+        to: Kolari
+        outboundDate: "2026-07-20"
+        outboundTime: 09:40
+    - transportation:
+        type: train
+        from: KLI
+        to: HKI
+        outboundDate: "2026-07-20"
+        outboundTime: 20:57:00.000+03:00
+    - transportation:
+        type: train
+        from: HKI
+        to: JY
+        outboundDate: "2026-07-21"
+        outboundTime: 10:00:00.000+03:00
+
+photo_info:
+  cameraOffset:
+    realClock: 13.09
+    cameraClock: 14.02
+    substrackt: "53m"

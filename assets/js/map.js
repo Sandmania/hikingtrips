@@ -253,7 +253,31 @@ function initializeBaseMaps(config) {
             attribution: '&copy; <a href="http://kartverket.no">Kartverket</a>',
             maxZoom: 18,
             tileSize: 256
-        })
+        }),
+        "NLS Vector tiles": L.mapboxGL({
+            style: 'nls_vector_map.json',
+            attribution: 
+                '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
+                "target=new>Maanmittauslaitos</a>"
+        }),
+        "FiSeNo Composite": L.layerGroup([
+                new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
+                maxZoom: 17,
+                maxNativeZoom: 14,
+                attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
+            }),
+                new L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
+                attribution: '&copy; <a href="http://kartverket.no">Kartverket</a>',
+                maxZoom: 18,
+                tileSize: 256
+            }),
+            L.mapboxGL({
+                style: 'nls_vector_map.json',
+                attribution: 
+                    '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
+                    "target=new>Maanmittauslaitos</a>"
+            })
+        ])
     };
 
     if (config.defaults && config.defaults.availableTileLayers) {
