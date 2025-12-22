@@ -53,7 +53,7 @@ defaults:
       snacks: true      
 
 trip:
-  - gpx: planned_route/Goldahytta.gpx
+  - gpx: planned_route/Kuohkimajarvi_ele.gpx
     startIcon: ../assets/images/circle-play-regular.svg
     mealPlan:
       breakfast: false
@@ -62,13 +62,13 @@ trip:
       snacks: true
     description: >
       
-  - gpx: planned_route/Gappohytta.gpx
+  - gpx: planned_route/Kuohkimajarvi_Gappohytta_ele.gpx
     description: >
 
   - gpx: planned_route/Rostahytta_ele.gpx
     description: >
 
-  - gpx: planned_route/P_ltsastugan.gpx
+  - gpx: planned_route/Paltsastugan_ele.gpx
     description: >
 
   - gpx: planned_route/Golddaluokta.gpx

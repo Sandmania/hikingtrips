@@ -17,12 +17,18 @@ const trips = [
     image: "muotka2025/photos/DSC03935.jpeg",
     url: "muotka2025/index.html",
   },
-{
-    name: "Sarek National Park",
-    dates: "Did Not Start (July 18-27, 2025)",
-    image: "placeholder_small.png",
-    url: "sarek2025/index.html",
-}
+  {
+      name: "Sarek National Park",
+      dates: "Did Not Start (July 18-27, 2025)",
+      image: "placeholder_small.png",
+      url: "sarek2025/index.html",
+  },
+  {
+      name: "Moskángáisi Massif 2026",
+      dates: "Planned (July 2026)",
+      image: "placeholder_small.png",
+      url: "moskangaisi2026/index.html",
+  }
 ];
 
 const grid = document.getElementById("trips-grid");
