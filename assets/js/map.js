@@ -28,20 +28,25 @@ export function initMap(fullConfiguration) {
     if(fullConfiguration === undefined) {
         console.warn("Global config is undefined. This might lead to problems.");
     }
-    map = new L.map("map");
+    map = new L.map("map").setView([66.50, 25.72], 6);
 
     var baseMaps = initializeBaseMaps(globalConfiguration);
 
     // Determine the default tile layer
-    const defaultTileLayerName = globalConfiguration.defaults.tileLayer || "OpenTopoMap";
+    const defaultTileLayerName = globalConfiguration?.defaults?.tileLayer || "OpenTopoMap";
     const defaultTileLayer = baseMaps[defaultTileLayerName] || OpenTopoMap;
 
     // Add the default tile layer to the map
     defaultTileLayer.addTo(map);
 
+    if(!globalConfiguration) {
+        console.log("No configuration defined. Returning simple map.")
+        return map
+    }
+
     //layerControl = L.control.layers(baseMaps).addTo(map);
     // --- Add elevation control and actual route layer if GPX exists ---
-    if (globalConfiguration.actualRoute && globalConfiguration.actualRoute.gpx) {
+    if (globalConfiguration?.actualRoute?.gpx) {
         setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
     } else {
         layerControl = L.control.layers(baseMaps).addTo(map);
@@ -280,7 +285,7 @@ function initializeBaseMaps(config) {
         ])
     };
 
-    if (config.defaults && config.defaults.availableTileLayers) {
+    if (config && config.defaults && config.defaults.availableTileLayers) {
         const availableTileLayers = config.defaults.availableTileLayers;
         return availableTileLayers.reduce((baseMaps, layerName) => {
             if (allBaseMaps[layerName]) {
@@ -330,8 +335,8 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     console.log("Routes for type: ", routesForType);
     console.log("Feature group: ", featureGroup);
     console.log("Callback: ", callback);
-    if (routesForType === undefined || routesForType.length === 0) {
-        console.log("Routes for type " + routeType + " is undefined or empty. Skipping.");
+    if (routesForType === undefined || routesForType === null || routesForType.length === 0) {
+        console.log("Routes for type " + routeType + " is undefined, null or empty. Skipping.");
         return;
     }
     
@@ -459,7 +464,7 @@ function calculateMealPlan(distance, speed, mealPlan) {
 function generateAlternativeCheckboxes(config) {
     const alternativeRoutesDiv = document.getElementById('alternative-routes');
 
-    if (!config.trip || !Array.isArray(config.trip)) {
+    if (!config || !config.trip || !Array.isArray(config.trip)) {
         console.warn("No trip configuration found. Skipping alternative checkboxes.");
         return;
     }

@@ -50,9 +50,11 @@
         const configurationFileName = 'trip_config.yaml'
         loadYAMLConfig(configurationFileName).then((config) => {
             // Set the page title from the configuration
-            document.title = config.heading;
+            document.title = config?.heading;
             initMap(config);
-            renderTripCalendar(config.travel_info);
+            if(config?.travel_info) {
+                renderTripCalendar(config.travel_info);
+            }
         });
 
         document.getElementById('alternative-routes').addEventListener('change', (event) => {
