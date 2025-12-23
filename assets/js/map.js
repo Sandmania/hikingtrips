@@ -313,7 +313,11 @@ function addRouteInformationToInfoDiv() {
         if (leg.elevationGain || leg.elevationLoss) {
             elevationInfo = ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
         }
-        document.getElementById('info').innerHTML += `<p>Leg ${index + 1}: ${leg.distance.toFixed(2)} km${elevationInfo}</p>`;
+        let distanceInfo = '';
+        if (leg.distance) {
+            distanceInfo = `: ${leg.distance.toFixed(2)} km`;
+        }
+        document.getElementById('info').innerHTML += `<p>Leg ${index + 1}: ${distanceInfo}${elevationInfo}</p>`;
         document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
     });
     const zeroDays = globalConfiguration.defaults.numberOfZeroDays;
@@ -390,11 +394,11 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
             if(routeType === "trip") {
                 selectedTripConfiguration = routesForType;
             }
-        });
+        }).catch(showError);
     });
 
     if (routeType === "trip") {
-        Promise.all(loadAllRoutes).then(() => {
+        Promise.allSettled(loadAllRoutes).then(() => {
             console.log("All routes loaded.");
             map.fitBounds(featureGroup.getBounds());
             callback();
@@ -404,20 +408,55 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     }
 }
 
+const toast = document.getElementById("errorToast");
+const toastText = document.getElementById("toastText");
+const dismiss = document.getElementById("dismissToast");
+
+const errorQueue = [];
+let showing = false;
+
+function showNextError() {
+  if (showing || errorQueue.length === 0) return;
+
+  showing = true;
+  const err = errorQueue.shift();
+  toastText.textContent = err?.message || String(err);
+  toast.hidden = false;
+}
+
+function showError(err) {
+  errorQueue.push(err);
+  showNextError();
+}
+
+dismiss.onclick = () => {
+  toast.hidden = true;
+  showing = false;
+  showNextError();
+};
+
+
 function loadGPX(leg, showIcons, featureGroup, defaultOptions) {
-    return new Promise((resolve) => {
-        const gpxOptions = {
+
+    return new Promise((resolve, reject) => {
+        new L.GPX(leg.gpx, {
             async: true,
             markers: getMarkerOptions(leg, showIcons, defaultOptions),
             marker_options: {
                 shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/1.4.0/pin-shadow.png'
             },
             polyline_options: getPolylineOptions(leg, defaultOptions)
-        };
-
-        new L.GPX(leg.gpx, gpxOptions).on('loaded', function(e) {
+        })
+        /*.on('addpoint', function (e) {
+            console.log('Added ' + e.point_type + ' point: ' + e.point);
+        })*/
+        .on('loaded', function (e) {
             featureGroup.addLayer(e.target);
-            resolve({loadedGpx: e.target});
+            resolve({ loadedGpx: e.target });
+        })
+        .on('error', function (e) {
+            console.log('Error loading file: ' + e.err);
+            reject(e.err)
         });
     });
 }
