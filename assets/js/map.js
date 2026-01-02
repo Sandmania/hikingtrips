@@ -44,13 +44,12 @@ export function initMap(fullConfiguration) {
         return map
     }
 
-    //layerControl = L.control.layers(baseMaps).addTo(map);
     // --- Add elevation control and actual route layer if GPX exists ---
     if (globalConfiguration?.actualRoute?.gpx) {
         setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
     } else {
         layerControl = L.control.layers(baseMaps).addTo(map);
-        map.addLayer(legFeatureGroup);    
+        map.addLayer(legFeatureGroup);
         map.addLayer(evacuationFeatureGroup);
         map.addLayer(alternativeFeatureGroup);
     }
