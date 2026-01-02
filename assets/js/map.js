@@ -44,12 +44,22 @@ export function initMap(fullConfiguration) {
         return map
     }
 
+    layerControl = L.control.layers(baseMaps, null, {position:'topleft'}).addTo(map);
+    if(hasRoutesForType(globalConfiguration["trip"])) {
+        layerControl.addOverlay(legFeatureGroup, "Trip");
+    }
+    if(hasRoutesForType(globalConfiguration["evacuation"])) {
+        layerControl.addOverlay(evacuationFeatureGroup, "Evacuation");
+    }
+    if(hasRoutesForType(gatherAllAlternatives(globalConfiguration))) {
+        layerControl.addOverlay(alternativeFeatureGroup, "Alternatives");
+    }
+
     // --- Add elevation control and actual route layer if GPX exists ---
     if (globalConfiguration?.actualRoute?.gpx) {
         setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
-    } else {
-        layerControl = L.control.layers(baseMaps).addTo(map);
-        map.addLayer(legFeatureGroup);
+   } else {
+        map.addLayer(legFeatureGroup);    
         map.addLayer(evacuationFeatureGroup);
         map.addLayer(alternativeFeatureGroup);
     }
@@ -152,13 +162,6 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
     actualRouteLayer = L.featureGroup();
     let actualRouteLayerAdded = false;
 
-    // Ensure the default base map is added
-    const defaultTileLayerName = globalConfiguration.defaults.tileLayer || "OpenTopoMap";
-    const defaultTileLayer = baseMaps[defaultTileLayerName] || baseMaps["OpenTopoMap"];
-    if (!map.hasLayer(defaultTileLayer)) {
-        defaultTileLayer.addTo(map);
-    }
-
     // Initialize elevation control
     const elevationControl = L.control.elevation({
         edgeScale: false,
@@ -174,12 +177,8 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
         hotline: false
     }).addTo(map);
 
-    // Add to layer control as overlay
-    layerControl = L.control.layers(
-        baseMaps,
-        { "Actual Route": actualRouteLayer },
-        { position: 'topleft' }
-    ).addTo(map);
+    actualRouteLayer.addTo(map);
+    layerControl.addOverlay(actualRouteLayer, "Actual route")
 
     elevationControl.on('eledata_loaded', 
         ({ layer, name }) => {
@@ -200,10 +199,6 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
                     }
                 }
             });
-            if (!map.hasLayer(actualRouteLayer)) {
-                actualRouteLayer.addTo(map);
-                actualRouteLayerAdded = true;
-            }
         }
     );
     elevationControl.load(gpxPath);
@@ -333,6 +328,10 @@ function addRouteInformationToInfoDiv() {
     document.getElementById('info').innerHTML += `<p>Total Meals: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
 }
 
+function hasRoutesForType(routesForType) {
+    return routesForType !== undefined && routesForType !== null && routesForType.length > 0
+}
+
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, callback) {
     console.log("Adding routes to feature group for type " + routeType);
     console.log("Routes for type: ", routesForType);
@@ -341,14 +340,6 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     if (routesForType === undefined || routesForType === null || routesForType.length === 0) {
         console.log("Routes for type " + routeType + " is undefined, null or empty. Skipping.");
         return;
-    }
-    
-    // Check if there already is a toggle. 
-    // This is here because updateMapWithAlternatives duplicates theses.
-    // Perhaps there should be a better way to toggle alternatives.
-    if (!layerControl._layers.some(layer => layer.name === routeType)) {
-        // Add toggle checkbox for the feature group
-        layerControl.addOverlay(featureGroup, routeType);
     }
 
     callback = callback || function(){};
@@ -364,26 +355,14 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     const loadAllRoutes = routesForType.map((leg, index) => {
         return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
             
-            try {
-                if (gpx.loadedGpx.get_elevation_data()) {
-                    leg.elevationGain = Math.round(gpx.loadedGpx.get_elevation_gain());
-                    leg.elevationLoss = Math.round(gpx.loadedGpx.get_elevation_loss());
-                }
-            } catch (error) {
-                // console.warn("Error retrieving elevation data:", error);
-            }
-            // Use name from GPX file if available, otherwise use index + 1
-            const name = leg.name != null ? leg.name : gpx.loadedGpx.get_name() != null ? gpx.loadedGpx.get_name() : (index + 1);
-            if (leg.name === undefined) {
-                leg.name = name;
-            }
-            console.log("Loaded route " + index + " with name " + name);
-            //console.log("Loaded route " + index + " with distance " + distance);
+            setLegElevationData(gpx, leg);
+            setLegName(gpx, leg, index + 1);
+            setLegDistance(leg, gpx);
+            
+            console.log("Loaded route " + index + " with name " + leg.name);
             // Display popup with route number and distance
-            const distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
-            leg.distance = distance;
             gpx.loadedGpx.eachLayer(layer => {
-                let popupContent = `${name}: ${distance.toFixed(2)} km`;
+                let popupContent = `${leg.name}: ${leg.distance.toFixed(2)} km`;
                 if (leg.elevationGain || leg.elevationLoss) {
                     popupContent += ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
                 }
@@ -413,6 +392,36 @@ const dismiss = document.getElementById("dismissToast");
 
 const errorQueue = [];
 let showing = false;
+
+function setLegDistance(leg, gpx) {
+    leg.distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
+}
+
+/**
+ * 
+ * @param {L.GPX} gpx leaflet gpx from which a name will be extracted, if any
+ * @param {*} leg 
+ * @param {String} fallback name for leg
+ * @returns 
+ */
+function setLegName(gpx, leg, fallback) {
+    const name = leg.name != null ? leg.name : gpx.loadedGpx.get_name() != null ? gpx.loadedGpx.get_name() : fallback;
+    if (leg.name === undefined) {
+        leg.name = name;
+    }
+    return name;
+}
+
+function setLegElevationData(gpx, leg) {
+    try {
+        if (gpx.loadedGpx.get_elevation_data()) {
+            leg.elevationGain = Math.round(gpx.loadedGpx.get_elevation_gain());
+            leg.elevationLoss = Math.round(gpx.loadedGpx.get_elevation_loss());
+        }
+    } catch (error) {
+        // console.warn("Error retrieving elevation data:", error);
+    }
+}
 
 function showNextError() {
   if (showing || errorQueue.length === 0) return;
