@@ -101,6 +101,22 @@ export function initMap(fullConfiguration) {
         map.addControl(new infoControl({ position: 'topright' }));
     }
 
+    if(true) {
+        console.log("Trip is configured, showing trip information");
+        const infoControl = L.Control.extend({
+            onAdd: function() {
+                var infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
+                L.DomEvent.disableClickPropagation(infoButton);
+                infoButton.title = "Show/Hide Trip Info";
+                infoButton.onclick = function() {
+                    document.dispatchEvent(new CustomEvent('toggle-trip-info'));
+                };
+                return infoButton;
+            }
+        });
+        map.addControl(new infoControl({ position: 'topright' }));
+    }
+
     if (globalConfiguration.travel_info) {
         console.log("Travel info is available. Adding calendar control.");
         const calendarControl = L.Control.extend({
@@ -294,8 +310,22 @@ function initializeBaseMaps(config) {
 }
 
 function addRouteInformationToInfoDiv() {
+
+
+
     const speed = globalConfiguration.defaults.walkingSpeed;
     const trip = selectedTripConfiguration || globalConfiguration.trip;
+
+
+    const tripInfoEl = document.getElementById('tripInfo');
+
+    tripInfoEl.trip = selectedTripConfiguration || globalConfiguration.trip;
+
+    tripInfoEl.speed = globalConfiguration.defaults.walkingSpeed;
+
+    tripInfoEl.defaults = globalConfiguration.defaults;
+
+
     trip.forEach((leg, index) => {
         const mealPlan = leg.mealPlan || globalConfiguration.defaults.trip.mealPlan;
         leg.mealPlanDetails = calculateMealPlan(leg.distance, speed, mealPlan);

@@ -27,7 +27,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.css" integrity="sha256-Cw03qt3zMjRIGpKLc1iqjUVAvLauJYvyxTBTiISfCmQ=" crossorigin="anonymous">
     
     <script src="../assets/components/packDetails/PackDetails.js"></script>
-</head>
+    <script src="../assets/components/tripInfo/TripInfo.js"></script>
 
 <body>
     <div id="content">
@@ -47,6 +47,24 @@
             <button id="dismissToast">✖</button>
         </div>
         
+<trip-info id="tripInfo"></trip-info>
+<script>
+/*const tripInfoEl = document.getElementById('tripInfo');
+
+tripInfoEl.trip = [
+    { distance: 10, elevationGain: 100, elevationLoss: 50, mealPlan: { breakfast: true, lunch: false, dinner: true, snacks: true } },
+    { distance: 20, elevationGain: 200, elevationLoss: 150 }
+];
+tripInfoEl.speed = 5;
+tripInfoEl.defaults = {
+    trip: {
+        mealPlan: { breakfast: true, lunch: true, dinner: false, snacks: true }
+    }
+}; */
+
+// The component automatically renders itself.
+</script>
+
     </div>
     <script type="module">
         import { loadYAMLConfig, initMap, updateMapWithAlternatives } from '../assets/js/map.js';
