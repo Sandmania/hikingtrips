@@ -1,3 +1,5 @@
+import { showError } from './error.js'
+
 let map;
 let layerControl;
 let globalConfiguration = {};
@@ -354,24 +356,11 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     const loadAllRoutes = routesForType.map((leg, index) => {
         return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
-            
-            setLegElevationData(gpx, leg);
-            setLegName(gpx, leg, index + 1);
-            setLegDistance(leg, gpx);
-            
-            console.log("Loaded route " + index + " with name " + leg.name);
-            // Display popup with route number and distance
-            gpx.loadedGpx.eachLayer(layer => {
-                let popupContent = `${leg.name}: ${leg.distance.toFixed(2)} km`;
-                if (leg.elevationGain || leg.elevationLoss) {
-                    popupContent += ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
-                }
-                layer.bindPopup(popupContent);
-            });
+            setMetadataFromGpxToLegAtIndex(gpx, leg, index);
+            createInfoPopupForGpxLayer(gpx, leg);
+            // Increase the total distance of specific routes
             routesForType.totalDistance += leg.distance;
-            if(routeType === "trip") {
-                selectedTripConfiguration = routesForType;
-            }
+            console.log("Loaded route " + index + " with name " + leg.name);
         }).catch(showError);
     });
 
@@ -379,6 +368,10 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
         Promise.allSettled(loadAllRoutes).then(() => {
             console.log("All routes loaded.");
             map.fitBounds(featureGroup.getBounds());
+            // Selected trip configuration is displayed in trip information view
+            // This can be either the pre configured trip in configuration, or a dynamic trip
+            // constructed from various selected alternatives
+            selectedTripConfiguration = routesForType;
             callback();
         }).catch((error) => {
             console.error("Error loading routes: ", error);
@@ -386,15 +379,20 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
     }
 }
 
-const toast = document.getElementById("errorToast");
-const toastText = document.getElementById("toastText");
-const dismiss = document.getElementById("dismissToast");
+function createInfoPopupForGpxLayer(gpx, leg) {
+    gpx.loadedGpx.eachLayer(layer => {
+        let popupContent = `${leg.name}: ${leg.distance.toFixed(2)} km`;
+        if (leg.elevationGain || leg.elevationLoss) {
+            popupContent += ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
+        }
+        layer.bindPopup(popupContent);
+    });
+}
 
-const errorQueue = [];
-let showing = false;
-
-function setLegDistance(leg, gpx) {
-    leg.distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
+function setMetadataFromGpxToLegAtIndex(gpx, leg, index) {
+    setLegElevationData(gpx, leg);
+    setLegName(gpx, leg, index + 1);
+    setLegDistance(leg, gpx);
 }
 
 /**
@@ -423,26 +421,9 @@ function setLegElevationData(gpx, leg) {
     }
 }
 
-function showNextError() {
-  if (showing || errorQueue.length === 0) return;
-
-  showing = true;
-  const err = errorQueue.shift();
-  toastText.textContent = err?.message || String(err);
-  toast.hidden = false;
+function setLegDistance(leg, gpx) {
+    leg.distance = gpx.loadedGpx.get_distance() / 1000; // convert to km
 }
-
-function showError(err) {
-  errorQueue.push(err);
-  showNextError();
-}
-
-dismiss.onclick = () => {
-  toast.hidden = true;
-  showing = false;
-  showNextError();
-};
-
 
 function loadGPX(leg, showIcons, featureGroup, defaultOptions) {
 
