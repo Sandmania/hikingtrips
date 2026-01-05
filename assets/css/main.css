@@ -59,6 +59,14 @@ body {
     background-image: url(../images/camera.svg) !important;
 }
 
+/**
+* leaflet-elevation profile might not display correctly if the gpx contains multiple segments
+* https://github.com/Raruto/leaflet-elevation/issues/237#issuecomment-1695359229
+*/
+.elevation-control .area mask {
+    display: none;
+}
+
 .image-grid {
     width: 600px !important;
     display: grid;

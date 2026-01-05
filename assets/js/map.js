@@ -60,7 +60,7 @@ export function initMap(fullConfiguration) {
     if (globalConfiguration?.actualRoute?.gpx) {
         // If actual route configuration is given, then display only actual route on initial load
         // Other layers can still be toggled on by layercontrols
-        setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
+        setupActualRouteElevation(map, globalConfiguration.actualRoute.gpx);
    } else {
         // Else, display trip, evac and alternative layers on initial load
         map.addLayer(legFeatureGroup);    
@@ -161,9 +161,8 @@ export function initMap(fullConfiguration) {
     return map;
 }
 
-function setupActualRouteElevation(map, baseMaps, gpxPath) {
+function setupActualRouteElevation(map, gpxPath) {
     actualRouteLayer = L.featureGroup();
-    let actualRouteLayerAdded = false;
 
     // Initialize elevation control
     const elevationControl = L.control.elevation({
@@ -193,10 +192,7 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
                     if (trkseg.feature.properties.sym === "Photo") {
                         if (!map.photoLayer) {
                             map.photoLayer = L.featureGroup().addTo(map);
-                            // Add to layer control if not already present
-                            if (layerControl && !layerControl._layers.some(layer => layer.name === "Photos")) {
-                                layerControl.addOverlay(map.photoLayer, "Photos");
-                            }
+                            layerControl.addOverlay(map.photoLayer, "Photos");
                         }
                         map.photoLayer.addLayer(trkseg);
                     }
@@ -206,14 +202,16 @@ function setupActualRouteElevation(map, baseMaps, gpxPath) {
     );
     elevationControl.load(gpxPath);
 
+    /**
+     * This somewhat complex logic is here so that start and end icons are also removed
+     * when the overlay is toggled off.
+     * 
+     * An unfortunate side effect for this is, that the photo icons work weirdly when toggling elevation layer off/on.
+     */
     map.on('overlayadd', function(e) {
         if (e.layer === actualRouteLayer) {
-            // Prevent duplicate add on initial load
-            if (actualRouteLayerAdded) {
-                elevationControl.clear();
-                elevationControl.load(gpxPath);
-            }
-            actualRouteLayerAdded = true;
+            elevationControl.clear();
+            elevationControl.load(gpxPath);
         }
     });
     map.on('overlayremove', function(e) {
@@ -300,8 +298,7 @@ function addRouteInformationToInfoDiv() {
     const trip = selectedTripConfiguration || globalConfiguration.trip;
     trip.forEach((leg, index) => {
         const mealPlan = leg.mealPlan || globalConfiguration.defaults.trip.mealPlan;
-        const mealPlanDetails = calculateMealPlan(leg.distance, speed, mealPlan);
-        leg.mealPlanDetails = mealPlanDetails;
+        leg.mealPlanDetails = calculateMealPlan(leg.distance, speed, mealPlan);
         if (mealPlan.breakfast) totalMealPlans.breakfast++;
         if (mealPlan.lunch) totalMealPlans.lunch++;
         if (mealPlan.dinner) totalMealPlans.dinner++;
@@ -315,7 +312,7 @@ function addRouteInformationToInfoDiv() {
             distanceInfo = `: ${leg.distance.toFixed(2)} km`;
         }
         document.getElementById('info').innerHTML += `<p>Leg ${index + 1}: ${distanceInfo}${elevationInfo}</p>`;
-        document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
+        document.getElementById('info').innerHTML += `<p>Meal Plan: ${leg.mealPlanDetails}</p>`;
     });
     const zeroDays = globalConfiguration.defaults.numberOfZeroDays;
     for (let i = 0; i < zeroDays; i++) {
