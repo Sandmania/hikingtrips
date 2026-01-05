@@ -57,15 +57,16 @@ export function initMap(fullConfiguration) {
         layerControl.addOverlay(alternativeFeatureGroup, "Alternatives");
     }
 
-    // --- Add elevation control and actual route layer if GPX exists ---
     if (globalConfiguration?.actualRoute?.gpx) {
+        // If actual route configuration is given, then display only actual route on initial load
+        // Other layers can still be toggled on by layercontrols
         setupActualRouteElevation(map, baseMaps, globalConfiguration.actualRoute.gpx);
    } else {
+        // Else, display trip, evac and alternative layers on initial load
         map.addLayer(legFeatureGroup);    
         map.addLayer(evacuationFeatureGroup);
         map.addLayer(alternativeFeatureGroup);
     }
-    // --- end elevation control ---
 
     generateAlternativeCheckboxes(globalConfiguration);
 
