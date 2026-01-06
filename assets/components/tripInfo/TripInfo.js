@@ -8,24 +8,17 @@ class TripInfo extends HTMLElement {
         this._defaults = null;
     }
 
-    set trip(value) {
-        this._trip = value ?? [];
-        this.render();
-    }
-
-    set speed(value) {
-        this._speed = value;
-        this.render();
-    }
-
-    set defaults(value) {
-        this._defaults = value;
-        this.render();
-    }
-
     connectedCallback() {
         this._toggleListener = () => this.toggle();
         document.addEventListener('toggle-trip-info', this._toggleListener);
+
+        document.addEventListener('trip-loaded', (e) => {
+            console.log("trip loaded")
+            this._trip = e.detail.tripConfiguration;
+            this._defaults = e.detail.defaults;
+            this._speed = e.detail.walkingSpeed;
+            this.render();
+        })
     }
 
     disconnectedCallback() {
@@ -72,7 +65,7 @@ class TripInfo extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
         <link rel="stylesheet" href="../assets/components/tripInfo/TripInfo.css">
-        <div id="trip-info" class="hidden">
+        <div id="trip-info">
 
             <div class="legs">
             ${legViewModels
@@ -90,9 +83,13 @@ class TripInfo extends HTMLElement {
                 `).join('')}
             </div>
             <div class="totals">
+                <p>Total length: ${this._trip.totalDistance.toFixed(2)} km</p>
                 <p>Total meals:</p>
                 Breakfast: ${totals.breakfast}, Lunch: ${totals.lunch}, Dinner: ${totals.dinner}, Snacks: ${totals.snacks}
             </div>
+            <section>
+                <slot name="leg-alternatives"></slot>
+            </section>
         </div>
         `;
 

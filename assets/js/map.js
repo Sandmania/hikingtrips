@@ -9,13 +9,6 @@ let evacuationFeatureGroup = L.featureGroup();
 let alternativeFeatureGroup = L.featureGroup();
 let actualRouteLayer = L.featureGroup();
 
-let totalMealPlans = {
-    breakfast: 0,
-    lunch: 0,
-    dinner: 0,
-    snacks: 0
-};
-
 let selectedTripConfiguration;
 
 export async function loadYAMLConfig(url) {
@@ -27,6 +20,10 @@ export async function loadYAMLConfig(url) {
 export function initMap(fullConfiguration) {
     globalConfiguration = fullConfiguration;
     console.log("Initializing map. Global config is: ", fullConfiguration);
+
+    const legAlternatives = document.querySelector('leg-alternatives');
+    legAlternatives.trip = globalConfiguration.trip;
+
     if(fullConfiguration === undefined) {
         console.warn("Global config is undefined. This might lead to problems.");
     }
@@ -68,40 +65,14 @@ export function initMap(fullConfiguration) {
         map.addLayer(alternativeFeatureGroup);
     }
 
-    generateAlternativeCheckboxes(globalConfiguration);
-
     var routeType = "trip";
-    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup, addRouteInformationToInfoDiv);
+    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup);
     routeType = "evacuation";
     addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
     routeType = "alternatives";
     addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
 
-
-    // Add custom control for toggling the plan info overlay
     if(globalConfiguration.trip) {
-        const infoControl = L.Control.extend({
-            onAdd: function(map) {
-                const infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
-                // Don't propagate click events to the map, double clicking would zoom in
-                L.DomEvent.disableClickPropagation(infoButton);
-                infoButton.innerHTML = '';
-                const rightContent = document.getElementById('right-content');
-                infoButton.onclick = function() {
-                    if (rightContent.style.display === 'none' || rightContent.style.display === '') {
-                        rightContent.style.display = 'flex';
-                    } else {
-                        rightContent.style.display = 'none';
-                    }
-                };
-                return infoButton;
-            }
-        });
-
-        map.addControl(new infoControl({ position: 'topright' }));
-    }
-
-    if(true) {
         console.log("Trip is configured, showing trip information");
         const infoControl = L.Control.extend({
             onAdd: function() {
@@ -309,74 +280,20 @@ function initializeBaseMaps(config) {
     return allBaseMaps;
 }
 
-function addRouteInformationToInfoDiv() {
-
-
-
-    const speed = globalConfiguration.defaults.walkingSpeed;
-    const trip = selectedTripConfiguration || globalConfiguration.trip;
-
-
-    const tripInfoEl = document.getElementById('tripInfo');
-
-    tripInfoEl.trip = selectedTripConfiguration || globalConfiguration.trip;
-
-    tripInfoEl.speed = globalConfiguration.defaults.walkingSpeed;
-
-    tripInfoEl.defaults = globalConfiguration.defaults;
-
-
-    trip.forEach((leg, index) => {
-        const mealPlan = leg.mealPlan || globalConfiguration.defaults.trip.mealPlan;
-        leg.mealPlanDetails = calculateMealPlan(leg.distance, speed, mealPlan);
-        if (mealPlan.breakfast) totalMealPlans.breakfast++;
-        if (mealPlan.lunch) totalMealPlans.lunch++;
-        if (mealPlan.dinner) totalMealPlans.dinner++;
-        if (mealPlan.snacks) totalMealPlans.snacks += Math.floor(leg.distance / speed);
-        let elevationInfo = '';
-        if (leg.elevationGain || leg.elevationLoss) {
-            elevationInfo = ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
-        }
-        let distanceInfo = '';
-        if (leg.distance) {
-            distanceInfo = `: ${leg.distance.toFixed(2)} km`;
-        }
-        document.getElementById('info').innerHTML += `<p>Leg ${index + 1}: ${distanceInfo}${elevationInfo}</p>`;
-        document.getElementById('info').innerHTML += `<p>Meal Plan: ${leg.mealPlanDetails}</p>`;
-    });
-    const zeroDays = globalConfiguration.defaults.numberOfZeroDays;
-    for (let i = 0; i < zeroDays; i++) {
-        const mealPlan = globalConfiguration.defaults.zero.mealPlan;
-        const mealPlanDetails = calculateMealPlan(0, speed, mealPlan);
-        if (mealPlan.breakfast) totalMealPlans.breakfast++;
-        if (mealPlan.lunch) totalMealPlans.lunch++;
-        if (mealPlan.dinner) totalMealPlans.dinner++;
-        document.getElementById('info').innerHTML += `<p>Zero Day ${i + 1}</p>`;
-        document.getElementById('info').innerHTML += `<p>Meal Plan: ${mealPlanDetails}</p>`;
-    }
-    document.getElementById('info').innerHTML += `<p>Total length: ${selectedTripConfiguration.totalDistance.toFixed(2)} km</p>`;
-    document.getElementById('info').innerHTML += `<p>Total Meals: Breakfasts: ${totalMealPlans.breakfast}, Lunches: ${totalMealPlans.lunch}, Dinners: ${totalMealPlans.dinner}, Snacks: ${totalMealPlans.snacks}</p>`;
-}
-
 function hasRoutesForType(routesForType) {
     return routesForType !== undefined && routesForType !== null && routesForType.length > 0
 }
 
-export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, callback) {
+export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) {
     console.log("Adding routes to feature group for type " + routeType);
     console.log("Routes for type: ", routesForType);
     console.log("Feature group: ", featureGroup);
-    console.log("Callback: ", callback);
-    if (routesForType === undefined || routesForType === null || routesForType.length === 0) {
+
+    if (!hasRoutesForType(routesForType)) {
         console.log("Routes for type " + routeType + " is undefined, null or empty. Skipping.");
         return;
     }
 
-    callback = callback || function(){};
-    if (routeType !== "alternatives") {
-        document.getElementById('info').innerHTML = '';
-        totalMealPlans = { breakfast: 0, lunch: 0, dinner: 0, snacks: 0 }; // Reset meal plans
-    }
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
     
@@ -400,9 +317,22 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup, 
             // This can be either the pre configured trip in configuration, or a dynamic trip
             // constructed from various selected alternatives
             selectedTripConfiguration = routesForType;
-            callback();
+            document.dispatchEvent(
+                new CustomEvent('trip-loaded', {
+                    detail: {
+                        tripConfiguration: selectedTripConfiguration,
+                        walkingSpeed: globalConfiguration.defaults.walkingSpeed,
+                        defaults: globalConfiguration.defaults
+                    }
+                })
+            );
         }).catch((error) => {
             console.error("Error loading routes: ", error);
+        });
+    } else if (routeType == "alternatives") {
+        document.addEventListener('alternatives-change', (event) => {
+            console.log('Alternatives updated:', event.detail.selectedAlternatives);
+            updateMapWithAlternatives(event.detail.selectedAlternatives);
         });
     }
 }
@@ -500,58 +430,7 @@ function getPolylineOptions(leg, defaultOptions) {
     };
 }
 
-// Function to calculate meal plan
-function calculateMealPlan(distance, speed, mealPlan) {
-    var time = distance / speed;
-    var mealPlanDetails = [];
-
-    if (mealPlan.breakfast) mealPlanDetails.push("Breakfast");
-    if (mealPlan.lunch) mealPlanDetails.push("Lunch");
-    if (mealPlan.dinner) mealPlanDetails.push("Dinner");
-
-    if (mealPlan.snacks) {
-        var snacks = Math.floor(time);
-        mealPlanDetails.push(`${snacks} Snack Bar${snacks > 1 ? 's' : ''}`);
-    }
-
-    return mealPlanDetails.join(", ");
-}
-
-function generateAlternativeCheckboxes(config) {
-    const alternativeRoutesDiv = document.getElementById('alternative-routes');
-
-    if (!config || !config.trip || !Array.isArray(config.trip)) {
-        console.warn("No trip configuration found. Skipping alternative checkboxes.");
-        return;
-    }
-
-    config.trip.forEach((leg, legIndex) => {
-        if (leg.alternatives) {
-            leg.alternatives.forEach((alt, altIndex) => {
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = `alt-leg-${legIndex + 1}-${altIndex + 1}`;
-                checkbox.dataset.legIndex = legIndex;
-                checkbox.dataset.altIndex = altIndex;
-
-                const label = document.createElement('label');
-                label.htmlFor = checkbox.id;
-                label.innerText = `Alternative for Leg ${legIndex + 1} - Option ${altIndex + 1}`;
-
-                alternativeRoutesDiv.appendChild(checkbox);
-                alternativeRoutesDiv.appendChild(label);
-                alternativeRoutesDiv.appendChild(document.createElement('br'));
-            });
-        }
-    });
-}
-
-export function updateMapWithAlternatives() {
-    const selectedAlternatives = Array.from(document.querySelectorAll('#alternative-routes input:checked')).map(checkbox => ({
-        legIndex: parseInt(checkbox.dataset.legIndex),
-        altIndex: parseInt(checkbox.dataset.altIndex)
-    }));
-
+export function updateMapWithAlternatives(selectedAlternatives) {
     // Create a set to keep track of legs to be skipped
     const legsToSkip = new Set();
 
@@ -570,7 +449,7 @@ export function updateMapWithAlternatives() {
 
     legFeatureGroup.clearLayers();
 
-    addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup, addRouteInformationToInfoDiv);
+    addRoutesToFeatureGroup('trip', tripWithAlternatives, legFeatureGroup);
 }
 
 /**
