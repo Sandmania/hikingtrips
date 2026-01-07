@@ -12,32 +12,33 @@
     <link href="../assets/css/main.css" rel="stylesheet" />
     <link href="../assets/css/calendar.css" rel="stylesheet" />
     <link href="../assets/css/info.css" rel="stylesheet" />
+    <!-- js-yaml for loading yaml config -->
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+    
     <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
-    
+
     <!-- Mapbox GL for vector tiles -->
     <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
     <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-leaflet/0.0.16/leaflet-mapbox-gl.js"></script>
 
     <!-- leaflet-elevation -->
-    <script src="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.js" integrity="sha256-Z/FTYiiAVwGeE4rl3LpmVN6p5KlulJ64thKUoneYMwk=" crossorigin="anonymous"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.css" integrity="sha256-Cw03qt3zMjRIGpKLc1iqjUVAvLauJYvyxTBTiISfCmQ=" crossorigin="anonymous">
-    
+    <script src="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.js"
+        integrity="sha256-Z/FTYiiAVwGeE4rl3LpmVN6p5KlulJ64thKUoneYMwk=" crossorigin="anonymous"></script>
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.css"
+        integrity="sha256-Cw03qt3zMjRIGpKLc1iqjUVAvLauJYvyxTBTiISfCmQ=" crossorigin="anonymous">
+
     <script src="../assets/components/packDetails/PackDetails.js"></script>
     <script src="../assets/components/tripInfo/TripInfo.js"></script>
+    <script src="../assets/components/legAlternatives/LegAlternatives.js"></script>
 
 <body>
     <div id="content">
-        <div id="map">
-        </div>
+        <div id="map"></div>
         <div id="elevation-div"></div>
-        <div id="right-content">
-            <div id="info"></div>
-            <div id="alternative-routes"></div>
-        </div>
         <div id="calendar-container"></div>
         <div id="event-tooltip" class="event-tooltip hidden"></div>
         <div id="pack-container"></div>
@@ -46,45 +47,13 @@
             <span id="toastText"></span>
             <button id="dismissToast">✖</button>
         </div>
-        
-<trip-info id="tripInfo"></trip-info>
-<script>
-/*const tripInfoEl = document.getElementById('tripInfo');
 
-tripInfoEl.trip = [
-    { distance: 10, elevationGain: 100, elevationLoss: 50, mealPlan: { breakfast: true, lunch: false, dinner: true, snacks: true } },
-    { distance: 20, elevationGain: 200, elevationLoss: 150 }
-];
-tripInfoEl.speed = 5;
-tripInfoEl.defaults = {
-    trip: {
-        mealPlan: { breakfast: true, lunch: true, dinner: false, snacks: true }
-    }
-}; */
-
-// The component automatically renders itself.
-</script>
+        <trip-info id="tripInfo">
+            <leg-alternatives slot="leg-alternatives"></leg-alternatives>
+        </trip-info>
 
     </div>
-    <script type="module">
-        import { loadYAMLConfig, initMap, updateMapWithAlternatives } from '../assets/js/map.js';
-        import { renderTripCalendar } from '../assets/js/calendar.js';
-        const configurationFileName = 'trip_config.yaml'
-        loadYAMLConfig(configurationFileName).then((config) => {
-            // Set the page title from the configuration
-            document.title = config?.heading;
-            initMap(config);
-            if(config?.travel_info) {
-                renderTripCalendar(config.travel_info);
-            }
-        });
-
-        document.getElementById('alternative-routes').addEventListener('change', (event) => {
-            if (event.target.type === 'checkbox') {
-                updateMapWithAlternatives();
-            }
-        });
-    </script>
+    <script type="module" src="../assets/js/main.js"></script>
 </body>
 
 </html>

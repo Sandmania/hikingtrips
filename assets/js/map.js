@@ -11,39 +11,21 @@ let actualRouteLayer = L.featureGroup();
 
 let selectedTripConfiguration;
 
-export async function loadYAMLConfig(url) {
-    const response = await fetch(url);
-    const yamlText = await response.text();
-    return jsyaml.load(yamlText);
-}
-
 export function initMap(fullConfiguration) {
     globalConfiguration = fullConfiguration;
     console.log("Initializing map. Global config is: ", fullConfiguration);
-
-    const legAlternatives = document.querySelector('leg-alternatives');
-    legAlternatives.trip = globalConfiguration.trip;
-
-    if(fullConfiguration === undefined) {
-        console.warn("Global config is undefined. This might lead to problems.");
-    }
     map = new L.map("map").setView([66.50, 25.72], 6);
 
     var baseMaps = initializeBaseMaps(globalConfiguration);
+    resolveDefaultTileLayer(baseMaps).addTo(map);
 
-    // Determine the default tile layer
-    const defaultTileLayerName = globalConfiguration?.defaults?.tileLayer || "OpenTopoMap";
-    const defaultTileLayer = baseMaps[defaultTileLayerName] || OpenTopoMap;
-
-    // Add the default tile layer to the map
-    defaultTileLayer.addTo(map);
+    layerControl = L.control.layers(baseMaps, null, {position:'topleft'}).addTo(map);
 
     if(!globalConfiguration) {
         console.log("No configuration defined. Returning simple map.")
         return map
     }
 
-    layerControl = L.control.layers(baseMaps, null, {position:'topleft'}).addTo(map);
     if(hasRoutesForType(globalConfiguration["trip"])) {
         layerControl.addOverlay(legFeatureGroup, "Trip");
     }
@@ -146,6 +128,12 @@ export function initMap(fullConfiguration) {
     }
     
     return map;
+}
+
+function resolveDefaultTileLayer(baseMaps) {
+    const defaultTileLayerName = globalConfiguration?.defaults?.tileLayer || "OpenTopoMap";
+    const defaultTileLayer = baseMaps[defaultTileLayerName] || OpenTopoMap;
+    return defaultTileLayer;
 }
 
 function setupActualRouteElevation(map, gpxPath) {
@@ -305,7 +293,7 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
             createInfoPopupForGpxLayer(gpx, leg);
             // Increase the total distance of specific routes
             routesForType.totalDistance += leg.distance;
-            console.log("Loaded route " + index + " with name " + leg.name);
+            console.log("Loaded route " + index + " of type " + routeType + " with name " + leg.name);
         }).catch(showError);
     });
 
