@@ -65,7 +65,7 @@ class TripInfo extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
         <link rel="stylesheet" href="../assets/components/tripInfo/TripInfo.css">
-        <div id="trip-info" class="hidden">
+        <div id="trip-info">
 
             <div class="legs">
             ${legViewModels

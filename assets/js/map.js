@@ -33,12 +33,15 @@ export function initMap(fullConfiguration) {
 
     if(hasRoutesForType(globalConfiguration["trip"])) {
         layerControl.addOverlay(legFeatureGroup, "Trip");
+        addRoutesToFeatureGroup("trip", globalConfiguration.trip, legFeatureGroup);
     }
     if(hasRoutesForType(globalConfiguration["evacuation"])) {
         layerControl.addOverlay(evacuationFeatureGroup, "Evacuation");
+        addRoutesToFeatureGroup("evacuation", globalConfiguration.evacuation, evacuationFeatureGroup);
     }
     if(hasRoutesForType(gatherAllAlternatives(globalConfiguration))) {
         layerControl.addOverlay(alternativeFeatureGroup, "Alternatives");
+        addRoutesToFeatureGroup("alternatives", gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
     }
 
     if (globalConfiguration?.actualRoute?.gpx) {
@@ -51,13 +54,6 @@ export function initMap(fullConfiguration) {
         map.addLayer(evacuationFeatureGroup);
         map.addLayer(alternativeFeatureGroup);
     }
-
-    var routeType = "trip";
-    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup);
-    routeType = "evacuation";
-    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
-    routeType = "alternatives";
-    addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
 
     infoControl(({tripInfo: globalConfiguration.trip})).addTo(map);
     packDetailsControl().addTo(map);
@@ -131,12 +127,6 @@ function setupActualRouteElevation(map, gpxPath) {
             elevationControl.clear();
         }
     });
-}
-
-
-
-function hasRoutesForType(routesForType) {
-    return routesForType !== undefined && routesForType !== null && routesForType.length > 0
 }
 
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) {
@@ -332,4 +322,8 @@ function gatherAllAlternatives(config) {
         }
     });
     return alternatives;
+}
+
+function hasRoutesForType(routesForType) {
+    return routesForType !== undefined && routesForType !== null && routesForType.length > 0
 }
