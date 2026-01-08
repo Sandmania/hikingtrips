@@ -81,3 +81,6 @@ sips -s formatOptions 95 --resampleWidth 580 *.jpeg --out thumbs
 Plain Vanilla https://plainvanillaweb.com/index.html
 
 
+https://www.phpied.com/maximally-minimal-build-process/
+https://www.phpied.com/import-javascript-like-its-2026/
+https://blog.bitsrc.io/sharing-data-between-web-components-using-custom-events-7eff301625d2
