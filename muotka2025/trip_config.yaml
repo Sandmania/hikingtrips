@@ -172,3 +172,6 @@ travel_info:
 
 photo_info:
   galleryUrl: gallery.html
+
+packDetails:
+  csvUrl: lighterpack.csv
