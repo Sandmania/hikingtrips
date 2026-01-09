@@ -6,6 +6,7 @@ class TripInfo extends HTMLElement {
         this._trip = [];
         this._speed = 0;
         this._defaults = null;
+        this._isHidden = true;
     }
 
     connectedCallback() {
@@ -26,6 +27,7 @@ class TripInfo extends HTMLElement {
     }
 
     toggle() {
+        this._isHidden = !this._isHidden;
         const details = this.shadowRoot.querySelector('#trip-info');
         if (details) {
             details.classList.toggle('hidden');
@@ -65,7 +67,7 @@ class TripInfo extends HTMLElement {
 
         this.shadowRoot.innerHTML = `
         <link rel="stylesheet" href="../assets/components/tripInfo/TripInfo.css">
-        <div id="trip-info">
+        <div id="trip-info" class="${this._isHidden ? 'hidden' : ''}">
 
             <div class="legs">
             ${legViewModels
