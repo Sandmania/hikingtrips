@@ -1,9 +1,8 @@
 class PackDetails extends HTMLElement {
-  static observedAttributes = ['csvurl'];
-
   constructor() {
     super();
     this.attachShadow({ mode: 'open' });
+    this._csvUrl = null;
     this.shadowRoot.innerHTML = `
       <link rel="stylesheet" href="../assets/components/packDetails/PackDetails.css">
       <div id="details" class="hidden">
@@ -13,19 +12,18 @@ class PackDetails extends HTMLElement {
     `;
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
-    if (name === 'csvurl' && newValue) {
-      this.loadCsv(newValue);
+  set csvUrl(url) {
+    this._csvUrl = url;
+    if (url) {
+      this.loadCsv(url);
     }
   }
 
+  get csvUrl() {
+    return this._csvUrl;
+  }
+
   connectedCallback() {
-    const csvUrl = this.getAttribute('csvurl');
-    if (csvUrl) {
-      this.loadCsv(csvUrl);
-    } else {
-      console.error('No CSV URL provided.');
-    }
     // Listen for the custom event
     this._toggleListener = () => this.toggleDetails();
     document.addEventListener('toggle-pack-details', this._toggleListener);

@@ -10,7 +10,6 @@
     <title>TrailTreader</title>
 
     <link href="../assets/css/main.css" rel="stylesheet" />
-    <link href="../assets/css/calendar.css" rel="stylesheet" />
     <link href="../assets/css/info.css" rel="stylesheet" />
     <!-- js-yaml for loading yaml config -->
     <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
@@ -39,8 +38,7 @@
     <div id="content">
         <div id="map"></div>
         <div id="elevation-div"></div>
-        <div id="calendar-container"></div>
-        <div id="event-tooltip" class="event-tooltip hidden"></div>
+        <hiking-calendar></hiking-calendar>
         <div id="pack-container"></div>
 
         <div id="errorToast" hidden>
@@ -51,6 +49,8 @@
         <trip-info id="tripInfo">
             <leg-alternatives slot="leg-alternatives"></leg-alternatives>
         </trip-info>
+
+        <tt-pack-details></tt-pack-details>
 
     </div>
     <script type="module" src="../assets/js/main.js"></script>

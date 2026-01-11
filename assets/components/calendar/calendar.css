@@ -1,0 +1,217 @@
+:host {
+    --color-nothing: #d8f3dc;
+    --color-travel: #6ba9e6;
+    --color-stay: #f7b74a;
+    --color-hike: #79cc1f;
+}
+
+.calendar-container2 {
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    z-index: 1001;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    font-family: sans-serif;
+    display: none;
+}
+
+.calendar {
+    border-collapse: separate;
+    border-spacing: 4px;
+    width: 100%;
+    max-width: 420px;
+    min-width: 330px;
+    table-layout: fixed;
+    padding: 10px;
+    padding-top: 0px;
+}
+
+.calendar-header {
+    font-weight: 600;
+    padding-top: 10px;
+}
+
+.calendar th {
+    background: #eee;
+    padding: 10px 0;
+    font-weight: 600;
+}
+
+.calendar td {
+    padding: 0;
+    vertical-align: top;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.calendar td span {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Base coloring */
+td.empty {
+    background-color: white;
+}
+.legend-color.nothing,
+td.nothing {
+    background-color: var(--color-nothing);
+}
+.legend-color.travel,
+td.travel {
+    background-color: var(--color-travel);
+}
+.legend-color.stay,
+td.stay {
+    background-color: var(--color-stay);
+}
+.legend-color.hike,
+td.hike {
+    background-color: var(--color-hike);
+}
+
+.legend-color.travel-stay,
+.travel-stay {
+    background: linear-gradient(
+        135deg,
+        var(--color-travel) 50%,
+        var(--color-stay) 50%
+    );
+}
+
+.legend {
+    max-width: 420px;
+    margin-bottom: 10px;
+    margin-left: 5px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 10px;
+    padding: 0 10px;
+    box-sizing: border-box;
+    font-size: 0.9em;
+    color: #2c3e50;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.date-cell {
+  background: var(--cell-background);
+}
+
+.event-tooltip {
+    position: fixed;
+    z-index: 1006;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    color: #333;
+    min-width: 300px;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.event-tooltip.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.event-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.event-tooltip .event-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.event-tooltip .event-item:last-child {
+    margin-bottom: 0;
+}
+
+.tooltip-content {
+    font-family: Arial, sans-serif;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    max-width: 300px;
+}
+
+.tooltip-date {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.tooltip-event-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.tooltip-event-item:last-child {
+    margin-bottom: 0;
+}
+
+.event-type-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.event-time-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.event-from-to {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.event-location {
+    display: block;
+}
+
+.event-type {
+    font-weight: 600;
+}
+
+.event-type.event-type-travel {
+    color: var(--color-travel);
+}
+
+.event-type.event-type-stay {
+    color: var(--color-stay);
+}
+
+.event-type.event-type-hike {
+    color: var(--color-hike);
+}

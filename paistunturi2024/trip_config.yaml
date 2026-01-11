@@ -191,3 +191,7 @@ travel_info:
         to: JY
         outboundDate: "2024-08-25"
         outboundTime: 10:00:00.000+03:00
+
+
+packDetails:
+  csvUrl: Paistunturi_2024.csv

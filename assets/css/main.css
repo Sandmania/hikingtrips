@@ -20,6 +20,13 @@ body {
     flex: 1;
 }
 
+.leaflet-control.calendar-button {
+    height: 48px;
+    width: 48px;
+    background-color: white;
+    background-image: url('../images/calendar.svg');
+}
+
 .mapboxgl-map {
     z-index: 500; /* Display mapbox vector maps on top of raster maps */
 }

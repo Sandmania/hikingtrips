@@ -1,4 +1,9 @@
 import { showError } from './error.js'
+import { packDetailsControl } from './leaflet/packDetailsControl.js'
+import { galleryControl } from './leaflet/galleryControl.js'
+import { calendarControl } from './leaflet/calendarControl.js'
+import { infoControl } from './leaflet/infoControl.js'
+import { initializeConfiguredBasemaps } from './leaflet/baseMaps.js'
 
 let map;
 let layerControl;
@@ -16,7 +21,7 @@ export function initMap(fullConfiguration) {
     console.log("Initializing map. Global config is: ", fullConfiguration);
     map = new L.map("map").setView([66.50, 25.72], 6);
 
-    var baseMaps = initializeBaseMaps(globalConfiguration);
+    var baseMaps = initializeConfiguredBasemaps(globalConfiguration);
     resolveDefaultTileLayer(baseMaps).addTo(map);
 
     layerControl = L.control.layers(baseMaps, null, {position:'topleft'}).addTo(map);
@@ -28,12 +33,15 @@ export function initMap(fullConfiguration) {
 
     if(hasRoutesForType(globalConfiguration["trip"])) {
         layerControl.addOverlay(legFeatureGroup, "Trip");
+        addRoutesToFeatureGroup("trip", globalConfiguration.trip, legFeatureGroup);
     }
     if(hasRoutesForType(globalConfiguration["evacuation"])) {
         layerControl.addOverlay(evacuationFeatureGroup, "Evacuation");
+        addRoutesToFeatureGroup("evacuation", globalConfiguration.evacuation, evacuationFeatureGroup);
     }
     if(hasRoutesForType(gatherAllAlternatives(globalConfiguration))) {
         layerControl.addOverlay(alternativeFeatureGroup, "Alternatives");
+        addRoutesToFeatureGroup("alternatives", gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
     }
 
     if (globalConfiguration?.actualRoute?.gpx) {
@@ -47,85 +55,10 @@ export function initMap(fullConfiguration) {
         map.addLayer(alternativeFeatureGroup);
     }
 
-    var routeType = "trip";
-    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], legFeatureGroup);
-    routeType = "evacuation";
-    addRoutesToFeatureGroup(routeType, globalConfiguration[routeType], evacuationFeatureGroup);
-    routeType = "alternatives";
-    addRoutesToFeatureGroup(routeType, gatherAllAlternatives(globalConfiguration), alternativeFeatureGroup);
-
-    if(globalConfiguration.trip) {
-        console.log("Trip is configured, showing trip information");
-        const infoControl = L.Control.extend({
-            onAdd: function() {
-                var infoButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control info-button');
-                L.DomEvent.disableClickPropagation(infoButton);
-                infoButton.title = "Show/Hide Trip Info";
-                infoButton.onclick = function() {
-                    document.dispatchEvent(new CustomEvent('toggle-trip-info'));
-                };
-                return infoButton;
-            }
-        });
-        map.addControl(new infoControl({ position: 'topright' }));
-    }
-
-    if (globalConfiguration.travel_info) {
-        console.log("Travel info is available. Adding calendar control.");
-        const calendarControl = L.Control.extend({
-            onAdd: function(map) {
-                var calendarButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control calendar-button');
-                // Don't propagate click events to the map, double clicking would zoom in
-                L.DomEvent.disableClickPropagation(calendarButton);
-                calendarButton.innerHTML = '';
-                const rightContent = document.getElementById('calendar-container');
-                calendarButton.onclick = function() {
-                    if (rightContent.style.display === 'none' || rightContent.style.display === '') {
-                        rightContent.style.display = 'flex';
-                    } else {
-                        rightContent.style.display = 'none';
-                    }
-                };
-                return calendarButton;
-            }
-        });
-
-        map.addControl(new calendarControl({ position: 'topright' }));
-    }
-
-    if (document.querySelector('tt-pack-details')) {
-        const packDetailsControl = L.Control.extend({
-            onAdd: function(map) {
-                const btn = L.DomUtil.create('button', 'leaflet-bar leaflet-control pack-details-button');
-                L.DomEvent.disableClickPropagation(btn);
-                btn.title = "Show/Hide Pack Details";
-                btn.onclick = function() {
-                    document.dispatchEvent(new CustomEvent('toggle-pack-details'));
-                };
-                return btn;
-            }
-        });
-
-        map.addControl(new packDetailsControl({ position: 'topright' }));
-    }
-
-    // --- Add gallery control button ---
-    if (globalConfiguration.photo_info && globalConfiguration.photo_info.galleryUrl) {
-        const galleryControl = L.Control.extend({
-            onAdd: function(map) {
-                const galleryButton = L.DomUtil.create('button', 'leaflet-bar leaflet-control gallery-button');
-                L.DomEvent.disableClickPropagation(galleryButton);
-                galleryButton.innerHTML = '';
-                galleryButton.title = "Open Gallery";
-                galleryButton.onclick = function() {
-                    window.open(globalConfiguration.photo_info.galleryUrl, '_blank');
-                };
-                return galleryButton;
-            }
-        });
-
-        map.addControl(new galleryControl({ position: 'topright' }));
-    }
+    infoControl(({tripInfo: globalConfiguration.trip})).addTo(map);
+    packDetailsControl().addTo(map);
+    galleryControl({url: globalConfiguration?.photo_info?.galleryUrl}).addTo(map);
+    calendarControl({travelInfo: globalConfiguration.travel_info}).addTo(map);
     
     return map;
 }
@@ -194,82 +127,6 @@ function setupActualRouteElevation(map, gpxPath) {
             elevationControl.clear();
         }
     });
-}
-
-function initializeBaseMaps(config) {
-    const allBaseMaps = {
-        "Esri World Imagery": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-            attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-        }),
-        "NLS Topographic map": L.tileLayer('https://api.joun.in/nls_proxy?z={z}&y={y}&x={x}', {
-            maxZoom: 15,
-            attribution:
-                '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
-                "target=new>Maanmittauslaitos</a>"
-        }),
-        "OpenTopoMap": L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-            maxZoom: 17,
-            attribution: 'Map data: &copy; <a href="https://www.opentopomap.org">OpenTopoMap</a> contributors'
-        }),
-        "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }),
-        "NLS Ortophoto": L.tileLayer('https://tiles.kartat.kapsi.fi/ortokuva_3067/{z}/{x}/{y}.jpg', {
-            maxZoom: 19,
-            attribution: 'National Land Survey of Finland, Ortophoto'
-        }),                              
-        "Lantmäteriet": new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-            maxZoom: 17,
-            maxNativeZoom: 14,
-            attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
-        }),
-        "Kartverket": new L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
-            attribution: '&copy; <a href="http://kartverket.no">Kartverket</a>',
-            maxZoom: 18,
-            tileSize: 256
-        }),
-        "NLS Vector tiles": L.mapboxGL({
-            style: 'nls_vector_map.json',
-            attribution: 
-                '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
-                "target=new>Maanmittauslaitos</a>"
-        }),
-        "FiSeNo Composite": L.layerGroup([
-                new L.tileLayer('https://api.joun.in/SLR_proxy?z={z}&y={y}&x={x}', {
-                maxZoom: 17,
-                maxNativeZoom: 14,
-                attribution: '&copy; <a href="https://www.lantmateriet.se/en/">Lantmäteriet</a> Topografisk Webbkarta Visning, CCB',
-            }),
-                new L.tileLayer('https://cache.kartverket.no/v1/wmts/1.0.0/topo/default/webmercator/{z}/{y}/{x}.png', {
-                attribution: '&copy; <a href="http://kartverket.no">Kartverket</a>',
-                maxZoom: 18,
-                tileSize: 256
-            }),
-            L.mapboxGL({
-                style: 'nls_vector_map.json',
-                attribution: 
-                    '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
-                    "target=new>Maanmittauslaitos</a>"
-            })
-        ])
-    };
-
-    if (config && config.defaults && config.defaults.availableTileLayers) {
-        const availableTileLayers = config.defaults.availableTileLayers;
-        return availableTileLayers.reduce((baseMaps, layerName) => {
-            if (allBaseMaps[layerName]) {
-                baseMaps[layerName] = allBaseMaps[layerName];
-            }
-            return baseMaps;
-        }, {});
-    }
-
-    return allBaseMaps;
-}
-
-function hasRoutesForType(routesForType) {
-    return routesForType !== undefined && routesForType !== null && routesForType.length > 0
 }
 
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) {
@@ -465,4 +322,8 @@ function gatherAllAlternatives(config) {
         }
     });
     return alternatives;
+}
+
+function hasRoutesForType(routesForType) {
+    return routesForType !== undefined && routesForType !== null && routesForType.length > 0
 }

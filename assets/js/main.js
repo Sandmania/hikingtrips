@@ -1,6 +1,7 @@
 import { loadYAMLConfig } from './config.js';
 import { initMap } from './map.js';
-import { renderTripCalendar } from './calendar.js';
+import { renderTripCalendar } from '../components/calendar/calendar.js';
+import '../components/calendar/calendar.js'; // Ensure web component is registered
 
 const configurationFileName = 'trip_config.yaml';
 
@@ -15,6 +16,7 @@ async function init() {
         initMap(config);
 
         initializeLegAlternatives(config);
+        initializePackDetails(config);
 
         if (config?.travel_info) {
             renderTripCalendar(config.travel_info);
@@ -33,4 +35,17 @@ function initializeLegAlternatives(config) {
         return;
     }
     legAlternatives.trip = config.trip;
+}
+
+function initializePackDetails(config) {
+    if (!config?.packDetails?.csvUrl) {
+        console.log("No pack details CSV URL configured.");
+        return;
+    }
+    const packDetails = document.querySelector('tt-pack-details');
+    if(!packDetails) {
+        console.log("Pack details web component not available.")
+        return;
+    }
+    packDetails.csvUrl = config.packDetails.csvUrl;
 }
