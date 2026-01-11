@@ -29,21 +29,28 @@ class HikingCalendar extends HTMLElement {
       const eventMap = this.buildEventMap(this.travelInfo);
       console.log(eventMap);
 
-      // Get the first date from eventMap keys (sorted by buildEventMap)
-      const firstDateStr = Object.keys(eventMap)[0];
-      let year, month;
-      if (firstDateStr) {
-        const firstDate = new Date(firstDateStr);
-        year = firstDate.getFullYear();
-        month = firstDate.getMonth() + 1;
-      } else {
-        // fallback to current month/year
-        const now = new Date();
-        year = now.getFullYear();
-        month = now.getMonth() + 1;
-      }
-
+      const { year, month } = this.getInitialYearMonth(eventMap);
       this.renderCalendar(year, month, eventMap);
+    }
+  }
+
+  getInitialYearMonth(eventMap) {
+    // Get the first date from eventMap keys (sorted by buildEventMap)
+    const firstDateStr = Object.keys(eventMap)[0];
+    
+    if (firstDateStr) {
+      const firstDate = new Date(firstDateStr);
+      return {
+        year: firstDate.getFullYear(),
+        month: firstDate.getMonth() + 1,
+      };
+    } else {
+      // fallback to current month/year
+      const now = new Date();
+      return {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+      };
     }
   }
 
@@ -158,55 +165,17 @@ class HikingCalendar extends HTMLElement {
       return new Date(`${date}T${time}`);
     };
 
-    // Flatten all events with date+time from 'to'
-    const toEvents = travelInfo.to
-      .flatMap((e) => {
-        if (e.transportation) {
-          return [
-            {
-              date: e.transportation.outboundDate,
-              time: e.transportation.outboundTime,
-              obj: e,
-            },
-          ];
-        }
-        if (e.accommodation) {
-          return [
-            {
-              date: e.accommodation.checkOutDate,
-              time: e.accommodation.checkOutTime,
-              obj: e,
-            },
-          ];
-        }
-        return [];
-      })
-      .filter((e) => e.date);
-
-    // Flatten all events with date+time from 'from'
-    const fromEvents = travelInfo.from
-      .flatMap((e) => {
-        if (e.transportation) {
-          return [
-            {
-              date: e.transportation.outboundDate,
-              time: e.transportation.outboundTime,
-              obj: e,
-            },
-          ];
-        }
-        if (e.accommodation) {
-          return [
-            {
-              date: e.accommodation.checkInDate,
-              time: e.accommodation.checkInTime,
-              obj: e,
-            },
-          ];
-        }
-        return [];
-      })
-      .filter((e) => e.date);
+    // Extract events from both directions with their respective date/time keys
+    const toEvents = this.extractSegmentEvents(
+      travelInfo.to,
+      "checkOutDate",
+      "checkOutTime",
+    );
+    const fromEvents = this.extractSegmentEvents(
+      travelInfo.from,
+      "checkInDate",
+      "checkInTime",
+    );
 
     // Find the last 'to' event by datetime
     const lastTo = toEvents.length
@@ -230,6 +199,32 @@ class HikingCalendar extends HTMLElement {
     const hikeEnd = firstFrom ? getDateTime(firstFrom, "date", "time") : null;
 
     return { hikeStart, hikeEnd };
+  }
+
+  extractSegmentEvents(segments, accommodationDateKey, accommodationTimeKey) {
+    return segments
+      .flatMap((e) => {
+        if (e.transportation) {
+          return [
+            {
+              date: e.transportation.outboundDate,
+              time: e.transportation.outboundTime,
+              obj: e,
+            },
+          ];
+        }
+        if (e.accommodation) {
+          return [
+            {
+              date: e.accommodation[accommodationDateKey],
+              time: e.accommodation[accommodationTimeKey],
+              obj: e,
+            },
+          ];
+        }
+        return [];
+      })
+      .filter((e) => e.date);
   }
 
   getEventsForAdjacentDate(eventMap, baseDate, offset) {
@@ -305,15 +300,7 @@ class HikingCalendar extends HTMLElement {
     container.appendChild(table);
 
     // Add legend
-    const legend = document.createElement("div");
-    legend.className = "legend";
-    legend.innerHTML = `
-      <div class="legend-item"><div class="legend-color nothing"></div> Nothing</div>
-      <div class="legend-item"><div class="legend-color travel"></div> Travel</div>
-      <div class="legend-item"><div class="legend-color stay"></div> Stay</div>
-      <div class="legend-item"><div class="legend-color hike"></div> Hike</div>
-      <div class="legend-item"><div class="legend-color travel-stay"></div> Mixed</div>
-    `;
+    const legend = this.createLegend();
     container.appendChild(legend);
 
     // Create tooltip element
@@ -336,6 +323,35 @@ class HikingCalendar extends HTMLElement {
         this.toggleEventTooltip(e, cell.dataset.date),
       );
     });
+  }
+
+  createLegend() {
+    const legend = document.createElement("div");
+    legend.className = "legend";
+
+    const legendItems = [
+      { className: "nothing", label: "Nothing" },
+      { className: "travel", label: "Travel" },
+      { className: "stay", label: "Stay" },
+      { className: "hike", label: "Hike" },
+      { className: "travel-stay", label: "Mixed" },
+    ];
+
+    for (const item of legendItems) {
+      const legendItem = document.createElement("div");
+      legendItem.className = "legend-item";
+
+      const colorDiv = document.createElement("div");
+      colorDiv.className = `legend-color ${item.className}`;
+
+      const label = document.createTextNode(item.label);
+
+      legendItem.appendChild(colorDiv);
+      legendItem.appendChild(label);
+      legend.appendChild(legendItem);
+    }
+
+    return legend;
   }
 
   createCalendarCell(date, events, prevEvents, nextEvents) {
@@ -434,28 +450,37 @@ class HikingCalendar extends HTMLElement {
     tooltip.classList.add("visible");
 
     // Adjust position if the tooltip goes outside the viewport
+    const { left, top } = this.adjustTooltipPosition(
+      tooltip,
+      event.pageX,
+      event.pageY,
+    );
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
+  }
+
+  adjustTooltipPosition(tooltip, pageX, pageY) {
     const tooltipRect = tooltip.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
-    let adjustedLeft = event.pageX + 10;
-    let adjustedTop = event.pageY + 10;
+    let left = pageX + 10;
+    let top = pageY + 10;
 
     if (tooltipRect.right > viewportWidth) {
-      adjustedLeft = event.pageX - tooltipRect.width - 10;
+      left = pageX - tooltipRect.width - 10;
     }
     if (tooltipRect.bottom > viewportHeight) {
-      adjustedTop = event.pageY - tooltipRect.height - 10;
+      top = pageY - tooltipRect.height - 10;
     }
     if (tooltipRect.left < 0) {
-      adjustedLeft = 10;
+      left = 10;
     }
     if (tooltipRect.top < 0) {
-      adjustedTop = 10;
+      top = 10;
     }
 
-    tooltip.style.left = `${adjustedLeft}px`;
-    tooltip.style.top = `${adjustedTop}px`;
+    return { left, top };
   }
 
   hideEventTooltip() {
