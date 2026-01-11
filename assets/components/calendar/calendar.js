@@ -367,7 +367,10 @@ class HikingCalendar extends HTMLElement {
           return `${this.getEventColor(event.type)} ${start}% ${end}%`;
         })
         .join(", ");
-      cell.style.background = `linear-gradient(115deg, ${gradientStops})`;
+      cell.style.setProperty(
+        "--cell-background",
+        `linear-gradient(115deg, ${gradientStops})`,
+      );
     } else if (events.length === 1) {
       cell.classList.add(events[0].type);
     } else {
@@ -380,12 +383,12 @@ class HikingCalendar extends HTMLElement {
   }
 
   getEventColor(event) {
-    const colors = {
-      travel: "#6BA9E6",
-      stay: "#F5A623",
-      hike: "#79CC1F",
+    const colorVars = {
+      travel: "var(--color-travel)",
+      stay: "var(--color-stay)",
+      hike: "var(--color-hike)",
     };
-    return colors[event] || "#D8F3DC";
+    return colorVars[event] || "var(--color-nothing)";
   }
 
   createDateWithTimezone(year, month, day) {
@@ -483,19 +486,19 @@ class HikingCalendar extends HTMLElement {
       .filter((event) => event !== "nothing")
       .map((event) => {
         const time = event.time
-          ? `<div><strong>Time:</strong> ${event.time}</div>`
-          : `<div><strong>Time:</strong> Not specified</div>`;
-        const type = `<div><strong>Type:</strong> <span style="color: ${this.getEventColor(event.type)};">${this.capitalizeFirstLetter(event.type)}</span></div>`;
+          ? `<div class="event-time-label"><strong>Time:</strong> ${event.time}</div>`
+          : `<div class="event-time-label"><strong>Time:</strong> Not specified</div>`;
+        const type = `<div class="event-type-label"><strong>Type:</strong> <span class="event-type event-type-${event.type}">${this.capitalizeFirstLetter(event.type)}</span></div>`;
         const fromTo =
           event.from && event.to
-            ? `<div><strong>From:</strong> ${event.from} <strong>To:</strong> ${event.to}</div>`
+            ? `<div class="event-from-to"><strong>From:</strong> ${event.from} <strong>To:</strong> ${event.to}</div>`
             : "";
         const location = event.name
-          ? `<div><strong>Location:</strong> ${event.name}</div>`
+          ? `<div class="event-location"><strong>Location:</strong> ${event.name}</div>`
           : "";
 
         return `
-          <div style="margin-bottom: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 5px; background-color: #f9f9f9;">
+          <div class="tooltip-event-item">
             ${type}
             ${time}
             ${fromTo}
@@ -506,8 +509,8 @@ class HikingCalendar extends HTMLElement {
       .join("");
 
     return `
-      <div style="font-family: Arial, sans-serif; padding: 15px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); background-color: white; max-width: 300px;">
-        <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">${formattedDate}</div>
+      <div class="tooltip-content">
+        <div class="tooltip-date">${formattedDate}</div>
         ${eventDetails || "<div>No events for this day.</div>"}
       </div>
     `;

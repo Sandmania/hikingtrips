@@ -114,6 +114,10 @@ td.hike {
     flex-shrink: 0;
 }
 
+.date-cell {
+  background: var(--cell-background);
+}
+
 .event-tooltip {
     position: fixed;
     z-index: 1006;
@@ -148,4 +152,66 @@ td.hike {
 
 .event-tooltip .event-item:last-child {
     margin-bottom: 0;
+}
+
+.tooltip-content {
+    font-family: Arial, sans-serif;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: white;
+    max-width: 300px;
+}
+
+.tooltip-date {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.tooltip-event-item {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+}
+
+.tooltip-event-item:last-child {
+    margin-bottom: 0;
+}
+
+.event-type-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.event-time-label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.event-from-to {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.event-location {
+    display: block;
+}
+
+.event-type {
+    font-weight: 600;
+}
+
+.event-type.event-type-travel {
+    color: var(--color-travel);
+}
+
+.event-type.event-type-stay {
+    color: var(--color-stay);
+}
+
+.event-type.event-type-hike {
+    color: var(--color-hike);
 }
