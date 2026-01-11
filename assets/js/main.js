@@ -1,6 +1,7 @@
 import { loadYAMLConfig } from './config.js';
 import { initMap } from './map.js';
-import { renderTripCalendar } from './calendar.js';
+import { renderTripCalendar } from '../components/calendar/calendar.js';
+import '../components/calendar/calendar.js'; // Ensure web component is registered
 
 const configurationFileName = 'trip_config.yaml';
 

@@ -8,10 +8,8 @@ export function calendarControl(options = {}) {
 
     return {
         canAdd() {
-            // this config.travelInfo is really not used for anything else, 
-            // we just need to know that travel info exists and then we need to render this leaflet control button
-            // to show the calendar component
-            return config.travelInfo; 
+            // Check if travelInfo exists and if the hiking-calendar element is available
+            return config.travelInfo && document.querySelector('hiking-calendar'); 
         },
 
         addTo(map) {
@@ -23,12 +21,10 @@ export function calendarControl(options = {}) {
                     // Don't propagate click events to the map, double clicking would zoom in
                     L.DomEvent.disableClickPropagation(calendarButton);
                     calendarButton.innerHTML = '';
-                    const rightContent = document.getElementById('calendar-container');
+                    const calendar = document.querySelector('hiking-calendar');
                     calendarButton.onclick = function () {
-                        if (rightContent.style.display === 'none' || rightContent.style.display === '') {
-                            rightContent.style.display = 'flex';
-                        } else {
-                            rightContent.style.display = 'none';
+                        if (calendar) {
+                            calendar.toggleVisibility();
                         }
                     };
                     return calendarButton;
