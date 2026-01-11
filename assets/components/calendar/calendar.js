@@ -238,6 +238,29 @@ class HikingCalendar extends HTMLElement {
     const container = document.createElement("div");
     container.className = "calendar-container2";
 
+    // Create calendar table
+    const table = this.createCalendarTable(year, month, eventMap);
+    container.appendChild(table);
+
+    // Add legend
+    const legend = this.createLegend();
+    container.appendChild(legend);
+
+    // Create tooltip element
+    const tooltip = document.createElement("div");
+    tooltip.className = "event-tooltip hidden";
+    tooltip.id = "event-tooltip";
+
+    this.shadowRoot.innerHTML =
+      '<link rel="stylesheet" href="../assets/components/calendar/calendar.css">';
+    this.shadowRoot.appendChild(container);
+    this.shadowRoot.appendChild(tooltip);
+
+    // Attach event listeners to cells
+    this.attachCellListeners();
+  }
+
+  createCalendarTable(year, month, eventMap) {
     const daysInMonth = new Date(year, month, 0).getDate();
     let firstDayOfWeek = new Date(year, month - 1, 1).getDay();
     firstDayOfWeek = (firstDayOfWeek + 6) % 7;
@@ -246,33 +269,14 @@ class HikingCalendar extends HTMLElement {
     table.classList.add("calendar");
 
     // Add caption for month and year
-    const monthNames = [
-      "January",
-      "February",
-      "March",
-      "April",
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-    ];
-    const caption = document.createElement("caption");
-    caption.classList.add("calendar-header");
-    caption.textContent = `${monthNames[month - 1]}, ${year}`;
+    const caption = this.createTableCaption(year, month);
     table.appendChild(caption);
 
-    const headerRow = document.createElement("tr");
-    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((day) => {
-      const th = document.createElement("th");
-      th.innerText = day;
-      headerRow.appendChild(th);
-    });
+    // Add header row with day names
+    const headerRow = this.createHeaderRow();
     table.appendChild(headerRow);
 
+    // Add calendar day cells
     let row = this.createEmptyCells(firstDayOfWeek);
 
     for (let day = 1; day <= daysInMonth; day++) {
@@ -297,23 +301,41 @@ class HikingCalendar extends HTMLElement {
       }
     }
 
-    container.appendChild(table);
+    return table;
+  }
 
-    // Add legend
-    const legend = this.createLegend();
-    container.appendChild(legend);
+  createTableCaption(year, month) {
+    const monthNames = [
+      "January",
+      "February",
+      "March",
+      "April",
+      "May",
+      "June",
+      "July",
+      "August",
+      "September",
+      "October",
+      "November",
+      "December",
+    ];
+    const caption = document.createElement("caption");
+    caption.classList.add("calendar-header");
+    caption.textContent = `${monthNames[month - 1]}, ${year}`;
+    return caption;
+  }
 
-    // Create tooltip element
-    const tooltip = document.createElement("div");
-    tooltip.className = "event-tooltip hidden";
-    tooltip.id = "event-tooltip";
+  createHeaderRow() {
+    const headerRow = document.createElement("tr");
+    ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].forEach((day) => {
+      const th = document.createElement("th");
+      th.innerText = day;
+      headerRow.appendChild(th);
+    });
+    return headerRow;
+  }
 
-    this.shadowRoot.innerHTML =
-      '<link rel="stylesheet" href="../assets/components/calendar/calendar.css">';
-    this.shadowRoot.appendChild(container);
-    this.shadowRoot.appendChild(tooltip);
-
-    // Attach event listeners to cells after rendering
+  attachCellListeners() {
     this.shadowRoot.querySelectorAll(".date-cell").forEach((cell) => {
       cell.addEventListener("mouseover", (e) =>
         this.showEventTooltip(e, cell.dataset.date),
