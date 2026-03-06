@@ -14,7 +14,7 @@ defaults:
     color: 'black'
     opacity: 0.7
     weight: 7
-    endIcon: ../assets/images/bonfire-outline.svg
+    endIcon: /assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: true
       lunch: true
@@ -25,7 +25,7 @@ defaults:
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
-    endIcon: ../assets/images/bonfire-outline.svg
+    endIcon: /assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: true
       lunch: true
@@ -36,7 +36,7 @@ defaults:
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
-    startIcon: ../assets/images/medkit-outline.svg
+    startIcon: /assets/images/medkit-outline.svg
     mealPlan:
       breakfast: false
       lunch: false
@@ -54,7 +54,7 @@ actualRoute:
 trip:
   - gpx: planned_route/Jeageloaivi_ele.gpx
     name: Day 1
-    startIcon: ../assets/images/circle-play-regular.svg
+    startIcon: /assets/images/circle-play-regular.svg
     mealPlan:
       breakfast: false
       lunch: true
@@ -98,7 +98,7 @@ trip:
       Kuljemme tunturissa ja yövymme todennäköisesti nimettömän järven (350.5 mpy) rannalla, Soavveljávrrečopman lounaispuolella.
   - gpx: planned_route/Peltoaivi_ele.gpx
     name: Day 6
-    endIcon: ../assets/images/flag-checkered-solid.svg
+    endIcon: /assets/images/flag-checkered-solid.svg
     mealPlan:
       breakfast: true
       lunch: true

@@ -13,7 +13,7 @@ defaults:
     color: 'black'
     opacity: 0.7
     weight: 7
-    endIcon: ../assets/images/bonfire-outline.svg
+    endIcon: /assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: true
       lunch: true
@@ -24,7 +24,7 @@ defaults:
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
-    endIcon: ../assets/images/bonfire-outline.svg
+    endIcon: /assets/images/bonfire-outline.svg
     mealPlan:
       breakfast: true
       lunch: true
@@ -35,7 +35,7 @@ defaults:
     opacity: 0.7
     weight: 5
     dashArray: '7, 7'
-    startIcon: ../assets/images/medkit-outline.svg
+    startIcon: /assets/images/medkit-outline.svg
     mealPlan:
       breakfast: false
       lunch: false
@@ -50,7 +50,7 @@ defaults:
 
 trip:
   - gpx: planned_route/day1_ele.gpx
-    startIcon: ../assets/images/circle-play-regular.svg
+    startIcon: /assets/images/circle-play-regular.svg
     mealPlan:
       breakfast: false
       lunch: true # Lunch on the road or at Ritsem?
@@ -84,7 +84,7 @@ trip:
     description: >
       Tämän päivän aikana siirrytään Sarekista Stora Sjöfalletin kansallispuistoon.
   - gpx: planned_route/day7_ele.gpx
-    endIcon: ../assets/images/flag-checkered-solid.svg
+    endIcon: /assets/images/flag-checkered-solid.svg
     mealPlan:
       breakfast: true
       lunch: true

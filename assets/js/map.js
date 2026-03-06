@@ -16,6 +16,17 @@ let actualRouteLayer = L.featureGroup();
 
 let selectedTripConfiguration;
 
+export function destroyMap() {
+    if (map) {
+        map.remove();
+        map = null;
+    }
+    legFeatureGroup = L.featureGroup();
+    evacuationFeatureGroup = L.featureGroup();
+    alternativeFeatureGroup = L.featureGroup();
+    actualRouteLayer = L.featureGroup();
+}
+
 export function initMap(fullConfiguration) {
     globalConfiguration = fullConfiguration;
     console.log("Initializing map. Global config is: ", fullConfiguration);
