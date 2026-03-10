@@ -4,8 +4,14 @@ import { initMap, destroyMap } from './map.js';
 import { renderTripCalendar } from '../components/calendar/calendar.js';
 import '../components/calendar/calendar.js'; // Ensure web component is registered
 
+let currentController = null;
+
 async function init() {
     console.log("init")
+
+    if (currentController) currentController.abort();
+    currentController = new AbortController();
+    const { signal } = currentController;
 
     destroyMap();
     clearConfigCache();
@@ -19,7 +25,9 @@ async function init() {
     const configUrl = `${tripId}/trip_config.yaml`;
 
     try {
-        const config = await loadYAMLConfig(configUrl);
+        const config = await loadYAMLConfig(configUrl, signal);
+        if (signal.aborted) return;
+
         resolveRelativePaths(config, tripId);
 
         // Set the page title from the configuration
@@ -34,6 +42,7 @@ async function init() {
             renderTripCalendar(config.travel_info);
         }
     } catch (err) {
+        if (err.name === 'AbortError') return;
         console.error('Failed to initialize page:', err);
     }
 }

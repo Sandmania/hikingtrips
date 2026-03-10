@@ -16,6 +16,12 @@ let actualRouteLayer = L.featureGroup();
 
 let selectedTripConfiguration;
 
+document.addEventListener('alternatives-change', (event) => {
+    if (!map) return;
+    console.log('Alternatives updated:', event.detail.selectedAlternatives);
+    updateMapWithAlternatives(event.detail.selectedAlternatives);
+});
+
 export function destroyMap() {
     if (map) {
         map.remove();
@@ -25,6 +31,8 @@ export function destroyMap() {
     evacuationFeatureGroup = L.featureGroup();
     alternativeFeatureGroup = L.featureGroup();
     actualRouteLayer = L.featureGroup();
+    const elevDiv = document.getElementById('elevation-div');
+    if (elevDiv) elevDiv.innerHTML = '';
 }
 
 export function initMap(fullConfiguration) {
@@ -80,8 +88,9 @@ function resolveDefaultTileLayer(baseMaps) {
     return defaultTileLayer;
 }
 
-function setupActualRouteElevation(map, gpxPath) {
-    actualRouteLayer = L.featureGroup();
+function setupActualRouteElevation(mapInstance, gpxPath) {
+    const routeLayer = L.featureGroup();
+    actualRouteLayer = routeLayer;
 
     // Initialize elevation control
     const elevationControl = L.control.elevation({
@@ -96,24 +105,25 @@ function setupActualRouteElevation(map, gpxPath) {
         distanceMarkers: false,
         edgeScale: false,
         hotline: false
-    }).addTo(map);
+    }).addTo(mapInstance);
 
-    actualRouteLayer.addTo(map);
-    layerControl.addOverlay(actualRouteLayer, "Actual route")
+    routeLayer.addTo(mapInstance);
+    layerControl.addOverlay(routeLayer, "Actual route")
 
-    elevationControl.on('eledata_loaded', 
+    elevationControl.on('eledata_loaded',
         ({ layer, name }) => {
+            if (map !== mapInstance) return; // stale: map was destroyed and replaced
             layer.eachLayer((trkseg) => {
                 if (trkseg.feature.geometry.type !== "Point") {
-                    actualRouteLayer.addLayer(trkseg);
+                    routeLayer.addLayer(trkseg);
                 } else {
                     // If sym == Photo, add to photoLayer so that photo icons can be toggled
                     if (trkseg.feature.properties.sym === "Photo") {
-                        if (!map.photoLayer) {
-                            map.photoLayer = L.featureGroup().addTo(map);
-                            layerControl.addOverlay(map.photoLayer, "Photos");
+                        if (!mapInstance.photoLayer) {
+                            mapInstance.photoLayer = L.featureGroup().addTo(mapInstance);
+                            layerControl.addOverlay(mapInstance.photoLayer, "Photos");
                         }
-                        map.photoLayer.addLayer(trkseg);
+                        mapInstance.photoLayer.addLayer(trkseg);
                     }
                 }
             });
@@ -124,17 +134,17 @@ function setupActualRouteElevation(map, gpxPath) {
     /**
      * This somewhat complex logic is here so that start and end icons are also removed
      * when the overlay is toggled off.
-     * 
+     *
      * An unfortunate side effect for this is, that the photo icons work weirdly when toggling elevation layer off/on.
      */
-    map.on('overlayadd', function(e) {
-        if (e.layer === actualRouteLayer) {
+    mapInstance.on('overlayadd', function(e) {
+        if (e.layer === routeLayer) {
             elevationControl.clear();
             elevationControl.load(gpxPath);
         }
     });
-    map.on('overlayremove', function(e) {
-        if (e.layer === actualRouteLayer) {
+    mapInstance.on('overlayremove', function(e) {
+        if (e.layer === routeLayer) {
             elevationControl.clear();
         }
     });
@@ -184,11 +194,6 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
             );
         }).catch((error) => {
             console.error("Error loading routes: ", error);
-        });
-    } else if (routeType == "alternatives") {
-        document.addEventListener('alternatives-change', (event) => {
-            console.log('Alternatives updated:', event.detail.selectedAlternatives);
-            updateMapWithAlternatives(event.detail.selectedAlternatives);
         });
     }
 }
