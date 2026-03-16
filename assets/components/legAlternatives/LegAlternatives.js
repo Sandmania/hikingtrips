@@ -8,10 +8,18 @@ class LegAlternatives extends HTMLElement {
 
     set trip(value) {
         this._trip = value ?? [];
+        this._selected.clear();
         this.render();
     }
 
     render() {
+        const hasAlternatives = this._trip.some(leg => leg.alternatives?.length > 0);
+        if (!hasAlternatives) {
+            this._selected.clear();
+            this.shadowRoot.innerHTML = '';
+            return;
+        }
+
         this.shadowRoot.innerHTML = `
             <style>
                 :host { display: block; }
