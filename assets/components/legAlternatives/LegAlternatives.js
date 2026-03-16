@@ -12,6 +12,12 @@ class LegAlternatives extends HTMLElement {
     }
 
     render() {
+        const hasAlternatives = this._trip.some(leg => leg.alternatives?.length > 0);
+        if (!hasAlternatives) {
+            this.shadowRoot.innerHTML = '';
+            return;
+        }
+
         this.shadowRoot.innerHTML = `
             <style>
                 :host { display: block; }

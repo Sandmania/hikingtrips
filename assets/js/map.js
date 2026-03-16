@@ -19,6 +19,8 @@ let selectedTripConfiguration;
 document.addEventListener('alternatives-change', (event) => {
     if (!map) return;
     console.log('Alternatives updated:', event.detail.selectedAlternatives);
+    if (!map.hasLayer(legFeatureGroup)) map.addLayer(legFeatureGroup);
+    if (!map.hasLayer(alternativeFeatureGroup)) map.addLayer(alternativeFeatureGroup);
     updateMapWithAlternatives(event.detail.selectedAlternatives);
 });
 
