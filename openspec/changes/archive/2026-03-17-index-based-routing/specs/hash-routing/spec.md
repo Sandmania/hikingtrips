@@ -1,3 +1,5 @@
+## MODIFIED Requirements
+
 ### Requirement: Trip resolved from URL hash
 The system SHALL use `index.html` as the single entry point. When loaded with a hash, it SHALL read `window.location.hash` (stripping the leading `#`) to determine the trip identifier, then fetch `<tripId>/trip_config.yaml` to initialize the trip view.
 
@@ -36,3 +38,9 @@ The trip listing page SHALL link to trips using the `#<tripId>` format, where `<
 #### Scenario: Assets load correctly from root
 - **WHEN** `index.html` is served from the site root
 - **THEN** all linked CSS, JavaScript, and web component files load without 404 errors
+
+## REMOVED Requirements
+
+### Requirement: Trip listing links use hash-based URLs
+**Reason**: Replaced by updated requirement using hash-only URLs (`#<tripId>` instead of `trip.html#<tripId>`)
+**Migration**: Update all trip card `url` values from `trip.html#<tripId>` to `#<tripId>`

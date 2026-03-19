@@ -6,7 +6,7 @@ import '../components/calendar/calendar.js'; // Ensure web component is register
 
 let currentController = null;
 
-async function init() {
+export async function initTrip() {
     console.log("init")
 
     if (currentController) currentController.abort();
@@ -18,7 +18,6 @@ async function init() {
 
     const tripId = window.location.hash.slice(1);
     if (!tripId) {
-        showError(new Error('No trip specified. Add a trip ID to the URL hash (e.g., trip.html#muotka2025).'));
         return;
     }
 
@@ -43,12 +42,9 @@ async function init() {
         }
     } catch (err) {
         if (err.name === 'AbortError') return;
-        console.error('Failed to initialize page:', err);
+        throw err;
     }
 }
-
-document.addEventListener('DOMContentLoaded', init);
-window.addEventListener('hashchange', init);
 
 function initializeLegAlternatives(config) {
     const legAlternatives = document.querySelector('leg-alternatives');
