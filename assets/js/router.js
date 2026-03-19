@@ -1,4 +1,3 @@
-import { renderTripCards } from './index.js';
 import { initTrip } from './main.js';
 import { showError } from './error.js';
 
@@ -19,7 +18,6 @@ async function route() {
     } else {
         tripView.style.display = 'none';
         indexView.style.display = 'block';
-        renderTripCards();
     }
 }
 
