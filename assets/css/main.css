@@ -9,7 +9,7 @@ body {
     flex-flow: column wrap;
 }
 
-#content {
+#trip-view {
     flex: 1 1;
     order: 2;
     display: flex;
@@ -39,6 +39,7 @@ body {
   color: white;
   padding: 1rem;
   border-radius: 4px;
+  z-index: 9999;
 }
 
 #elevation-div,

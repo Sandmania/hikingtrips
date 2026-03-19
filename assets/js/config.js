@@ -9,6 +9,7 @@ export async function loadYAMLConfig(url = 'trip_config.yaml', signal) {
         configPromise = (async () => {
             console.log("Loading config from " + url)
             const response = await fetch(url, { signal });
+            if (!response.ok) throw new Error(`Trip not found: "${url}" returned ${response.status}`);
             const yamlText = await response.text();
             return jsyaml.load(yamlText);
         })();
