@@ -31,17 +31,6 @@ body {
     z-index: 500; /* Display mapbox vector maps on top of raster maps */
 }
 
-#errorToast {
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  background: #f44336;
-  color: white;
-  padding: 1rem;
-  border-radius: 4px;
-  z-index: 9999;
-}
-
 #elevation-div,
 .leaflet-control-elevation {
     width: 100%;

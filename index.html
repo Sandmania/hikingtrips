@@ -29,6 +29,7 @@
       href="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.css"
       integrity="sha256-Cw03qt3zMjRIGpKLc1iqjUVAvLauJYvyxTBTiISfCmQ=" crossorigin="anonymous">
 
+  <script src="assets/components/errorToast/ErrorToast.js"></script>
   <script src="assets/components/tripCard/TripCard.js"></script>
   <script src="assets/components/tripGrid/TripGrid.js"></script>
   <script src="assets/components/packDetails/PackDetails.js"></script>
@@ -53,10 +54,7 @@
     <tt-pack-details></tt-pack-details>
   </div>
 
-  <div id="errorToast" hidden>
-    <span id="toastText"></span>
-    <button id="dismissToast">✖</button>
-  </div>
+  <error-toast></error-toast>
 
   <script type="module" src="assets/js/router.js"></script>
 </body>

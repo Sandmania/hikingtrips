@@ -1,5 +1,4 @@
 import { loadYAMLConfig, clearConfigCache } from './config.js';
-import { showError } from './error.js';
 import { initMap, destroyMap } from './map.js';
 import { renderTripCalendar } from '../components/calendar/calendar.js';
 import '../components/calendar/calendar.js'; // Ensure web component is registered

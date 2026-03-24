@@ -9,10 +9,10 @@ let map;
 let layerControl;
 let globalConfiguration = {};
 // Feature groups for different route types
-let legFeatureGroup = L.featureGroup();
-let evacuationFeatureGroup = L.featureGroup();
-let alternativeFeatureGroup = L.featureGroup();
-let actualRouteLayer = L.featureGroup();
+let legFeatureGroup;
+let evacuationFeatureGroup;
+let alternativeFeatureGroup;
+let actualRouteLayer;
 
 let selectedTripConfiguration;
 
@@ -39,6 +39,10 @@ export function destroyMap() {
 
 export function initMap(fullConfiguration) {
     globalConfiguration = fullConfiguration;
+    legFeatureGroup = L.featureGroup();
+    evacuationFeatureGroup = L.featureGroup();
+    alternativeFeatureGroup = L.featureGroup();
+    actualRouteLayer = L.featureGroup();
     console.log("Initializing map. Global config is: ", fullConfiguration);
     map = new L.map("map").setView([66.50, 25.72], 6);
 
