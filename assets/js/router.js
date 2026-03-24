@@ -8,7 +8,15 @@ async function route() {
     const hash = window.location.hash.slice(1);
     if (hash) {
         indexView.style.display = 'none';
-        await tripView.show();
+        try {
+            await tripView.show();
+        } catch (err) {
+            window.location.hash = '';
+            indexView.style.display = 'block';
+            const error = err instanceof Error ? err : new Error(String(err));
+            showError(error);
+            return;
+        }
         try {
             await initTrip();
         } catch (err) {
