@@ -32,7 +32,9 @@ class TripGrid extends HTMLElement {
     async loadTrips() {
         try {
             const response = await fetch('trips.json');
-            if (!response.ok) throw new Error(`Failed to fetch trips.json: ${response.statusText}`);
+            if (!response.ok) {
+                throw new Error(`Failed to fetch trips.json: ${response.status} ${response.statusText}`);
+            }
             const trips = await response.json();
             this.renderTrips(trips);
         } catch (err) {
