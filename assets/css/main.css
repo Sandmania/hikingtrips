@@ -9,7 +9,7 @@ body {
     flex-flow: column wrap;
 }
 
-#trip-view {
+trip-view {
     flex: 1 1;
     order: 2;
     display: flex;

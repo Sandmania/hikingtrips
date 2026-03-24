@@ -2,13 +2,13 @@ import { initTrip } from './main.js';
 import { showError } from './error.js';
 
 const indexView = document.getElementById('index-view');
-const tripView = document.getElementById('trip-view');
+const tripView = document.querySelector('trip-view');
 
 async function route() {
     const hash = window.location.hash.slice(1);
     if (hash) {
         indexView.style.display = 'none';
-        tripView.style.display = 'flex';
+        await tripView.show();
         try {
             await initTrip();
         } catch (err) {
@@ -16,7 +16,7 @@ async function route() {
             showError(new Error(`Trip "${hash}" not found.`));
         }
     } else {
-        tripView.style.display = 'none';
+        tripView.hide();
         indexView.style.display = 'block';
     }
 }
