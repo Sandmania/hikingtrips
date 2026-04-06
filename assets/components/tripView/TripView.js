@@ -6,18 +6,6 @@ class TripView extends HTMLElement {
 
     connectedCallback() {
         this.style.display = 'none';
-        this.innerHTML = `
-            <div id="map"></div>
-            <div id="elevation-div"></div>
-            <hiking-calendar></hiking-calendar>
-            <div id="pack-container"></div>
-
-            <trip-info id="tripInfo">
-                <leg-alternatives slot="leg-alternatives"></leg-alternatives>
-            </trip-info>
-
-            <tt-pack-details></tt-pack-details>
-        `;
     }
 
     async show() {
