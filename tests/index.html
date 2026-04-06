@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Hiking Trips - Tests</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+    <!-- https://unpkg.com/mocha@9.2.2/mocha.css -->
+    <link rel="stylesheet" href="https://unpkg.com/mocha@9.2.2/mocha.css" />
+    <!-- https://unpkg.com/chai@4.3.6/chai.js -->
+    <script src="https://unpkg.com/chai@4.3.6/chai.js" defer></script>
+    <!-- https://unpkg.com/mocha@9.2.2/mocha.js -->
+    <script src="https://unpkg.com/mocha@9.2.2/mocha.js" defer></script>
+    <!-- https://unpkg.com/@testing-library/dom@8.17.1/dist/@testing-library/dom.umd.js -->
+    <script src="https://unpkg.com/@testing-library/dom@8.17.1/dist/@testing-library/dom.umd.js" defer></script>
+
+    <script type="module" defer>
+        mocha.setup('bdd');
+        mocha.checkLeaks();
+    </script>
+
+    <script type="module" src="./packDetails.test.js" defer></script>
+    <script type="module" src="./calendar.test.js" defer></script>
+
+    <!-- include more tests here -->
+
+    <script type="module" src="./index.js" defer></script>
+</head>
+<body>
+    <div id="mocha"></div>
+</body>
+</html>

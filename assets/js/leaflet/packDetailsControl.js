@@ -9,7 +9,7 @@ export function packDetailsControl(options = {}) {
 
     return {
         canAdd() {
-            return !!document.querySelector(config.selector);
+            return !!config.csvUrl;
         },
 
         addTo(map) {

@@ -111,7 +111,7 @@ export function initMap(fullConfiguration) {
     }
 
     infoControl(({tripInfo: globalConfiguration.trip})).addTo(map);
-    packDetailsControl().addTo(map);
+    packDetailsControl({csvUrl: globalConfiguration?.packDetails?.csvUrl}).addTo(map);
     galleryControl({url: globalConfiguration?.photo_info?.galleryUrl}).addTo(map);
     calendarControl({travelInfo: globalConfiguration.travel_info}).addTo(map);
     

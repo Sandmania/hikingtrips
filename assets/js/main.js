@@ -55,13 +55,13 @@ function initializeLegAlternatives(config) {
 }
 
 function initializePackDetails(config) {
-    if (!config?.packDetails?.csvUrl) {
-        console.log("No pack details CSV URL configured.");
-        return;
-    }
     const packDetails = document.querySelector('tt-pack-details');
     if(!packDetails) {
         console.log("Pack details web component not available.")
+        return;
+    }
+    if (!config?.packDetails?.csvUrl) {
+        packDetails.csvUrl = null;
         return;
     }
     packDetails.csvUrl = config.packDetails.csvUrl;

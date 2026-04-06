@@ -16,6 +16,8 @@ class PackDetails extends HTMLElement {
     this._csvUrl = url;
     if (url) {
       this.loadCsv(url);
+    } else {
+      this.clear();
     }
   }
 
@@ -31,6 +33,13 @@ class PackDetails extends HTMLElement {
 
   disconnectedCallback() {
     document.removeEventListener('toggle-pack-details', this._toggleListener);
+  }
+
+  clear() {
+    const output = this.shadowRoot.querySelector('#output');
+    output.innerHTML = '';
+    const details = this.shadowRoot.querySelector('#details');
+    details.classList.add('hidden');
   }
 
   toggleDetails() {
