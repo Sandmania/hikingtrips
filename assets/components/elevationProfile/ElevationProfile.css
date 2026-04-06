@@ -1,0 +1,39 @@
+elevation-profile,
+.leaflet-control-elevation {
+    width: 100%;
+    max-height: 450px;
+    box-sizing: border-box;
+    z-index: 1000;
+    background: #fff;
+    overflow: auto;
+}
+
+.avgele,
+.minslope,
+.maxslope,
+.avgslope {
+    display: none;
+}
+
+.elevation-waypoint-icon::before {
+    background-image: url(../../images/bonfire-outline.svg) !important;
+}
+
+.elevation-waypoint-icon.photo::before {
+    background-image: url(../../images/camera.svg) !important;
+}
+
+/**
+* leaflet-elevation profile might not display correctly if the gpx contains multiple segments
+* https://github.com/Raruto/leaflet-elevation/issues/237#issuecomment-1695359229
+*/
+.elevation-control .area mask {
+    display: none;
+}
+
+.elevation-tooltip.leaflet-tooltip {
+    white-space: normal;
+    padding: 0;
+    margin: 0;
+    border-radius: 12px;
+}
