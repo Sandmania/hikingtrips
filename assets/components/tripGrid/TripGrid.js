@@ -1,45 +1,30 @@
-class TripGrid extends HTMLElement {
+customElements.define('trip-grid', class extends HTMLElement {
+    static styleSheet = fetchCSS(['../assets/components/tripGrid/TripGrid.css']);
+    static template = Object.assign(document.createElement('template'), {
+        innerHTML: `
+            <div class="grid"></div>
+        `
+    });
+
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
-        this.shadowRoot.innerHTML = `
-            <style>
-                :host {
-                    display: block;
-                }
-
-                .grid {
-                    display: grid;
-                    grid-template-columns: repeat(2, 1fr);
-                    gap: 2rem;
-                    padding: 2rem;
-                }
-
-                @media (max-width: 980px) {
-                    .grid {
-                        grid-template-columns: 1fr;
-                    }
-                }
-            </style>
-            <div class="grid"></div>
-        `;
+        this.shadowRoot.appendChild(
+            this.constructor.template.content.cloneNode(true)
+        );
     }
 
     connectedCallback() {
-        this.loadTrips();
+        if (this.shadowRoot.adoptedStyleSheets.length === 0) {
+            this.constructor.styleSheet.then((sheet) => {
+                this.shadowRoot.adoptedStyleSheets = [sheet];
+            });
+        }
     }
 
-    async loadTrips() {
-        try {
-            const response = await fetch('trips.json');
-            if (!response.ok) {
-                throw new Error(`Failed to fetch trips.json: ${response.status} ${response.statusText}`);
-            }
-            const trips = await response.json();
-            this.renderTrips(trips);
-        } catch (err) {
-            console.error('TripGrid: could not load trips.json', err);
-        }
+    set trips(value) {
+        this._trips = value;
+        this.renderTrips(value);
     }
 
     renderTrips(trips) {
@@ -51,6 +36,4 @@ class TripGrid extends HTMLElement {
             grid.appendChild(card);
         });
     }
-}
-
-customElements.define('trip-grid', TripGrid);
+});

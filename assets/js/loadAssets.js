@@ -39,6 +39,16 @@ function loadScript(src, options = {}) {
     return promise;
 }
 
+async function fetchCSS(urls = []) {
+    let css = '';
+    for (const url of urls) {
+        css += await (await fetch(url)).text();
+    }
+    const sheet = new CSSStyleSheet();
+    sheet.replaceSync(css);
+    return sheet;
+}
+
 function loadStylesheet(href) {
     if (document.querySelector(`link[href="${href}"]`)) return;
     const l = document.createElement('link');

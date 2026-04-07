@@ -3,6 +3,8 @@ import { showError } from './error.js';
 
 const indexView = document.getElementById('index-view');
 const tripView = document.querySelector('trip-view');
+const tripGrid = document.querySelector('trip-grid');
+let tripsLoaded = false;
 
 async function route() {
     const hash = window.location.hash.slice(1);
@@ -26,6 +28,12 @@ async function route() {
     } else {
         tripView.hide();
         indexView.style.display = 'block';
+        if (!tripsLoaded) {
+            const response = await fetch('trips.json');
+            const trips = await response.json();
+            tripGrid.trips = trips;
+            tripsLoaded = true;
+        }
     }
 }
 
