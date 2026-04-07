@@ -15,6 +15,7 @@ let alternativeFeatureGroup;
 let actualRouteLayer;
 
 let selectedTripConfiguration;
+let pendingElevationListener;
 
 document.addEventListener('alternatives-change', (event) => {
     if (!map) return;
@@ -28,6 +29,10 @@ export function destroyMap() {
     if (map) {
         map.remove();
         map = null;
+    }
+    if (pendingElevationListener) {
+        document.removeEventListener('elevation-layers-ready', pendingElevationListener);
+        pendingElevationListener = null;
     }
     legFeatureGroup = L.featureGroup();
     evacuationFeatureGroup = L.featureGroup();
@@ -72,7 +77,7 @@ export function initMap(fullConfiguration) {
         const gpxPath = globalConfiguration.actualRoute.gpx;
 
         const onLayersReady = (event) => {
-            document.removeEventListener('elevation-layers-ready', onLayersReady);
+            pendingElevationListener = null;
             const { routeLayer, photoLayer } = event.detail;
             actualRouteLayer = routeLayer;
             routeLayer.addTo(map);
@@ -98,7 +103,8 @@ export function initMap(fullConfiguration) {
                 }
             });
         };
-        document.addEventListener('elevation-layers-ready', onLayersReady);
+        pendingElevationListener = onLayersReady;
+        document.addEventListener('elevation-layers-ready', onLayersReady, { once: true });
 
         document.dispatchEvent(new CustomEvent('elevation-init', {
             detail: { mapInstance: map, gpxPath }

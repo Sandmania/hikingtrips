@@ -39,15 +39,21 @@ class ErrorToast extends HTMLElement {
     }
 
     connectedCallback() {
-        this.shadowRoot.getElementById('dismiss').addEventListener('click', () => {
+        this._onDismiss = () => {
             this._hide();
             this._showNext();
-        });
-
-        document.addEventListener('show-error', (e) => {
+        };
+        this._onShowError = (e) => {
             this._queue.push(e.detail.message);
             this._showNext();
-        });
+        };
+        this.shadowRoot.getElementById('dismiss').addEventListener('click', this._onDismiss);
+        document.addEventListener('show-error', this._onShowError);
+    }
+
+    disconnectedCallback() {
+        this.shadowRoot.getElementById('dismiss').removeEventListener('click', this._onDismiss);
+        document.removeEventListener('show-error', this._onShowError);
     }
 
     _showNext() {

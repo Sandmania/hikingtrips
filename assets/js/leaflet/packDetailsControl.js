@@ -1,6 +1,5 @@
 const DEFAULTS = {
     position: 'topright',
-    selector: 'tt-pack-details', // DOM element to check for
     title: 'Show/Hide Pack Details'
 };
 

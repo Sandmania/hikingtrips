@@ -29,10 +29,17 @@ async function route() {
         tripView.hide();
         indexView.style.display = 'block';
         if (!tripsLoaded) {
-            const response = await fetch('trips.json');
-            const trips = await response.json();
-            tripGrid.trips = trips;
-            tripsLoaded = true;
+            try {
+                const response = await fetch('trips.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to load trips (${response.status})`);
+                }
+                const trips = await response.json();
+                tripGrid.trips = trips;
+                tripsLoaded = true;
+            } catch (err) {
+                showError(err instanceof Error ? err : new Error(String(err)));
+            }
         }
     }
 }
