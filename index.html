@@ -9,52 +9,35 @@
   <link rel="stylesheet" href="assets/css/index.css">
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/info.css">
+  <link rel="stylesheet" href="assets/components/elevationProfile/ElevationProfile.css">
 
-  <!-- js-yaml for loading yaml config -->
-  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
-
-  <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet-gpx/2.1.2/gpx.min.js"></script>
-
-  <!-- Mapbox GL for vector tiles -->
-  <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.css' rel='stylesheet' />
-  <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v1.5.0/mapbox-gl.js'></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/mapbox-gl-leaflet/0.0.16/leaflet-mapbox-gl.js"></script>
-
-  <!-- leaflet-elevation -->
-  <script src="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.js"
-      integrity="sha256-Z/FTYiiAVwGeE4rl3LpmVN6p5KlulJ64thKUoneYMwk=" crossorigin="anonymous"></script>
-  <link rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/@raruto/leaflet-elevation@2.5.1/dist/leaflet-elevation.min.css"
-      integrity="sha256-Cw03qt3zMjRIGpKLc1iqjUVAvLauJYvyxTBTiISfCmQ=" crossorigin="anonymous">
-
+  <script src="assets/js/loadAssets.js"></script>
+  <script src="assets/components/errorToast/ErrorToast.js"></script>
+  <script src="assets/components/elevationProfile/ElevationProfile.js"></script>
+  <script src="assets/components/tripCard/TripCard.js"></script>
+  <script src="assets/components/tripGrid/TripGrid.js"></script>
+  <script src="assets/components/tripView/TripView.js"></script>
   <script src="assets/components/packDetails/PackDetails.js"></script>
   <script src="assets/components/tripInfo/TripInfo.js"></script>
   <script src="assets/components/legAlternatives/LegAlternatives.js"></script>
 </head>
 <body>
   <div id="index-view">
-    <div id="trips-grid"></div>
+    <trip-grid></trip-grid>
   </div>
 
-  <div id="trip-view" style="display: none;">
+  <trip-view>
     <div id="map"></div>
-    <div id="elevation-div"></div>
+    <elevation-profile id="elevation-profile"></elevation-profile>
     <hiking-calendar></hiking-calendar>
     <div id="pack-container"></div>
-
     <trip-info id="tripInfo">
       <leg-alternatives slot="leg-alternatives"></leg-alternatives>
     </trip-info>
-
     <tt-pack-details></tt-pack-details>
-  </div>
+  </trip-view>
 
-  <div id="errorToast" hidden>
-    <span id="toastText"></span>
-    <button id="dismissToast">✖</button>
-  </div>
+  <error-toast></error-toast>
 
   <script type="module" src="assets/js/router.js"></script>
 </body>

@@ -9,12 +9,13 @@ let map;
 let layerControl;
 let globalConfiguration = {};
 // Feature groups for different route types
-let legFeatureGroup = L.featureGroup();
-let evacuationFeatureGroup = L.featureGroup();
-let alternativeFeatureGroup = L.featureGroup();
-let actualRouteLayer = L.featureGroup();
+let legFeatureGroup;
+let evacuationFeatureGroup;
+let alternativeFeatureGroup;
+let actualRouteLayer;
 
 let selectedTripConfiguration;
+let pendingElevationListener;
 
 document.addEventListener('alternatives-change', (event) => {
     if (!map) return;
@@ -29,16 +30,23 @@ export function destroyMap() {
         map.remove();
         map = null;
     }
+    if (pendingElevationListener) {
+        document.removeEventListener('elevation-layers-ready', pendingElevationListener);
+        pendingElevationListener = null;
+    }
     legFeatureGroup = L.featureGroup();
     evacuationFeatureGroup = L.featureGroup();
     alternativeFeatureGroup = L.featureGroup();
     actualRouteLayer = L.featureGroup();
-    const elevDiv = document.getElementById('elevation-div');
-    if (elevDiv) elevDiv.innerHTML = '';
+    document.dispatchEvent(new CustomEvent('elevation-destroy'));
 }
 
 export function initMap(fullConfiguration) {
     globalConfiguration = fullConfiguration;
+    legFeatureGroup = L.featureGroup();
+    evacuationFeatureGroup = L.featureGroup();
+    alternativeFeatureGroup = L.featureGroup();
+    actualRouteLayer = L.featureGroup();
     console.log("Initializing map. Global config is: ", fullConfiguration);
     map = new L.map("map").setView([66.50, 25.72], 6);
 
@@ -66,10 +74,42 @@ export function initMap(fullConfiguration) {
     }
 
     if (globalConfiguration?.actualRoute?.gpx) {
-        // If actual route configuration is given, then display only actual route on initial load
-        // Other layers can still be toggled on by layercontrols
-        setupActualRouteElevation(map, globalConfiguration.actualRoute.gpx);
-   } else {
+        const gpxPath = globalConfiguration.actualRoute.gpx;
+
+        const onLayersReady = (event) => {
+            pendingElevationListener = null;
+            const { routeLayer, photoLayer } = event.detail;
+            actualRouteLayer = routeLayer;
+            routeLayer.addTo(map);
+            layerControl.addOverlay(routeLayer, "Actual route");
+
+            if (photoLayer) {
+                photoLayer.addTo(map);
+                layerControl.addOverlay(photoLayer, "Photos");
+            }
+
+            map.on('overlayadd', function(e) {
+                if (e.layer === routeLayer) {
+                    document.dispatchEvent(new CustomEvent('elevation-toggle', {
+                        detail: { visible: true, gpxPath }
+                    }));
+                }
+            });
+            map.on('overlayremove', function(e) {
+                if (e.layer === routeLayer) {
+                    document.dispatchEvent(new CustomEvent('elevation-toggle', {
+                        detail: { visible: false }
+                    }));
+                }
+            });
+        };
+        pendingElevationListener = onLayersReady;
+        document.addEventListener('elevation-layers-ready', onLayersReady, { once: true });
+
+        document.dispatchEvent(new CustomEvent('elevation-init', {
+            detail: { mapInstance: map, gpxPath }
+        }));
+    } else {
         // Else, display trip, evac and alternative layers on initial load
         map.addLayer(legFeatureGroup);    
         map.addLayer(evacuationFeatureGroup);
@@ -77,7 +117,7 @@ export function initMap(fullConfiguration) {
     }
 
     infoControl(({tripInfo: globalConfiguration.trip})).addTo(map);
-    packDetailsControl().addTo(map);
+    packDetailsControl({csvUrl: globalConfiguration?.packDetails?.csvUrl}).addTo(map);
     galleryControl({url: globalConfiguration?.photo_info?.galleryUrl}).addTo(map);
     calendarControl({travelInfo: globalConfiguration.travel_info}).addTo(map);
     
@@ -90,67 +130,6 @@ function resolveDefaultTileLayer(baseMaps) {
     return defaultTileLayer;
 }
 
-function setupActualRouteElevation(mapInstance, gpxPath) {
-    const routeLayer = L.featureGroup();
-    actualRouteLayer = routeLayer;
-
-    // Initialize elevation control
-    const elevationControl = L.control.elevation({
-        edgeScale: false,
-        theme: "magenta-theme",
-        collapsed: true,
-        detached: true,
-        elevationDiv: "#elevation-div",
-        slope: "summary",
-        followMarker: false,
-        downloadLink: false,
-        distanceMarkers: false,
-        edgeScale: false,
-        hotline: false
-    }).addTo(mapInstance);
-
-    routeLayer.addTo(mapInstance);
-    layerControl.addOverlay(routeLayer, "Actual route")
-
-    elevationControl.on('eledata_loaded',
-        ({ layer, name }) => {
-            if (map !== mapInstance) return; // stale: map was destroyed and replaced
-            layer.eachLayer((trkseg) => {
-                if (trkseg.feature.geometry.type !== "Point") {
-                    routeLayer.addLayer(trkseg);
-                } else {
-                    // If sym == Photo, add to photoLayer so that photo icons can be toggled
-                    if (trkseg.feature.properties.sym === "Photo") {
-                        if (!mapInstance.photoLayer) {
-                            mapInstance.photoLayer = L.featureGroup().addTo(mapInstance);
-                            layerControl.addOverlay(mapInstance.photoLayer, "Photos");
-                        }
-                        mapInstance.photoLayer.addLayer(trkseg);
-                    }
-                }
-            });
-        }
-    );
-    elevationControl.load(gpxPath);
-
-    /**
-     * This somewhat complex logic is here so that start and end icons are also removed
-     * when the overlay is toggled off.
-     *
-     * An unfortunate side effect for this is, that the photo icons work weirdly when toggling elevation layer off/on.
-     */
-    mapInstance.on('overlayadd', function(e) {
-        if (e.layer === routeLayer) {
-            elevationControl.clear();
-            elevationControl.load(gpxPath);
-        }
-    });
-    mapInstance.on('overlayremove', function(e) {
-        if (e.layer === routeLayer) {
-            elevationControl.clear();
-        }
-    });
-}
 
 export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) {
     console.log("Adding routes to feature group for type " + routeType);

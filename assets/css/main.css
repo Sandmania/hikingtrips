@@ -9,7 +9,7 @@ body {
     flex-flow: column wrap;
 }
 
-#trip-view {
+trip-view {
     flex: 1 1;
     order: 2;
     display: flex;
@@ -31,49 +31,6 @@ body {
     z-index: 500; /* Display mapbox vector maps on top of raster maps */
 }
 
-#errorToast {
-  position: fixed;
-  bottom: 1rem;
-  right: 1rem;
-  background: #f44336;
-  color: white;
-  padding: 1rem;
-  border-radius: 4px;
-  z-index: 9999;
-}
-
-#elevation-div,
-.leaflet-control-elevation {
-    width: 100%;
-    max-height: 450px;
-    box-sizing: border-box;
-    z-index: 1000;
-    background: #fff;
-    overflow: auto;
-}
-
-.avgele,
-.minslope,
-.maxslope,
-.avgslope {
-    display: none;
-}
-
-.elevation-waypoint-icon::before {
-    background-image: url(../images/bonfire-outline.svg) !important;
-}
-
-.elevation-waypoint-icon.photo::before {
-    background-image: url(../images/camera.svg) !important;
-}
-
-/**
-* leaflet-elevation profile might not display correctly if the gpx contains multiple segments
-* https://github.com/Raruto/leaflet-elevation/issues/237#issuecomment-1695359229
-*/
-.elevation-control .area mask {
-    display: none;
-}
 
 .image-grid {
     width: 600px !important;
@@ -96,12 +53,6 @@ body {
     max-width: 600px;
 }
 
-.elevation-tooltip.leaflet-tooltip {
-    white-space: normal;
-    padding: 0;
-    margin: 0;
-    border-radius: 12px;
-}
 
 .image-grid img {
     transition: transform 0.3s ease;

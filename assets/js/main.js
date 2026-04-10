@@ -1,5 +1,4 @@
 import { loadYAMLConfig, clearConfigCache } from './config.js';
-import { showError } from './error.js';
 import { initMap, destroyMap } from './map.js';
 import { renderTripCalendar } from '../components/calendar/calendar.js';
 import '../components/calendar/calendar.js'; // Ensure web component is registered
@@ -56,13 +55,13 @@ function initializeLegAlternatives(config) {
 }
 
 function initializePackDetails(config) {
-    if (!config?.packDetails?.csvUrl) {
-        console.log("No pack details CSV URL configured.");
-        return;
-    }
     const packDetails = document.querySelector('tt-pack-details');
     if(!packDetails) {
         console.log("Pack details web component not available.")
+        return;
+    }
+    if (!config?.packDetails?.csvUrl) {
+        packDetails.csvUrl = null;
         return;
     }
     packDetails.csvUrl = config.packDetails.csvUrl;

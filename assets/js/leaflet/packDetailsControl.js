@@ -1,6 +1,5 @@
 const DEFAULTS = {
     position: 'topright',
-    selector: 'tt-pack-details', // DOM element to check for
     title: 'Show/Hide Pack Details'
 };
 
@@ -9,7 +8,7 @@ export function packDetailsControl(options = {}) {
 
     return {
         canAdd() {
-            return !!document.querySelector(config.selector);
+            return !!config.csvUrl;
         },
 
         addTo(map) {

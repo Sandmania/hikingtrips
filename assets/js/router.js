@@ -1,15 +1,24 @@
-import { renderTripCards } from './index.js';
 import { initTrip } from './main.js';
 import { showError } from './error.js';
 
 const indexView = document.getElementById('index-view');
-const tripView = document.getElementById('trip-view');
+const tripView = document.querySelector('trip-view');
+const tripGrid = document.querySelector('trip-grid');
+let tripsLoaded = false;
 
 async function route() {
     const hash = window.location.hash.slice(1);
     if (hash) {
         indexView.style.display = 'none';
-        tripView.style.display = 'flex';
+        try {
+            await tripView.show();
+        } catch (err) {
+            window.location.hash = '';
+            indexView.style.display = 'block';
+            const error = err instanceof Error ? err : new Error(String(err));
+            showError(error);
+            return;
+        }
         try {
             await initTrip();
         } catch (err) {
@@ -17,9 +26,21 @@ async function route() {
             showError(new Error(`Trip "${hash}" not found.`));
         }
     } else {
-        tripView.style.display = 'none';
+        tripView.hide();
         indexView.style.display = 'block';
-        renderTripCards();
+        if (!tripsLoaded) {
+            try {
+                const response = await fetch('trips.json');
+                if (!response.ok) {
+                    throw new Error(`Failed to load trips (${response.status})`);
+                }
+                const trips = await response.json();
+                tripGrid.trips = trips;
+                tripsLoaded = true;
+            } catch (err) {
+                showError(err instanceof Error ? err : new Error(String(err)));
+            }
+        }
     }
 }
 
