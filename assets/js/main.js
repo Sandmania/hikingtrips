@@ -14,6 +14,7 @@ export async function initTrip() {
 
     destroyMap();
     clearConfigCache();
+    document.dispatchEvent(new CustomEvent('trip-cleanup'));
 
     const tripId = window.location.hash.slice(1);
     if (!tripId) {
@@ -35,6 +36,7 @@ export async function initTrip() {
 
         initializeLegAlternatives(config);
         initializePackDetails(config);
+        initializeMealPlan(config);
 
         if (config?.travel_info) {
             renderTripCalendar(config.travel_info);
@@ -67,6 +69,19 @@ function initializePackDetails(config) {
     packDetails.csvUrl = config.packDetails.csvUrl;
 }
 
+function initializeMealPlan(config) {
+    const mealPlan = document.querySelector('tt-meal-plan');
+    if(!mealPlan) {
+        console.log("Meal plan web component not available.")
+        return;
+    }
+    if (!config?.mealPlan?.csvUrl) {
+        mealPlan.csvUrl = null;
+        return;
+    }
+    mealPlan.csvUrl = config.mealPlan.csvUrl;
+}
+
 function resolveRelativePaths(config, tripId) {
     function resolvePath(path) {
         if (!path || path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) return path;
@@ -96,4 +111,5 @@ function resolveRelativePaths(config, tripId) {
     if (config.actualRoute?.gpx) config.actualRoute.gpx = resolvePath(config.actualRoute.gpx);
     if (config.photo_info?.galleryUrl) config.photo_info.galleryUrl = resolvePath(config.photo_info.galleryUrl);
     if (config.packDetails?.csvUrl) config.packDetails.csvUrl = resolvePath(config.packDetails.csvUrl);
+    if (config.mealPlan?.csvUrl) config.mealPlan.csvUrl = resolvePath(config.mealPlan.csvUrl);
 }

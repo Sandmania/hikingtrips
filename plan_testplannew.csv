@@ -1,0 +1,38 @@
+Day,PersonIndex,MealType,Name,Brand,Net Weight,Gross Weight,CaloriesPortion,ProteinPortion,FatPortion,CarbsPortion,Calories100g,Protein100g,Fat100g,Carbs100g,MainCarb,PrimaryProtein
+1,1,Breakfast,Porridge with smoked ham and mushrooms,Voyager,120,140,492,27.0,18.0,55.0,410,23.0,15.0,45.0,GRAIN,PORK
+1,1,Lunch,Cod Brandade,Voyager,110,130,431,17.0,9.2,67.0,392,16.0,8.4,61.0,POTATO,FISH
+1,1,Dinner,Cari de poulet et riz (Chicken Curry with Rice),Voyager,150,172,650,25.0,21.0,88.0,434,17.0,14.0,59.0,RICE,POULTRY
+1,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+1,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+1,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+1,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+2,1,Breakfast,Porridge with smoked ham and mushrooms,Voyager,120,140,492,27.0,18.0,55.0,410,23.0,15.0,45.0,GRAIN,PORK
+2,1,Lunch,Cod Brandade,Voyager,110,130,431,17.0,9.2,67.0,392,16.0,8.4,61.0,POTATO,FISH
+2,1,Dinner,Creamy risotto with mushrooms,Voyager,150,174,647,21.0,22.0,89.0,431,14.0,15.0,59.0,RICE,VEGETARIAN
+2,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+2,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+2,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+2,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+3,1,Breakfast,Porridge with smoked ham and mushrooms,Voyager,120,140,492,27.0,18.0,55.0,410,23.0,15.0,45.0,GRAIN,PORK
+3,1,Lunch,Quinoa duo with lentils,Voyager,135,156,514,24.0,14.0,66.0,381,18.0,10.0,49.0,GRAIN,VEGETARIAN
+3,1,Dinner,Boeuf au riz et aux graines,Voyager,185,204,1023,33.0,65.0,74.0,553,18.0,35.0,40.0,RICE,BEEF
+3,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+3,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+3,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+3,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+3,1,Dessert,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+3,1,Dessert,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+4,1,Breakfast,Porridge with smoked ham and mushrooms,Voyager,120,140,492,27.0,18.0,55.0,410,23.0,15.0,45.0,GRAIN,PORK
+4,1,Lunch,Quinoa duo with lentils,Voyager,135,156,514,24.0,14.0,66.0,381,18.0,10.0,49.0,GRAIN,VEGETARIAN
+4,1,Dinner,Hachis parmentier au bœuf,Voyager,125,143,577,23.0,25.0,62.0,462,19.0,20.0,50.0,POTATO,BEEF
+4,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+4,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+4,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+4,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+5,1,Breakfast,Porridge Aux Framboises,Voyager,100,120,434,12.0,17.0,57.0,434,12.0,17.0,57.0,GRAIN,VEGETARIAN
+5,1,Lunch,Purée de pomme de terre au jambon,Voyager,190,215,1029,40.0,64.0,70.0,541,21.0,34.0,37.0,POTATO,PORK
+5,1,Dinner,Pasta with salmon and dill,Voyager,125,147,551,27.0,22.0,59.0,440,22.0,17.0,48.0,PASTA,FISH
+5,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN
+5,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+5,1,Snack,Proteiinipatukka suolakinuski,Coop,50,,191,16.0,5.5,19.0,381,32.0,11.0,37.0,NONE,VEGETARIAN
+5,1,Snack,Peanut Caramel proteiinipatukka,Maxim,55,,204,16.0,9.2,20.0,372,29.0,17.0,36.0,NONE,VEGETARIAN

@@ -76,3 +76,14 @@ trip-view {
     background-color: white;
     background-image: url('../images/camera-outline.svg');
 }
+
+.leaflet-control.meal-plan-button {
+  cursor: pointer;
+  height: 48px;
+  width: 48px;
+  background-color: white;
+  background-image: url('../images/meal-plan.svg');
+  background-size: 28px;
+  background-repeat: no-repeat;
+  background-position: center;
+}

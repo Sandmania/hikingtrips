@@ -26,13 +26,15 @@ class PackDetails extends HTMLElement {
   }
 
   connectedCallback() {
-    // Listen for the custom event
     this._toggleListener = () => this.toggleDetails();
+    this._cleanupListener = () => this.clear();
     document.addEventListener('toggle-pack-details', this._toggleListener);
+    document.addEventListener('trip-cleanup', this._cleanupListener);
   }
 
   disconnectedCallback() {
     document.removeEventListener('toggle-pack-details', this._toggleListener);
+    document.removeEventListener('trip-cleanup', this._cleanupListener);
   }
 
   clear() {
