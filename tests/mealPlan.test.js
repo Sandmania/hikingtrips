@@ -191,11 +191,13 @@ describe('MealPlan', () => {
 
     describe('daily view (drill level 1)', () => {
         let el;
+        let originalFetch;
+
         beforeEach(async () => {
             el = makeMealPlan();
             render(el);
 
-            const originalFetch = window.fetch;
+            originalFetch = window.fetch;
             window.fetch = () => Promise.resolve({ ok: true, text: () => Promise.resolve(SINGLE_PERSON_CSV) });
 
             el.csvUrl = '/fake/meal.csv';
@@ -203,7 +205,9 @@ describe('MealPlan', () => {
             await waitFor(() => {
                 expect(el.shadowRoot.querySelector('.summary-view')).to.exist;
             });
+        });
 
+        afterEach(() => {
             window.fetch = originalFetch;
         });
 
@@ -273,11 +277,13 @@ describe('MealPlan', () => {
 
     describe('day detail view (drill level 2)', () => {
         let el;
+        let originalFetch;
+
         beforeEach(async () => {
             el = makeMealPlan();
             render(el);
 
-            const originalFetch = window.fetch;
+            originalFetch = window.fetch;
             window.fetch = () => Promise.resolve({ ok: true, text: () => Promise.resolve(SINGLE_PERSON_CSV) });
 
             el.csvUrl = '/fake/meal.csv';
@@ -285,7 +291,9 @@ describe('MealPlan', () => {
             await waitFor(() => {
                 expect(el.shadowRoot.querySelector('.summary-view')).to.exist;
             });
+        });
 
+        afterEach(() => {
             window.fetch = originalFetch;
         });
 

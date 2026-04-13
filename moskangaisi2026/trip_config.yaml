@@ -135,7 +135,7 @@ travel_info:
         outboundTime: 10:00:00.000+03:00
 
 mealPlan:
-  csvUrl: mealplan.csv
+  csvUrl: mealPlan.csv
 
 photo_info:
   cameraOffset:

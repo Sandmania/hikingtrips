@@ -35,16 +35,14 @@ class TripInfo extends HTMLElement {
         this._speed = 0;
         this._defaults = null;
         this._isHidden = true;
-        const info = this.shadowRoot.querySelector('#trip-info');
-        if (info) info.classList.add('hidden');
+        this.shadowRoot.innerHTML = '';
     }
 
     toggle() {
-        this._isHidden = !this._isHidden;
         const details = this.shadowRoot.querySelector('#trip-info');
-        if (details) {
-            details.classList.toggle('hidden');
-        }
+        if (!details) return;
+        this._isHidden = !this._isHidden;
+        details.classList.toggle('hidden');
     }
 
     render() {

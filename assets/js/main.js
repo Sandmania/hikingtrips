@@ -35,8 +35,8 @@ export async function initTrip() {
         initMap(config);
 
         initializeLegAlternatives(config);
-        initializePackDetails(config);
-        initializeMealPlan(config);
+        initializePackDetails(config, signal);
+        initializeMealPlan(config, signal);
 
         if (config?.travel_info) {
             renderTripCalendar(config.travel_info);
@@ -56,7 +56,7 @@ function initializeLegAlternatives(config) {
     legAlternatives.trip = config.trip;
 }
 
-function initializePackDetails(config) {
+function initializePackDetails(config, signal) {
     const packDetails = document.querySelector('tt-pack-details');
     if(!packDetails) {
         console.log("Pack details web component not available.")
@@ -66,10 +66,10 @@ function initializePackDetails(config) {
         packDetails.csvUrl = null;
         return;
     }
-    packDetails.csvUrl = config.packDetails.csvUrl;
+    packDetails.loadCsv(config.packDetails.csvUrl, signal);
 }
 
-function initializeMealPlan(config) {
+function initializeMealPlan(config, signal) {
     const mealPlan = document.querySelector('tt-meal-plan');
     if(!mealPlan) {
         console.log("Meal plan web component not available.")
@@ -79,7 +79,7 @@ function initializeMealPlan(config) {
         mealPlan.csvUrl = null;
         return;
     }
-    mealPlan.csvUrl = config.mealPlan.csvUrl;
+    mealPlan.loadCsv(config.mealPlan.csvUrl, signal);
 }
 
 function resolveRelativePaths(config, tripId) {
