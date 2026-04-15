@@ -26,13 +26,15 @@ class PackDetails extends HTMLElement {
   }
 
   connectedCallback() {
-    // Listen for the custom event
     this._toggleListener = () => this.toggleDetails();
+    this._cleanupListener = () => this.clear();
     document.addEventListener('toggle-pack-details', this._toggleListener);
+    document.addEventListener('trip-cleanup', this._cleanupListener);
   }
 
   disconnectedCallback() {
     document.removeEventListener('toggle-pack-details', this._toggleListener);
+    document.removeEventListener('trip-cleanup', this._cleanupListener);
   }
 
   clear() {
@@ -49,9 +51,10 @@ class PackDetails extends HTMLElement {
     }
   }
 
-  async loadCsv(url) {
+  async loadCsv(url, signal) {
+    this._csvUrl = url;
     try {
-      const response = await fetch(url);
+      const response = await fetch(url, { signal });
       if (!response.ok) {
         throw new Error(`Failed to fetch CSV: ${response.statusText}`);
       }
@@ -60,12 +63,13 @@ class PackDetails extends HTMLElement {
       const categorizedItems = this.categorizeItems(items);
       this.render(categorizedItems);
     } catch (error) {
+      if (error.name === 'AbortError') return;
       console.error('Error loading CSV:', error);
     }
   }
 
   parseCsv(csvData) {
-    const rows = csvData.split('\n').filter(row => row.trim() !== ''); // Remove empty rows
+    const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== ''); // Remove empty rows
     const headers = this.parseCsvRow(rows.shift()); // Parse the header row
 
     return rows.map(row => {

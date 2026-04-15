@@ -11,27 +11,38 @@ class TripInfo extends HTMLElement {
 
     connectedCallback() {
         this._toggleListener = () => this.toggle();
-        document.addEventListener('toggle-trip-info', this._toggleListener);
-
-        document.addEventListener('trip-loaded', (e) => {
+        this._tripLoadedListener = (e) => {
             console.log("trip loaded")
             this._trip = e.detail.tripConfiguration;
             this._defaults = e.detail.defaults;
             this._speed = e.detail.walkingSpeed;
             this.render();
-        })
+        };
+        this._cleanupListener = () => this.clear();
+        document.addEventListener('toggle-trip-info', this._toggleListener);
+        document.addEventListener('trip-loaded', this._tripLoadedListener);
+        document.addEventListener('trip-cleanup', this._cleanupListener);
     }
 
     disconnectedCallback() {
         document.removeEventListener('toggle-trip-info', this._toggleListener);
+        document.removeEventListener('trip-loaded', this._tripLoadedListener);
+        document.removeEventListener('trip-cleanup', this._cleanupListener);
+    }
+
+    clear() {
+        this._trip = [];
+        this._speed = 0;
+        this._defaults = null;
+        this._isHidden = true;
+        this.shadowRoot.innerHTML = '';
     }
 
     toggle() {
-        this._isHidden = !this._isHidden;
         const details = this.shadowRoot.querySelector('#trip-info');
-        if (details) {
-            details.classList.toggle('hidden');
-        }
+        if (!details) return;
+        this._isHidden = !this._isHidden;
+        details.classList.toggle('hidden');
     }
 
     render() {

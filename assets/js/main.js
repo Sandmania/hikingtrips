@@ -14,6 +14,7 @@ export async function initTrip() {
 
     destroyMap();
     clearConfigCache();
+    document.dispatchEvent(new CustomEvent('trip-cleanup'));
 
     const tripId = window.location.hash.slice(1);
     if (!tripId) {
@@ -34,7 +35,8 @@ export async function initTrip() {
         initMap(config);
 
         initializeLegAlternatives(config);
-        initializePackDetails(config);
+        initializePackDetails(config, signal);
+        initializeMealPlan(config, signal);
 
         if (config?.travel_info) {
             renderTripCalendar(config.travel_info);
@@ -54,7 +56,7 @@ function initializeLegAlternatives(config) {
     legAlternatives.trip = config.trip;
 }
 
-function initializePackDetails(config) {
+function initializePackDetails(config, signal) {
     const packDetails = document.querySelector('tt-pack-details');
     if(!packDetails) {
         console.log("Pack details web component not available.")
@@ -64,7 +66,20 @@ function initializePackDetails(config) {
         packDetails.csvUrl = null;
         return;
     }
-    packDetails.csvUrl = config.packDetails.csvUrl;
+    packDetails.loadCsv(config.packDetails.csvUrl, signal);
+}
+
+function initializeMealPlan(config, signal) {
+    const mealPlan = document.querySelector('tt-meal-plan');
+    if(!mealPlan) {
+        console.log("Meal plan web component not available.")
+        return;
+    }
+    if (!config?.mealPlan?.csvUrl) {
+        mealPlan.csvUrl = null;
+        return;
+    }
+    mealPlan.loadCsv(config.mealPlan.csvUrl, signal);
 }
 
 function resolveRelativePaths(config, tripId) {
@@ -96,4 +111,5 @@ function resolveRelativePaths(config, tripId) {
     if (config.actualRoute?.gpx) config.actualRoute.gpx = resolvePath(config.actualRoute.gpx);
     if (config.photo_info?.galleryUrl) config.photo_info.galleryUrl = resolvePath(config.photo_info.galleryUrl);
     if (config.packDetails?.csvUrl) config.packDetails.csvUrl = resolvePath(config.packDetails.csvUrl);
+    if (config.mealPlan?.csvUrl) config.mealPlan.csvUrl = resolvePath(config.mealPlan.csvUrl);
 }

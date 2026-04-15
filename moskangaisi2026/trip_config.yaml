@@ -134,6 +134,9 @@ travel_info:
         outboundDate: "2026-07-21"
         outboundTime: 10:00:00.000+03:00
 
+mealPlan:
+  csvUrl: mealPlan.csv
+
 photo_info:
   cameraOffset:
     realClock: 13.09

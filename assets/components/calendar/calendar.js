@@ -16,7 +16,19 @@ class HikingCalendar extends HTMLElement {
   }
 
   connectedCallback() {
+    this._cleanupListener = () => this.clear();
+    document.addEventListener('trip-cleanup', this._cleanupListener);
     this.render();
+  }
+
+  disconnectedCallback() {
+    document.removeEventListener('trip-cleanup', this._cleanupListener);
+  }
+
+  clear() {
+    this.travelInfo = null;
+    this.isVisible = false;
+    this.shadowRoot.innerHTML = '';
   }
 
   setTravelInfo(travelInfo) {
@@ -255,6 +267,9 @@ class HikingCalendar extends HTMLElement {
       '<link rel="stylesheet" href="../assets/components/calendar/calendar.css">';
     this.shadowRoot.appendChild(container);
     this.shadowRoot.appendChild(tooltip);
+
+    // Apply current visibility state to the newly created container
+    this.updateVisibility();
 
     // Attach event listeners to cells
     this.attachCellListeners();
