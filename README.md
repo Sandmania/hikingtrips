@@ -84,3 +84,30 @@ Plain Vanilla https://plainvanillaweb.com/index.html
 https://www.phpied.com/maximally-minimal-build-process/
 https://www.phpied.com/import-javascript-like-its-2026/
 https://blog.bitsrc.io/sharing-data-between-web-components-using-custom-events-7eff301625d2
+
+## Deployment
+```
+aws sso login --profile joun_in
+aws s3 sync public/ s3://joun.in/vaellukset/ --exclude "*.DS_Store" --exclude "*.gitignore" --exclude "*.gitkeep" --profile joun_in
+```
+Note: sync `public/` (the site root), not the repo root — everything the browser
+loads lives under `public/`.
+
+### Hosting (S3 + CloudFront)
+
+The site is served from a subdirectory (`joun.in/vaellukset/`) of a private S3
+bucket via CloudFront (OAC/REST origin: `joun.in.s3.eu-west-1.amazonaws.com`).
+All asset paths are **relative** (`assets/...`), so they resolve against the
+page's directory — which requires the URL to keep its trailing slash:
+
+- `joun.in/vaellukset/` → assets resolve to `joun.in/vaellukset/assets/...` ✓
+- `joun.in/vaellukset` (no slash) → assets resolve to `joun.in/assets/...` ✗
+
+A plain REST/OAC origin does not add the slash or serve a subfolder `index.html`
+on its own (CloudFront's Default Root Object only covers `/`). The CloudFront
+Function at [`infra/cloudfront-rewrite.js`](infra/cloudfront-rewrite.js) handles
+both: it 301-redirects `/vaellukset` → `/vaellukset/` and rewrites
+`/vaellukset/` → `/vaellukset/index.html`. It is an exact-match allowlist
+(`SUBDIRS`), so add a subdirectory app by adding one string. See that file's
+header for the console deploy steps (Functions → create → Publish → attach to the
+default behavior's **viewer-request** event).

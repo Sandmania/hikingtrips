@@ -264,7 +264,7 @@ class HikingCalendar extends HTMLElement {
     tooltip.id = "event-tooltip";
 
     this.shadowRoot.innerHTML =
-      '<link rel="stylesheet" href="../assets/components/calendar/calendar.css">';
+      '<link rel="stylesheet" href="assets/components/calendar/calendar.css">';
     this.shadowRoot.appendChild(container);
     this.shadowRoot.appendChild(tooltip);
 

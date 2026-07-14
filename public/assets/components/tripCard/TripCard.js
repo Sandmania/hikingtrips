@@ -1,5 +1,5 @@
 customElements.define('trip-card', class extends HTMLElement {
-    static styleSheet = fetchCSS(['../assets/components/tripCard/TripCard.css']);
+    static styleSheet = fetchCSS(['assets/components/tripCard/TripCard.css']);
     static template = Object.assign(document.createElement('template'), {
         innerHTML: `
             <div class="trip-card">

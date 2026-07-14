@@ -1,5 +1,5 @@
 customElements.define('trip-grid', class extends HTMLElement {
-    static styleSheet = fetchCSS(['../assets/components/tripGrid/TripGrid.css']);
+    static styleSheet = fetchCSS(['assets/components/tripGrid/TripGrid.css']);
     static template = Object.assign(document.createElement('template'), {
         innerHTML: `
             <div class="grid"></div>
