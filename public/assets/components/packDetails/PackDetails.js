@@ -4,7 +4,7 @@ class PackDetails extends HTMLElement {
     this.attachShadow({ mode: 'open' });
     this._csvUrl = null;
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="../assets/components/packDetails/PackDetails.css">
+      <link rel="stylesheet" href="assets/components/packDetails/PackDetails.css">
       <div id="details" class="hidden">
         <slot></slot>
         <div id="output"></div>

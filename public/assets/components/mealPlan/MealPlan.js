@@ -8,7 +8,7 @@ class MealPlan extends HTMLElement {
     this._drillLevel = 0;
     this._selectedDay = null;
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="../assets/components/mealPlan/MealPlan.css">
+      <link rel="stylesheet" href="assets/components/mealPlan/MealPlan.css">
       <div id="meal-plan" class="hidden">
         <div id="person-tabs"></div>
         <div id="output"></div>
