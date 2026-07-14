@@ -60,6 +60,7 @@ describe('MealPlan', () => {
         it('returns empty array for whitespace-only input', () => {
             expect(el.parseCsv('  \n \r\n\t\n')).to.have.lengthOf(0);
         });
+
     });
 
     describe('structureData', () => {
