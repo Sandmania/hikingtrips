@@ -88,7 +88,7 @@ https://blog.bitsrc.io/sharing-data-between-web-components-using-custom-events-7
 ## Deployment
 ```
 aws sso login --profile joun_in
-aws s3 sync public/ s3://joun.in/vaellukset/ --exclude "*.DS_Store" --exclude "*.gitignore" --exclude "*.gitkeep" --profile joun_in
+aws s3 sync public/ s3://joun.in/vaellukset/ --exclude "*.DS_Store" --exclude "*.gitignore" --exclude "*.gitkeep" --exclude "*/photos/*" --dryrun --delete --profile joun_in
 ```
 Note: sync `public/` (the site root), not the repo root — everything the browser
 loads lives under `public/`.
