@@ -1,7 +1,7 @@
 heading: Moskángáisi 2026 - TrailTreader
 
 defaults:
-  numberOfZeroDays: 1
+  numberOfZeroDays: 2
   tileLayer: FiSeNo Composite
   availableTileLayers:
     - "Esri World Imagery"
@@ -64,12 +64,16 @@ trip:
       
   - gpx: planned_route/Kuohkimajarvi_Gappohytta_ele.gpx
     description: >
+    alternatives:
+    - gpx: planned_route/Gappohytta_alt_ele.gpx
 
-  - gpx: planned_route/Rostahytta_ele.gpx
-    description: >
+  - gpx: planned_route/Iselva_ele.gpx
+    description: Bridge over Iselva is broken, so no point of going to Rostahytta
 
-  - gpx: planned_route/Paltsastugan_ele.gpx
+  - gpx: planned_route/Iselva_M_skohytta_P_ltsastugan_ele.gpx
     description: >
+    alternatives:
+    - gpx: planned_route/Iselva_Paltsastugan_ele.gpx
 
   - gpx: planned_route/Golddaluokta.gpx
     endIcon: /assets/images/flag-checkered-solid.svg
@@ -79,59 +83,71 @@ trip:
       dinner: false
       snacks: true
     description: >
-      
+
+evacuation:
+  - gpx: planned_route/evac1_ele.gpx
+  - gpx: planned_route/evac2.gpx
+    startIcon:
+    endIcon: /assets/images/medkit-outline.svg
+
 travel_info:
   to:
     - transportation:
         type: train
         from: JY
         to: TPE
-        outboundDate: "2026-07-11"
+        outboundDate: "2026-08-15"
         outboundTime: 21:14:00.000+03:00
     - transportation:
         type: train
         from: TPE
-        to: KLI
-        outboundDate: "2026-07-11"
+        to: ROI
+        outboundDate: "2026-08-15"
         outboundTime: 23:09:00.000+03:00
     - transportation:
         type: bus
-        from: Kolari
+        from: Rovaniemi
         to: Kilpisjärvi
-        outboundDate: "2026-07-12"
+        outboundDate: "2026-08-16"
         outboundTime: 11:20
     - accommodation:
-        name: Somewhere
-        url: 
-        checkInDate: "2026-07-12"
-        checkOutDate: "2026-07-13"
+        name: Kilpisjärven Retkeilykeskus
+        url: https://www.kilpisjarvenretkeilykeskus.fi/
+        checkInDate: "2026-08-16"
+        checkOutDate: "2026-08-17"
         checkInTime: 15:00
         checkOutTime: 12:00
   from:
+    - transportation:
+        type: boat
+        from: Golddaluokta
+        to: Kilpisjärvi
+        outboundDate: "2026-08-23"
+        outboundTime: 12:30
     - accommodation:
-        name: Somewhere
-        url:
-        checkInDate: "2026-07-19"
-        checkOutDate: "2026-07-20"
+        name: Kilpisjärven Retkeilykeskus
+        url: https://www.kilpisjarvenretkeilykeskus.fi/
+        checkInDate: "2026-08-23"
+        checkOutDate: "2026-08-24"
         checkInTime: 15:00
         checkOutTime: 08:00
     - transportation:
         type: bus
         from: Kilpisjärvi
-        to: Kolari
-        outboundDate: "2026-07-20"
+        to: Rovaniemi
+        outboundDate: "2026-08-24"
         outboundTime: 09:40
     - transportation:
         type: train
-        from: KLI
+        from: ROI
         to: HKI
-        outboundDate: "2026-07-20"
+        outboundDate: "2026-08-24"
         outboundTime: 20:57:00.000+03:00
     - transportation:
         type: train
         from: HKI
         to: JY
-        outboundDate: "2026-07-21"
+        outboundDate: "2026-08-25"
         outboundTime: 10:00:00.000+03:00
 
 mealPlan:

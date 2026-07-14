@@ -186,6 +186,7 @@ class MealPlan extends HTMLElement {
 
   parseCsv(csvData) {
     const lines = csvData.split(/\r?\n/).filter(line => line.trim() !== '');
+    if (lines.length === 0) return [];
     const headers = this.parseCsvRow(lines.shift());
 
     return lines.map(line => {
