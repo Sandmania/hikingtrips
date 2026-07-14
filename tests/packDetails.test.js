@@ -54,6 +54,14 @@ describe('PackDetails', () => {
             const items = el.parseCsv(csv);
             expect(items).to.have.lengthOf(0);
         });
+
+        it('returns empty array for empty input', () => {
+            expect(el.parseCsv('')).to.have.lengthOf(0);
+        });
+
+        it('returns empty array for whitespace-only input', () => {
+            expect(el.parseCsv('  \n \r\n\t\n')).to.have.lengthOf(0);
+        });
     });
 
     describe('categorizeItems', () => {

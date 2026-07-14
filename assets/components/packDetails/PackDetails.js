@@ -70,6 +70,7 @@ class PackDetails extends HTMLElement {
 
   parseCsv(csvData) {
     const rows = csvData.split(/\r?\n/).filter(row => row.trim() !== ''); // Remove empty rows
+    if (rows.length === 0) return [];
     const headers = this.parseCsvRow(rows.shift()); // Parse the header row
 
     return rows.map(row => {
