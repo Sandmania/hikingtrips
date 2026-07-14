@@ -6,7 +6,18 @@ class TripInfo extends HTMLElement {
         this._trip = [];
         this._speed = 0;
         this._defaults = null;
-        this._isHidden = true;
+
+        this.shadowRoot.innerHTML = `
+        <link rel="stylesheet" href="assets/components/tripInfo/TripInfo.css">
+        <div id="trip-info" class="hidden">
+            <div class="legs"></div>
+            <div class="zeros"></div>
+            <div class="totals"></div>
+            <section>
+                <slot name="leg-alternatives"></slot>
+            </section>
+        </div>
+        `;
     }
 
     connectedCallback() {
@@ -34,20 +45,27 @@ class TripInfo extends HTMLElement {
         this._trip = [];
         this._speed = 0;
         this._defaults = null;
-        this._isHidden = true;
-        this.shadowRoot.innerHTML = '';
+        this.shadowRoot.querySelector('#trip-info').classList.add('hidden');
+        this.shadowRoot.querySelector('.legs').innerHTML = '';
+        this.shadowRoot.querySelector('.zeros').innerHTML = '';
+        this.shadowRoot.querySelector('.totals').innerHTML = '';
     }
 
     toggle() {
         const details = this.shadowRoot.querySelector('#trip-info');
         if (!details) return;
-        this._isHidden = !this._isHidden;
         details.classList.toggle('hidden');
     }
 
     render() {
+        const legsEl = this.shadowRoot.querySelector('.legs');
+        const zerosEl = this.shadowRoot.querySelector('.zeros');
+        const totalsEl = this.shadowRoot.querySelector('.totals');
+
         if (!this._trip.length || !this._defaults) {
-            this.shadowRoot.innerHTML = '';
+            legsEl.innerHTML = '';
+            zerosEl.innerHTML = '';
+            totalsEl.innerHTML = '';
             return;
         }
 
@@ -76,36 +94,25 @@ class TripInfo extends HTMLElement {
         );
 
 
-        this.shadowRoot.innerHTML = `
-        <link rel="stylesheet" href="assets/components/tripInfo/TripInfo.css">
-        <div id="trip-info" class="${this._isHidden ? 'hidden' : ''}">
+        legsEl.innerHTML = legViewModels
+            .map(vm => `
+                <p>${vm.title}</p>
+                <p>${vm.mealPlanText}</p>
+            `)
+            .join('');
 
-            <div class="legs">
-            ${legViewModels
-                .map(vm => `
-                    <p>${vm.title}</p>
-                    <p>${vm.mealPlanText}</p>
-                `)
-                .join('')}
-            </div>
+        zerosEl.innerHTML = zeroDayViewModels
+            .map(vm => `
+                <p>${vm.title}</p>
+                <p>${vm.mealPlanText}</p>
+            `)
+            .join('');
 
-            <div class="zeros">
-                ${zeroDayViewModels.map(vm => `
-                    <p>${vm.title}</p>
-                    <p>${vm.mealPlanText}</p>
-                `).join('')}
-            </div>
-            <div class="totals">
-                <p>Total length: ${this._trip.totalDistance.toFixed(2)} km</p>
-                <p>Total meals:</p>
-                Breakfast: ${totals.breakfast}, Lunch: ${totals.lunch}, Dinner: ${totals.dinner}, Snacks: ${totals.snacks}
-            </div>
-            <section>
-                <slot name="leg-alternatives"></slot>
-            </section>
-        </div>
+        totalsEl.innerHTML = `
+            <p>Total length: ${this._trip.totalDistance.toFixed(2)} km</p>
+            <p>Total meals:</p>
+            Breakfast: ${totals.breakfast}, Lunch: ${totals.lunch}, Dinner: ${totals.dinner}, Snacks: ${totals.snacks}
         `;
-
     }
 }
 
