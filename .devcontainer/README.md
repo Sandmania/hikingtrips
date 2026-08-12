@@ -89,13 +89,26 @@ vendoring step that would let them work offline:
 ## Deployment is not in here
 
 Deploying is deliberately left on the host. There is no cloud CLI in the image and
-no credential directory mounted into it, so the container never sees your
-credentials — publishing stays something you do deliberately, from outside.
+no cloud-credential directory mounted into it, so nothing inside the container can
+publish the site — that stays something you do deliberately, from outside.
+
+To be precise about scope: this is a claim about **deployment** credentials only.
+The container is *not* a sealed box. It bind-mounts your host `~/.claude` and
+`~/.agents`, so Claude Code's own credentials, settings and memory are deliberately
+visible inside it (see *Gotchas*). Don't read the paragraph above as "no secrets
+reach the container".
 
 See the *Deployment* section of the repo [README](../README.md) for the command.
 
 ## Gotchas
 
+- **`~/.claude` and `~/.agents` must exist on the host before you start the
+  container.** They're bind mounts, and the devcontainer CLI passes them as
+  `--mount type=bind`, which *errors* on a missing source rather than creating it
+  — so on a machine that has never run Claude Code, the container won't come up at
+  all. Fix with `mkdir -p ~/.claude ~/.agents`. (Swapping them for named volumes
+  would avoid the prerequisite but defeat the point: the whole reason they're
+  binds is to share one set of credentials and memory with the host.)
 - **Photos are gitignored.** `public/*/photos/` is excluded from the repo, so trip
   cards and galleries show broken images locally. That's expected, not a bug you
   introduced.

@@ -25,6 +25,11 @@
     "source=hikingtrips-npm-cache,target=/home/node/.npm,type=volume",
 
     // --- shared dev config ---------------------------------------------------
+    // PREREQUISITE: both host paths below must exist before the container starts.
+    // These are passed to Docker as `--mount type=bind`, which errors on a missing
+    // source instead of creating it -- on a machine that has never run Claude Code
+    // the container won't come up. `mkdir -p ~/.claude ~/.agents` fixes it.
+    //
     // ~/.claude is bind-mounted from the host so credentials, settings and
     // per-project memory are shared. But the host runs its OWN (macOS, possibly
     // newer) Claude Code, and some subdirs hold version- and host-specific runtime

@@ -17,7 +17,34 @@
  * With no --url it starts `python3 -m http.server` over public/ on a free port
  * and shuts it down afterwards.
  *
+ * Exit codes:
+ *   0  every test passed
+ *   1  at least one test failed
+ *   2  the harness could not produce a trustworthy answer -- see "Trusting a
+ *      green run" below
+ *
  * Requires network: the page pulls mocha/chai/testing-library from unpkg.com.
+ *
+ * ## Trusting a green run
+ *
+ * Test files are registered by hand in public/tests/index.html; there is no glob.
+ * That makes a specific silent failure possible: if one test module 404s or has a
+ * syntax error, the *other* modules still register their tests, mocha still runs
+ * them, and the run still ends with zero failures. A naive runner reports that as
+ * a pass -- green, with a whole file of tests silently missing.
+ *
+ * So a clean mocha result is necessary but not sufficient. Two things are also
+ * treated as fatal:
+ *
+ *   - a script that failed to load or evaluate (network failure, or any 4xx/5xx
+ *     response for a .js/.mjs URL)
+ *   - an uncaught exception in the page (`pageerror`), which is what a syntax
+ *     error in a test module surfaces as
+ *
+ * Everything else -- console noise, a missing stylesheet, a 404 favicon -- is
+ * printed as a warning and does not affect the exit code. That distinction is
+ * deliberate: public/tests/ currently 404s three component stylesheets, which is
+ * a real (benign) bug but not a reason to fail the suite.
  */
 
 import { createRequire } from 'node:module';
@@ -117,6 +144,15 @@ async function startServer() {
     return { proc, baseUrl: `http://127.0.0.1:${port}` };
 }
 
+/** A URL the page loads as executable JavaScript. */
+function isScript(url) {
+    try {
+        return /\.m?js$/i.test(new URL(url).pathname);
+    } catch {
+        return false;
+    }
+}
+
 /**
  * Injected before any page script. mocha's HTML reporter only writes results
  * into the DOM, so instead of scraping it we intercept the `mocha` global at the
@@ -168,34 +204,55 @@ function instrumentMocha() {
 
 async function main() {
     const opts = parseArgs(process.argv.slice(2));
+
+    // Everything acquired below is released in the finally block, which tolerates
+    // any of these still being null -- a Chromium that fails to launch must not
+    // leave the http.server orphaned.
     let server = null;
-    let url = opts.url;
-
-    if (!url) {
-        server = await startServer();
-        url = `${server.baseUrl}/tests/`;
-    }
-    if (opts.grep) {
-        url += (url.includes('?') ? '&' : '?') + 'grep=' + encodeURIComponent(opts.grep);
-    }
-
-    const browser = await chromium.launch({ headless: !opts.headed });
-    const page = await browser.newPage();
-
-    const pageErrors = [];
-    const failedRequests = [];
-    page.on('pageerror', (err) => pageErrors.push(String(err && (err.stack || err.message))));
-    page.on('console', (msg) => {
-        if (msg.type() === 'error') pageErrors.push(msg.text());
-    });
-    page.on('requestfailed', (req) =>
-        failedRequests.push(`${req.url()} (${req.failure()?.errorText ?? 'failed'})`)
-    );
-
-    await page.addInitScript(instrumentMocha);
-
+    let browser = null;
+    let page = null;
     let exitCode = 0;
+
+    // `pageerror` is an uncaught exception in the page and is fatal. Console
+    // errors are not: a resource 404 logs one, and the suite has known-benign
+    // ones. Keep the two apart rather than lumping them together.
+    const uncaught = [];
+    const consoleErrors = [];
+    const brokenScripts = [];
+    const otherResourceProblems = [];
+
     try {
+        let url = opts.url;
+        if (!url) {
+            server = await startServer();
+            url = `${server.baseUrl}/tests/`;
+        }
+        if (opts.grep) {
+            url += (url.includes('?') ? '&' : '?') + 'grep=' + encodeURIComponent(opts.grep);
+        }
+
+        browser = await chromium.launch({ headless: !opts.headed });
+        page = await browser.newPage();
+
+        page.on('pageerror', (err) => uncaught.push(String((err && (err.stack || err.message)) || err)));
+        page.on('console', (msg) => {
+            if (msg.type() === 'error') consoleErrors.push(msg.text());
+        });
+        // A network-level failure (connection refused, aborted).
+        page.on('requestfailed', (req) => {
+            const entry = `${req.url()} (${req.failure()?.errorText ?? 'request failed'})`;
+            (isScript(req.url()) ? brokenScripts : otherResourceProblems).push(entry);
+        });
+        // A 404 is a *successful* response, so requestfailed never fires for it --
+        // a missing test file would slip straight through without this.
+        page.on('response', (res) => {
+            if (res.status() < 400) return;
+            const entry = `${res.url()} (HTTP ${res.status()})`;
+            (isScript(res.url()) ? brokenScripts : otherResourceProblems).push(entry);
+        });
+
+        await page.addInitScript(instrumentMocha);
+
         console.log(`running ${url}`);
         await page.goto(url, { waitUntil: 'load', timeout: 30000 });
 
@@ -216,11 +273,27 @@ async function main() {
         }
         const summary = `${results.passes} passing, ${results.failures.length} failing`;
         console.log(`\n${summary}${results.pending ? `, ${results.pending} pending` : ''}`);
+
+        // A clean mocha result means nothing if a test file never made it into the
+        // run. Refuse to report a pass we can't stand behind.
+        if (brokenScripts.length) {
+            throw new Error(
+                `${brokenScripts.length} script(s) failed to load, so tests may be silently ` +
+                    `missing from this run:\n  ${[...new Set(brokenScripts)].join('\n  ')}`
+            );
+        }
+        if (uncaught.length) {
+            throw new Error(
+                `uncaught exception(s) in the page, so tests may be silently missing from ` +
+                    `this run:\n  ${[...new Set(uncaught)].join('\n  ')}`
+            );
+        }
+
         exitCode = results.failures.length > 0 ? 1 : 0;
     } catch (err) {
         console.error(`\nharness error: ${err.message}`);
         // Whatever mocha managed before it wedged is the most useful clue.
-        const partial = await page.evaluate(() => window.__ttResults ?? null).catch(() => null);
+        const partial = await page?.evaluate(() => window.__ttResults ?? null).catch(() => null);
         if (partial) {
             console.error(
                 `mocha had reached ${partial.passes} passing, ${partial.failures.length} failing`
@@ -228,15 +301,16 @@ async function main() {
         }
         exitCode = 2;
     } finally {
-        if (pageErrors.length) {
-            console.error('\npage errors:');
-            for (const e of new Set(pageErrors)) console.error(`  ${e}`);
+        // Warnings only -- these do not change the exit code.
+        if (otherResourceProblems.length) {
+            console.error('\nnon-script resources that failed to load (not fatal):');
+            for (const r of new Set(otherResourceProblems)) console.error(`  ${r}`);
         }
-        if (failedRequests.length) {
-            console.error('\nfailed requests:');
-            for (const r of new Set(failedRequests)) console.error(`  ${r}`);
+        if (consoleErrors.length) {
+            console.error('\nconsole errors (not fatal):');
+            for (const e of new Set(consoleErrors)) console.error(`  ${e}`);
         }
-        await browser.close();
+        await browser?.close().catch(() => {});
         server?.proc.kill();
     }
 
