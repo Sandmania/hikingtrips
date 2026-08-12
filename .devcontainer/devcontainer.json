@@ -1,0 +1,79 @@
+{
+  "name": "hikingtrips",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "args": {
+      // Pin exact versions here if you need reproducible rebuilds.
+      // Playwright: https://github.com/microsoft/playwright/releases
+      "PLAYWRIGHT_VERSION": "1",
+      "OPENSPEC_VERSION": "latest"
+    }
+  },
+
+  "features": {
+    // Claude Code CLI, so development can continue in-container. Node already
+    // comes from the base image, so no node feature is needed.
+    "ghcr.io/anthropics/devcontainer-features/claude-code:1": {}
+  },
+
+  // Deliberately absent: any cloud CLI and any credential-directory mount.
+  // Deployment stays a host activity (see the repo README), so the container
+  // never has access to credentials that could publish the site.
+
+  "mounts": [
+    // npm cache, so `npx`/`npm i -g` warm-start after a rebuild.
+    "source=hikingtrips-npm-cache,target=/home/node/.npm,type=volume",
+
+    // --- shared dev config ---------------------------------------------------
+    // PREREQUISITE: both host paths below must exist before the container starts.
+    // These are passed to Docker as `--mount type=bind`, which errors on a missing
+    // source instead of creating it -- on a machine that has never run Claude Code
+    // the container won't come up. `mkdir -p ~/.claude ~/.agents` fixes it.
+    //
+    // ~/.claude is bind-mounted from the host so credentials, settings and
+    // per-project memory are shared. But the host runs its OWN (macOS, possibly
+    // newer) Claude Code, and some subdirs hold version- and host-specific runtime
+    // state that must NOT be shared: shell-snapshots encode the search-tool
+    // wrapper protocol of whichever binary wrote them, so a newer host snapshot
+    // consumed by the older container binary breaks bare grep/rg/find ("unknown
+    // option '-G'"). Overlay container-local volumes on those churny paths
+    // (listed AFTER the bind so the nested mounts win); the durable shared config
+    // underneath is untouched.
+    "source=${localEnv:HOME}/.claude,target=/home/node/.claude,type=bind,consistency=cached",
+    "source=hikingtrips-claude-shell-snapshots,target=/home/node/.claude/shell-snapshots,type=volume",
+    "source=hikingtrips-claude-sessions,target=/home/node/.claude/sessions,type=volume",
+    "source=hikingtrips-claude-session-env,target=/home/node/.claude/session-env,type=volume",
+    "source=${localEnv:HOME}/.agents,target=/home/node/.agents,type=bind,consistency=cached"
+  ],
+
+  // For `python3 -m http.server 8000 --directory public` (see README). Forwarded
+  // so the site — and public/tests/index.html — open in your HOST browser.
+  "forwardPorts": [8000],
+  "portsAttributes": {
+    "8000": { "label": "hikingtrips site" }
+  },
+
+  // Toolchain summary only. Best-effort; never fails the build.
+  "postCreateCommand": "bash .devcontainer/postCreate.sh",
+
+  // The javascript-node base image's non-root user is `node`, not `vscode`.
+  "remoteUser": "node",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Every trip is driven by a trip_config.yaml.
+        "redhat.vscode-yaml",
+        // Reload-on-save static server — the no-build-step equivalent of a
+        // dev server with HMR. Rooted at /public below.
+        "ritwickdey.LiveServer"
+      ],
+      "settings": {
+        // The site is under public/; point Live Server at it directly.
+        "liveServer.settings.root": "/public",
+        // GPX is XML; without this VS Code treats it as plain text.
+        "files.associations": { "*.gpx": "xml" }
+      }
+    }
+  }
+}
