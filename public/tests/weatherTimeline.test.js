@@ -1,5 +1,7 @@
 import { expect, render, waitFor } from './imports-test.js';
 import { weatherControl } from '../assets/js/leaflet/weatherControl.js';
+import { parseActualRoute } from '../assets/components/weatherTimeline/actualRoute.js';
+import { wallTimeToInstant } from '../assets/components/weatherTimeline/exposureRecord.js';
 import { MUOTKA_TRACK } from './actualRoute.test.js';
 import '../assets/components/weatherTimeline/WeatherTimeline.js';
 
@@ -47,6 +49,9 @@ const TRACK = `<?xml version="1.0" encoding="UTF-8"?>
 
 const MUOTKA = { csvUrl: 'trip/sand.csv', gpxUrl: 'trip/combined.gpx', timeZone: 'Europe/Helsinki' };
 
+/** The plot's own width in view units: the 960 viewBox less the two margins. */
+const PLOT_WIDTH = 874;
+
 /** A day in cloud: 95 % relative humidity at 9.9 °C, drying out by mid-afternoon. */
 const FOG_LOG = [
     '"Device Name","SandWeather"',
@@ -76,6 +81,34 @@ const CAMP_AND_SUN_LOG = [
     ''
 ].join('\n');
 
+/**
+ * An Exposure Record shaped like the real one: a reading every half hour across
+ * the whole Trip Window, nights included, so there is something to find wherever
+ * a cursor lands. Temperature follows the hour of the day, which puts the cold
+ * hours in Camp where they belong, and the trip's real low — 3.1 °C at 06 Jul
+ * 01:00 — is written in at the hour it happened.
+ */
+const WHOLE_TRIP_LOG = (() => {
+    const rows = [];
+    for (let at = Date.UTC(2025, 6, 4, 11, 0); at <= Date.UTC(2025, 6, 10, 15, 0); at += 30 * 60000) {
+        const time = new Date(at); // a wall clock, as the device writes it
+        const wallTime = time.toISOString().slice(0, 19).replace('T', ' ');
+        const hour = time.getUTCHours() + time.getUTCMinutes() / 60;
+        const isTripLow = wallTime === '2025-07-06 01:00:00';
+        const temperature = isTripLow ? 3.1 : 12 + 8 * Math.cos((hour - 14) / 24 * 2 * Math.PI);
+        const relativeHumidity = isTripLow ? 88.0 : 60;
+        rows.push(`"${wallTime}","${temperature.toFixed(1)}","${relativeHumidity.toFixed(1)}",` +
+            `"${temperature.toFixed(1)}","5.0","point"`);
+    }
+    return [
+        '"Device Name","SandWeather"',
+        '"FORMATTED DATE_TIME","Temperature","Relative Humidity","Heat Index","Dew Point","Data Type"',
+        '"YYYY-MM-DD HH:MM:SS","°C","%","°C","°C"',
+        ...rows,
+        ''
+    ].join('\n');
+})();
+
 /** Serve the fixtures, and record what was asked for. */
 function stubFetch(requested, sensorLog = SENSOR_LOG, track = TRACK) {
     return (url) => {
@@ -90,6 +123,75 @@ function pathYs(path) {
     return path.getAttribute('d')
         .match(/-?[\d.]+,-?[\d.]+/g)
         .map(pair => parseFloat(pair.split(',')[1]));
+}
+
+/** Open the timeline and wait for the drawn chart. */
+async function openTimeline(el, sensorLog, track) {
+    window.fetch = stubFetch([], sensorLog, track);
+    el.trip = MUOTKA;
+    document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+    return waitFor(
+        () => {
+            const surface = el.shadowRoot.querySelector('rect.hover-surface');
+            expect(surface).to.exist;
+            return surface;
+        },
+        { timeout: 15000 }
+    );
+}
+
+/**
+ * Point at the plot, a fraction of the way across it. Given in fractions rather
+ * than pixels because the chart is drawn in view units and scaled by viewBox, so
+ * the only stable thing to aim at is the plot's own width.
+ */
+function pointAt(el, fraction, { type = 'pointermove', pointerType = 'mouse' } = {}) {
+    const surface = el.shadowRoot.querySelector('rect.hover-surface');
+    const box = surface.getBoundingClientRect();
+    surface.dispatchEvent(new PointerEvent(type, {
+        bubbles: true,
+        pointerType,
+        clientX: box.left + box.width * fraction,
+        clientY: box.top + box.height / 2
+    }));
+}
+
+/** Where a moment on the trip's own clock falls across the plot, as a fraction. */
+function fractionOf(wallTime, track = MUOTKA_TRACK) {
+    const { tripWindow } = parseActualRoute(track);
+    const at = wallTimeToInstant(wallTime, MUOTKA.timeZone);
+    return (at - tripWindow.start) / (tripWindow.end - tripWindow.start);
+}
+
+/** Whether a moment on the trip's clock fell inside a Walking Window. */
+function isWalking(wallTime, track = MUOTKA_TRACK) {
+    const at = wallTimeToInstant(wallTime, MUOTKA.timeZone);
+    return parseActualRoute(track).walkingWindows
+        .some(window => at >= window.start && at <= window.end);
+}
+
+/** Whether the hairline and its readout are on show. */
+function isHoverShown(el) {
+    const hover = el.shadowRoot.querySelector('g.hover');
+    return hover !== null && hover.getAttribute('display') !== 'none';
+}
+
+/** Where the hairline stands, in plot units. */
+function hairlineX(el) {
+    return parseFloat(el.shadowRoot.querySelector('line.hairline').getAttribute('x1'));
+}
+
+/** Where the readout's box sits across the plot, in plot units. */
+function readoutSpan(el) {
+    const group = el.shadowRoot.querySelector('g.readout');
+    const left = parseFloat(group.getAttribute('transform').match(/translate\(([-\d.]+)/)[1]);
+    const width = parseFloat(el.shadowRoot.querySelector('rect.readout-box').getAttribute('width'));
+    return { left, right: left + width };
+}
+
+/** What the readout says, as its lines of text. */
+function readout(el) {
+    return Array.from(el.shadowRoot.querySelectorAll('.readout text'), text => text.textContent);
 }
 
 describe('WeatherTimeline', () => {
@@ -579,6 +681,119 @@ describe('WeatherTimeline', () => {
         // Numbers outlive a chart quietly: three tiles reading 3.1 / 8.6 / 30.5
         // above another trip's blank chart would be read as that trip's.
         expect(el.shadowRoot.querySelectorAll('.tile')).to.be.empty;
+    });
+
+    it('follows the cursor with a hairline across the plot', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        pointAt(el, 0.25);
+        expect(el.shadowRoot.querySelector('line.hairline')).to.exist;
+        const quarter = hairlineX(el);
+
+        pointAt(el, 0.75);
+        const threeQuarters = hairlineX(el);
+
+        // It is the same line moved, not a second one left behind, and it moves
+        // the way the cursor did.
+        expect(el.shadowRoot.querySelectorAll('line.hairline')).to.have.lengthOf(1);
+        expect(threeQuarters).to.be.above(quarter);
+    });
+
+    it('reads out the moment, the temperature and the humidity', async function () {
+        this.timeout(20000);
+        await openTimeline(el, CAMP_AND_SUN_LOG, MUOTKA_TRACK);
+
+        pointAt(el, fractionOf('2025-07-05 12:30:00'));
+
+        // The trip's own clock, both units named: two series on two axes, so a
+        // bare pair of numbers would leave the reader matching them up.
+        expect(readout(el)).to.deep.equal(['05 Jul 12:30', '30.5 °C', '24 %']);
+    });
+
+    it('stands on the reading it reports, rather than between two of them', async function () {
+        this.timeout(20000);
+        await openTimeline(el, CAMP_AND_SUN_LOG, MUOTKA_TRACK);
+
+        // 12:30 falls between the 11:30 and 13:00 readings, nearer the later.
+        pointAt(el, fractionOf('2025-07-04 12:30:00'));
+
+        // The line the cursor crosses at 12:30 is at about 19.5 °C, which is a
+        // temperature the device never recorded. The reading is the 13:00 one,
+        // and the hairline stands there to say so.
+        expect(readout(el)).to.deep.equal(['04 Jul 13:00', '21.4 °C', '48 %']);
+        expect(hairlineX(el)).to.be.closeTo(fractionOf('2025-07-04 13:00:00') * PLOT_WIDTH, 0.5);
+    });
+
+    it('reads out the hours spent in Camp, not only the hours spent walking', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        // 01:00 on the third night: the watch was off, so this hour exists on
+        // no other chart in the app. Two thirds of the Trip Window is like it.
+        const night = '2025-07-06 01:00:00';
+        expect(isWalking(night)).to.be.false;
+
+        pointAt(el, fractionOf(night));
+
+        expect(readout(el)).to.deep.equal(['06 Jul 01:00', '3.1 °C', '88 %']);
+    });
+
+    it('takes the hairline away when the cursor leaves the plot', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        pointAt(el, 0.4);
+        expect(isHoverShown(el)).to.be.true;
+
+        pointAt(el, 0.4, { type: 'pointerleave' });
+
+        // A hairline left standing over a chart nobody is pointing at claims a
+        // reading is being asked about when none is.
+        expect(isHoverShown(el)).to.be.false;
+    });
+
+    it('reads out where a finger touches down, without waiting for it to move', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        // A tap is a pointerdown with no move after it, so a chart that only
+        // listens for movement answers a mouse and ignores a finger.
+        pointAt(el, fractionOf('2025-07-06 01:00:00'), { type: 'pointerdown', pointerType: 'touch' });
+
+        expect(isHoverShown(el)).to.be.true;
+        expect(readout(el)).to.deep.equal(['06 Jul 01:00', '3.1 °C', '88 %']);
+    });
+
+    it('does not leave the hairline stuck where a finger was lifted', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        pointAt(el, 0.4, { type: 'pointerdown', pointerType: 'touch' });
+        pointAt(el, 0.45, { pointerType: 'touch' });
+        expect(isHoverShown(el)).to.be.true;
+
+        pointAt(el, 0.45, { type: 'pointerup', pointerType: 'touch' });
+
+        // A lifted finger sends no pointerleave — it stops existing where it
+        // was — so a chart that waits for one keeps that reading on screen for
+        // the rest of the visit.
+        expect(isHoverShown(el)).to.be.false;
+    });
+
+    it('flips the readout to the near side rather than off the edge of the plot', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        pointAt(el, 0.5);
+        expect(readoutSpan(el).left).to.be.above(hairlineX(el));
+
+        // The last hour of the trip is one a reader will want: it is where the
+        // walk ended. A readout that hangs past the plot is clipped there.
+        pointAt(el, 1);
+
+        expect(readoutSpan(el).right).to.be.at.most(PLOT_WIDTH);
+        expect(readoutSpan(el).left).to.be.below(hairlineX(el));
     });
 
     it('surfaces a missing sensor log as an error rather than an empty block', async () => {

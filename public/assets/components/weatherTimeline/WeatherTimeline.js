@@ -2,6 +2,7 @@ import { showError } from '../../js/error.js';
 import { toExposureRecord, instantToWallTime } from './exposureRecord.js';
 import { parseActualRoute } from './actualRoute.js';
 import { extremes } from './extremes.js';
+import { nearestSample } from './nearestSample.js';
 
 // Per ADR-0001 we share leaflet-elevation's d3 rather than shipping our own.
 // This is the URL that library loads, so loadScript's dedupe by URL means
@@ -18,6 +19,8 @@ const D3_URL = 'https://unpkg.com/d3@7.8.4/dist/d3.min.js';
 const VIEW = { width: 960, height: 280 };
 const MARGIN = { top: 12, right: 40, bottom: 46, left: 46 };
 const STRIP = { height: 12, gap: 8 };
+// The hover readout: two lines of text in a box beside the hairline.
+const READOUT = { width: 104, height: 36, padding: 7, offset: 8 };
 
 // Ties the warmest tile to the caption qualifying it. A dagger rather than an
 // asterisk: it reads as a reference to a note, not as a correction or a
@@ -133,6 +136,7 @@ class WeatherTimeline extends HTMLElement {
         // the axis, so the chart reads the same wherever it is opened from.
         const points = record.map(sample => ({
             at: wallTimeAsPlotDate(sample.wallTime),
+            wallTime: sample.wallTime,
             temperature: sample.temperature,
             relativeHumidity: sample.relativeHumidity
         }));
@@ -201,7 +205,70 @@ class WeatherTimeline extends HTMLElement {
             .attr('d', d3.line().x(p => x(p.at)).y(p => celsius(p.temperature)));
 
         this._renderWalkingWindows(plot, walkingWindows, at => x(onPlot(at)), plotHeight);
+        this._renderHover(plot, points, x, plotWidth, plotHeight);
         this._renderTiles(record, walkingWindows);
+    }
+
+    /**
+     * A hairline standing on the reading nearest the cursor, and a readout of
+     * what the device recorded there.
+     *
+     * Self-contained: the surface catches the pointer and nothing leaves this
+     * component, so hovering works whether or not there is a map on the page.
+     */
+    _renderHover(plot, points, x, plotWidth, plotHeight) {
+        const hover = plot.append('g')
+            .attr('class', 'hover')
+            .attr('display', 'none');
+
+        const hairline = hover.append('line')
+            .attr('class', 'hairline')
+            .attr('y1', 0)
+            .attr('y2', plotHeight);
+
+        const readout = appendReadout(hover, plotWidth);
+
+        // Drawn last, so it lies over the marks and the whole plot — camp hours
+        // included — answers to the cursor.
+        const surface = plot.append('rect')
+            .attr('class', 'hover-surface')
+            .attr('width', plotWidth)
+            .attr('height', plotHeight)
+            // Transparent rather than left to the stylesheet: an unstyled rect
+            // defaults to black, which would be the whole plot painted over.
+            .attr('fill', 'transparent');
+
+        const hide = () => hover.attr('display', 'none');
+
+        // pointerdown as well as pointermove: a tap is a touch that never moves,
+        // so a plot listening only for movement answers a mouse and not a finger.
+        surface.on('pointerdown pointermove', event => {
+            // The chart is drawn in view units and scaled by viewBox, so the
+            // cursor is placed by where it fell across the plot's own width.
+            const box = surface.node().getBoundingClientRect();
+            const cursor = (event.clientX - box.left) / box.width * plotWidth;
+
+            // Nearest rather than interpolated: half-hourly point measurements,
+            // and a value read off the line between two of them would be a
+            // reading the device never took.
+            const sample = nearestSample(points, x.invert(cursor));
+            // The line stands on the reading it reports rather than under the
+            // cursor. At half-hourly cadence over a week that is about three
+            // units of the plot's 874, so it still follows the cursor.
+            const position = x(sample.at);
+
+            hover.attr('display', null);
+            hairline.attr('x1', position).attr('x2', position);
+            readout.show(sample, position);
+        });
+
+        // A mouse leaves the plot; a finger stops existing where it was, sending
+        // no pointerleave. Without the second rule a touched reading stays on
+        // screen for the rest of the visit.
+        surface.on('pointerleave', hide);
+        surface.on('pointerup pointercancel', event => {
+            if (event.pointerType !== 'mouse') hide();
+        });
     }
 
     /**
@@ -276,6 +343,57 @@ class WeatherTimeline extends HTMLElement {
                 .text(window.day);
         }
     }
+}
+
+/**
+ * The box beside the hairline: one moment, and the two readings taken at it.
+ *
+ * Returns only `show`, so where the box sits and how it is laid out stays in
+ * here rather than being spread through the pointer handler.
+ */
+function appendReadout(hover, plotWidth) {
+    const group = hover.append('g').attr('class', 'readout');
+
+    group.append('rect')
+        .attr('class', 'readout-box')
+        .attr('width', READOUT.width)
+        .attr('height', READOUT.height)
+        .attr('rx', 2);
+
+    const when = group.append('text')
+        .attr('class', 'readout-when')
+        .attr('x', READOUT.padding)
+        .attr('y', 14);
+    // Temperature and humidity share the second line, each keeping its unit:
+    // the plot has two axes, and a bare pair of numbers would leave the reader
+    // working out which belongs to which.
+    const temperature = group.append('text')
+        .attr('class', 'readout-temperature')
+        .attr('x', READOUT.padding)
+        .attr('y', 29);
+    const humidity = group.append('text')
+        .attr('class', 'readout-humidity')
+        .attr('x', READOUT.width / 2 + READOUT.padding)
+        .attr('y', 29);
+
+    return {
+        show(sample, position) {
+            when.text(formatTripLocalMoment(sample.wallTime));
+            temperature.text(`${sample.temperature.toFixed(1)} °C`);
+            // Whole percent: the device reports a tenth, but a tenth of a
+            // percent of saturation is finer than the reading means anything at.
+            humidity.text(`${Math.round(sample.relativeHumidity)} %`);
+
+            // Beside the hairline, on whichever side of it the plot has room
+            // for: the last hours of a trip are worth reading, and a readout
+            // hanging past the edge is clipped there.
+            const room = position + READOUT.offset + READOUT.width <= plotWidth;
+            const left = room
+                ? position + READOUT.offset
+                : position - READOUT.offset - READOUT.width;
+            group.attr('transform', `translate(${left},${READOUT.offset})`);
+        }
+    };
 }
 
 function span(className, text) {

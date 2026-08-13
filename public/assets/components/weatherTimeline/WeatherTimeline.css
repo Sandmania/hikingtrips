@@ -53,6 +53,57 @@ text.walking-window-label {
   pointer-events: none;
 }
 
+/* The plot answers to the cursor anywhere, camp hours included, so the whole of
+   it takes the crosshair. */
+rect.hover-surface {
+  cursor: crosshair;
+}
+
+/* The hairline stands on the reading it reports rather than under the cursor,
+   and is dashed and neutral so it reads as a pointer at the data rather than as
+   a third series drawn over the two measured ones. */
+line.hairline {
+  stroke: #444;
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+/* The readout sits inside the plot, over whatever it lands on, so it carries its
+   own ground rather than being read against the humidity area. */
+g.hover {
+  /* The surface above it catches the pointer, but a readout that could take a
+     pointer event would flicker as the cursor crossed it. */
+  pointer-events: none;
+}
+
+rect.readout-box {
+  fill: #fff;
+  fill-opacity: 0.93;
+  stroke: #d5d8db;
+}
+
+.readout text {
+  font-size: 12px;
+  /* The reader is moving along the chart watching these change, so the digits
+     have to hold still rather than shuffle with the width of a 1 against a 0. */
+  font-variant-numeric: tabular-nums;
+}
+
+/* Each value in its series' own colour, which is the same tie the legend
+   swatches make: two axes, and no reason to make the reader match them up. */
+.readout-temperature {
+  fill: var(--temperature);
+}
+
+.readout-humidity {
+  fill: var(--humidity);
+}
+
+.readout-when {
+  font-size: 10px;
+  fill: #777;
+}
+
 .axis text {
   font-size: 11px;
   fill: #555;
