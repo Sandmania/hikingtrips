@@ -1,5 +1,6 @@
 import { showError } from '../../js/error.js';
-import { toExposureRecord, tripWindowFromTrack } from './exposureRecord.js';
+import { toExposureRecord, instantToWallTime } from './exposureRecord.js';
+import { parseActualRoute } from './actualRoute.js';
 
 // Per ADR-0001 we share leaflet-elevation's d3 rather than shipping our own.
 // This is the URL that library loads, so loadScript's dedupe by URL means
@@ -8,15 +9,23 @@ const D3_URL = 'https://unpkg.com/d3@7.8.4/dist/d3.min.js';
 
 // The chart is drawn once at this size and scaled by viewBox, so these are
 // aspect ratios rather than pixels.
-const VIEW = { width: 960, height: 260 };
-const MARGIN = { top: 12, right: 40, bottom: 26, left: 46 };
+//
+// The bottom margin holds two things stacked: the time axis (26), then the
+// Walking Window strip below it (STRIP.gap + STRIP.height). The height grew
+// with the strip rather than the plot shrinking, so the plot is the same 222
+// units it was when 0001 was signed off.
+const VIEW = { width: 960, height: 280 };
+const MARGIN = { top: 12, right: 40, bottom: 46, left: 46 };
+const STRIP = { height: 12, gap: 8 };
 
 class WeatherTimeline extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
         this._trip = null;
-        this._record = null;
+        // Everything read out of the trip's two files, or null before they have
+        // been read: the Exposure Record, the Walking Windows, the Trip Window.
+        this._data = null;
         this._loading = null;
         this.shadowRoot.innerHTML = `
           <link rel="stylesheet" href="assets/components/weatherTimeline/WeatherTimeline.css">
@@ -24,6 +33,7 @@ class WeatherTimeline extends HTMLElement {
             <p class="legend">
               <span class="key key-temperature"><span class="swatch"></span>Temperature (°C, left)</span>
               <span class="key key-humidity"><span class="swatch"></span>Relative humidity (%, right)</span>
+              <span class="key key-walking-windows"><span class="swatch"></span>Walking (bars below the axis; gaps are Camp)</span>
             </p>
             <div id="chart"></div>
             <p class="caption">Measured by a sensor carried on the outside of the pack, so
@@ -35,7 +45,7 @@ class WeatherTimeline extends HTMLElement {
     /** @param {{csvUrl: string, gpxUrl: string, timeZone: string}|null} trip */
     set trip(trip) {
         this._trip = trip;
-        this._record = null;
+        this._data = null;
         this._loading = null;
     }
 
@@ -87,10 +97,13 @@ class WeatherTimeline extends HTMLElement {
             // flight; a superseded load must not draw over its successor.
             if (this._trip !== trip) return;
 
-            this._record = toExposureRecord(csvText, {
-                timeZone,
-                tripWindow: tripWindowFromTrack(gpxText)
-            });
+            // The route is 448 KB and three things are wanted from it, so it is
+            // read once and the result kept.
+            const route = parseActualRoute(gpxText);
+            this._data = {
+                ...route,
+                record: toExposureRecord(csvText, { timeZone, tripWindow: route.tripWindow })
+            };
             this._render(d3);
         } catch (error) {
             if (this._trip !== trip) return;
@@ -99,7 +112,7 @@ class WeatherTimeline extends HTMLElement {
     }
 
     _render(d3) {
-        const record = this._record;
+        const { record, walkingWindows, tripWindow } = this._data ?? {};
         if (!record?.length) return;
 
         const plotWidth = VIEW.width - MARGIN.left - MARGIN.right;
@@ -113,8 +126,16 @@ class WeatherTimeline extends HTMLElement {
             relativeHumidity: sample.relativeHumidity
         }));
 
+        // Walking Window bounds arrive as instants, so they are read onto the
+        // trip's clock before joining the samples on the same axis.
+        const timeZone = this._trip.timeZone;
+        const onPlot = instant => wallTimeAsPlotDate(instantToWallTime(instant, timeZone));
+
+        // The axis is the Trip Window, not the record's own extent: the first
+        // sample lands wherever the logger's half-hour cadence put it, and the
+        // bars below have to line up with the trip, not with that.
         const x = d3.scaleUtc()
-            .domain([points[0].at, points[points.length - 1].at])
+            .domain([onPlot(tripWindow.start), onPlot(tripWindow.end)])
             .range([0, plotWidth]);
         // Two vertical scales, so neither is called y: temperature is fitted to
         // the trip, humidity is not.
@@ -167,6 +188,42 @@ class WeatherTimeline extends HTMLElement {
             .attr('class', 'temperature')
             .attr('fill', 'none')
             .attr('d', d3.line().x(p => x(p.at)).y(p => celsius(p.temperature)));
+
+        this._renderWalkingWindows(plot, walkingWindows, at => x(onPlot(at)), plotHeight);
+    }
+
+    /**
+     * The hours spent moving, as bars under the time axis. Drawn to true width
+     * against the same scale as the plot, because the windows are unequal — day
+     * 4 is under three hours where day 1 is over six — and that inequality is
+     * the point. What is left between them is Camp.
+     */
+    _renderWalkingWindows(plot, walkingWindows, positionOf, plotHeight) {
+        const strip = plot.append('g')
+            .attr('class', 'walking-windows')
+            .attr('transform', `translate(0,${plotHeight + MARGIN.bottom - STRIP.height})`);
+
+        for (const window of walkingWindows) {
+            const start = positionOf(window.start);
+            const end = positionOf(window.end);
+
+            strip.append('rect')
+                .attr('class', 'walking-window')
+                .attr('x', start)
+                .attr('y', 0)
+                // A window shorter than the scale can resolve still happened,
+                // so it keeps a hairline rather than vanishing.
+                .attr('width', Math.max(end - start, 1))
+                .attr('height', STRIP.height);
+
+            strip.append('text')
+                .attr('class', 'walking-window-label')
+                .attr('x', (start + end) / 2)
+                .attr('y', STRIP.height / 2)
+                .attr('dy', '0.35em')
+                .attr('text-anchor', 'middle')
+                .text(window.day);
+        }
     }
 }
 

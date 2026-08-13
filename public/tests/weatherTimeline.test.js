@@ -1,5 +1,6 @@
 import { expect, render, waitFor } from './imports-test.js';
 import { weatherControl } from '../assets/js/leaflet/weatherControl.js';
+import { MUOTKA_TRACK } from './actualRoute.test.js';
 import '../assets/components/weatherTimeline/WeatherTimeline.js';
 
 describe('weather control', () => {
@@ -58,10 +59,10 @@ const FOG_LOG = [
 ].join('\n');
 
 /** Serve the fixtures, and record what was asked for. */
-function stubFetch(requested, sensorLog = SENSOR_LOG) {
+function stubFetch(requested, sensorLog = SENSOR_LOG, track = TRACK) {
     return (url) => {
         requested.push(String(url));
-        const body = String(url).endsWith('.csv') ? sensorLog : TRACK;
+        const body = String(url).endsWith('.csv') ? sensorLog : track;
         return Promise.resolve({ ok: true, text: () => Promise.resolve(body) });
     };
 }
@@ -272,6 +273,18 @@ describe('WeatherTimeline', () => {
         expect(humidity).to.match(/right/i);
     });
 
+    it('says what the bars are, and that the gaps between them are Camp', () => {
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const key = el.shadowRoot.querySelector('.legend .key-walking-windows');
+
+        expect(key).to.exist;
+        expect(key.textContent).to.match(/walking/i);
+        // The absence of a bar is the other half of the reading, and nothing
+        // on the strip itself can say so.
+        expect(key.textContent).to.match(/camp/i);
+    });
+
     it('fills nearly the whole plot when the air is nearly saturated', async function () {
         this.timeout(20000);
         window.fetch = stubFetch([], FOG_LOG);
@@ -300,6 +313,105 @@ describe('WeatherTimeline', () => {
         expect(heights[1]).to.be.closeTo(0.30, 0.01);
         expect(heights[2]).to.be.closeTo(0.69, 0.01);
         expect(heights[3]).to.be.closeTo(0.95, 0.01);
+    });
+
+    it('draws one bar per Walking Window, seven for muotka2025', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], SENSOR_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const bars = await waitFor(
+            () => {
+                const rects = el.shadowRoot.querySelectorAll('rect.walking-window');
+                expect(rects).to.have.lengthOf(7);
+                return rects;
+            },
+            { timeout: 15000 }
+        );
+
+        expect(bars).to.have.lengthOf(7);
+    });
+
+    it('draws each bar to its true width, so the short day looks short', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], SENSOR_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const bars = await waitFor(
+            () => {
+                const rects = Array.from(el.shadowRoot.querySelectorAll('rect.walking-window'));
+                expect(rects).to.have.lengthOf(7);
+                return rects;
+            },
+            { timeout: 15000 }
+        );
+
+        const widths = bars.map(bar => parseFloat(bar.getAttribute('width')));
+
+        // Day 4 is 2.9 h against day 3's 7.6 h. Equal-width day markers would
+        // throw that away, so the ratio of the bars must be the ratio of the
+        // hours — a bit over a third.
+        expect(widths[3]).to.equal(Math.min(...widths));
+        expect(widths[3] / widths[2]).to.be.closeTo(2.89 / 7.64, 0.02);
+        expect(widths[0] / widths[3]).to.be.closeTo(6.06 / 2.89, 0.02);
+    });
+
+    it('labels every bar with its day', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], SENSOR_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const labels = await waitFor(
+            () => {
+                const texts = Array.from(
+                    el.shadowRoot.querySelectorAll('text.walking-window-label'),
+                    text => text.textContent
+                );
+                expect(texts).to.have.lengthOf(7);
+                return texts;
+            },
+            { timeout: 15000 }
+        );
+
+        expect(labels).to.deep.equal(['1', '2', '3', '4', '5', '6', '7']);
+    });
+
+    it('leaves a gap between bars for every night spent in Camp', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], SENSOR_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const bars = await waitFor(
+            () => {
+                const rects = Array.from(el.shadowRoot.querySelectorAll('rect.walking-window'));
+                expect(rects).to.have.lengthOf(7);
+                return rects;
+            },
+            { timeout: 15000 }
+        );
+
+        const spans = bars.map(bar => ({
+            start: parseFloat(bar.getAttribute('x')),
+            end: parseFloat(bar.getAttribute('x')) + parseFloat(bar.getAttribute('width'))
+        }));
+
+        // Six nights, none of them zero-width: the strip must read as seven
+        // separate stints, not one continuous week of walking.
+        const camps = spans.slice(1).map((span, index) => span.start - spans[index].end);
+        expect(camps).to.have.lengthOf(6);
+        expect(Math.min(...camps)).to.be.above(0);
+
+        // And the strip spans the axis it is read against, edge to edge.
+        expect(spans[0].start).to.be.closeTo(0, 0.5);
+        expect(spans[6].end).to.be.closeTo(874, 0.5); // 960 less the two margins
     });
 
     it('surfaces a missing sensor log as an error rather than an empty block', async () => {

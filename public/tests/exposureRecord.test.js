@@ -2,9 +2,9 @@ import { expect } from './imports-test.js';
 import {
     parseSensorLog,
     wallTimeToInstant,
-    tripWindowFromTrack,
     toExposureRecord
 } from '../assets/components/weatherTimeline/exposureRecord.js';
+import { parseActualRoute } from '../assets/components/weatherTimeline/actualRoute.js';
 
 // Shaped like the Kestrel DROP 2 export: three device rows above the header,
 // a units row below it, and samples in descending time order.
@@ -85,16 +85,7 @@ const TRACK = `<?xml version="1.0" encoding="UTF-8"?>
   </trkseg></trk>
 </gpx>`;
 
-describe('Trip Window', () => {
-
-    it('spans the first and last trackpoint of the actual route', () => {
-        const tripWindow = tripWindowFromTrack(TRACK);
-
-        expect(tripWindow.start.toISOString()).to.equal('2025-07-04T08:09:00.000Z');
-        expect(tripWindow.end.toISOString()).to.equal('2025-07-05T11:56:00.000Z');
-    });
-
-});
+const TRIP_WINDOW = parseActualRoute(TRACK).tripWindow;
 
 // The logger ran from indoors before the walk-in, as the real one did: a warm
 // spike at 09:30 local that belongs to a building, not to the trip.
@@ -116,7 +107,7 @@ describe('Exposure Record', () => {
     it('drops samples taken before the trip started', () => {
         const record = toExposureRecord(LOG_STARTING_INDOORS, {
             timeZone: 'Europe/Helsinki',
-            tripWindow: tripWindowFromTrack(TRACK)
+            tripWindow: TRIP_WINDOW
         });
 
         expect(record.map(s => s.temperature)).to.not.include(39.7);
@@ -126,7 +117,7 @@ describe('Exposure Record', () => {
     it('keeps every sample from the first trackpoint to the last, in order', () => {
         const record = toExposureRecord(LOG_STARTING_INDOORS, {
             timeZone: 'Europe/Helsinki',
-            tripWindow: tripWindowFromTrack(TRACK)
+            tripWindow: TRIP_WINDOW
         });
 
         // Trip Window is 08:09Z–11:56Z, i.e. 11:09–14:56 Helsinki: the 11:09
@@ -141,7 +132,7 @@ describe('Exposure Record', () => {
     it('carries the trip-local wall time alongside the instant', () => {
         const record = toExposureRecord(LOG_STARTING_INDOORS, {
             timeZone: 'Europe/Helsinki',
-            tripWindow: tripWindowFromTrack(TRACK)
+            tripWindow: TRIP_WINDOW
         });
 
         expect(record[0].instant.toISOString()).to.equal('2025-07-04T08:09:00.000Z');

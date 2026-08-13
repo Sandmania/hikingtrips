@@ -99,33 +99,6 @@ export function toExposureRecord(csvText, { timeZone, tripWindow }) {
 }
 
 /**
- * The Trip Window: from the first trackpoint of the actual route to the last.
- *
- * Per ADR-0002 the track, not the sensor, says when the trip happened. GPX
- * trackpoint times are already UTC, so they need no zone.
- *
- * @param {string} gpxText the actual route
- * @returns {{start: Date, end: Date}}
- */
-export function tripWindowFromTrack(gpxText) {
-    const doc = new DOMParser().parseFromString(gpxText, 'application/xml');
-
-    const times = Array.from(doc.getElementsByTagName('trkpt'))
-        .map(trkpt => trkpt.getElementsByTagName('time')[0]?.textContent)
-        .filter(Boolean)
-        .map(text => new Date(text).getTime())
-        .filter(time => !Number.isNaN(time));
-
-    if (times.length === 0) {
-        throw new Error('Actual route has no timed trackpoints, so the trip has no Trip Window');
-    }
-
-    // combined.gpx holds one <trk> per day; take the outer bounds rather than
-    // assuming the days were written in order.
-    return { start: new Date(Math.min(...times)), end: new Date(Math.max(...times)) };
-}
-
-/**
  * Place a naive wall time on the world clock using the trip's own timezone.
  *
  * Sensor logs state no offset, so the same string means a different instant
@@ -147,17 +120,29 @@ export function wallTimeToInstant(wallTime, timeZone) {
     return new Date(asIfUtc - zoneOffset(guess, timeZone));
 }
 
+/**
+ * Read an instant on the trip's own clock — the inverse of `wallTimeToInstant`,
+ * for the times that arrive as instants rather than as wall times, such as the
+ * UTC trackpoint times bounding a Walking Window.
+ *
+ * @param {Date} instant
+ * @param {string} timeZone an IANA zone, e.g. `Europe/Helsinki`
+ * @returns {string} `YYYY-MM-DD HH:MM:SS` on that zone's clock
+ */
+export function instantToWallTime(instant, timeZone) {
+    const parts = Object.fromEntries(
+        WALL_CLOCK_IN_ZONE(timeZone).formatToParts(instant).map(part => [part.type, part.value])
+    );
+    // `hour12: false` renders midnight as 24 in some engines, so wrap it.
+    const hour = String(+parts.hour % 24).padStart(2, '0');
+    return `${parts.year}-${parts.month}-${parts.day} ${hour}:${parts.minute}:${parts.second}`;
+}
+
 /** How far ahead of UTC `timeZone` is at the given instant, in milliseconds. */
 function zoneOffset(instantMs, timeZone) {
-    const parts = Object.fromEntries(
-        WALL_CLOCK_IN_ZONE(timeZone).formatToParts(new Date(instantMs))
-            .map(part => [part.type, part.value])
-    );
-    const wallAsIfUtc = Date.UTC(
-        +parts.year, +parts.month - 1, +parts.day,
-        +parts.hour % 24, +parts.minute, +parts.second
-    );
-    return wallAsIfUtc - instantMs;
+    const [, year, month, day, hour, minute, second] =
+        TIMESTAMP.exec(instantToWallTime(new Date(instantMs), timeZone));
+    return Date.UTC(+year, +month - 1, +day, +hour, +minute, +second) - instantMs;
 }
 
 const _zoneFormatters = new Map();

@@ -3,6 +3,7 @@
 #weather-timeline {
   --temperature: #c2185b;
   --humidity: #2a78d6;
+  --walking: #4a5560;
   width: 100%;
   box-sizing: border-box;
   background: #fff;
@@ -33,6 +34,23 @@ path.temperature {
   stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
+}
+
+/* Below the axis rather than behind the plot: the humidity area already holds
+   the translucent-fill channel, and a second fill over it would produce overlap
+   shades no reader can decode. A neutral grey, so the strip stands apart from
+   the two measured series instead of reading as a third one. */
+rect.walking-window {
+  fill: var(--walking);
+  rx: 2;
+}
+
+text.walking-window-label {
+  font-size: 8px;
+  fill: #fff;
+  /* The day 4 bar is ~17 units wide; if a shorter window ever squeezes its
+     number past the bar's edge, it must not be read as belonging to the gap. */
+  pointer-events: none;
 }
 
 .axis text {
@@ -74,6 +92,13 @@ path.temperature {
   height: 9px;
   background: var(--humidity);
   opacity: 0.28;
+}
+
+.key-walking-windows .swatch {
+  width: 14px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--walking);
 }
 
 /* The sensor hung off the outside of a pack, so midday readings include full

@@ -55,7 +55,7 @@ Two things that will bite whoever plots this:
 ## What already exists
 
 - `tools/TrailTreader/tools/mergeSensorGpx.py` — merges this CSV into GPX trackpoints. **The timeline does not need it**; read the CSV directly. But its CSV parsing is a tested reference for the format quirks above (header located by content not position, units-row detection, `Data Type == "point"` filtering, descending-order sort, tz handling). 28 unit tests in `tools/TrailTreader/tools/test_mergeSensorGpx.py`.
-- `public/muotka2025/actual_route/combined.gpx` — 7 `<trk>` elements (one per day), 2128 trackpoints, each carrying `<gpxtpx:atemp>`. Useful if you want to shade walking windows on the timeline: the trkpt `<time>` values give you exact start/end per day.
+- `public/muotka2025/actual_route/combined.gpx` — one `<trk>` holding 7 `<trkseg>` (one per day), 2128 trackpoints, each carrying `<gpxtpx:atemp>`. Useful if you want to shade walking windows on the timeline: the trkpt `<time>` values give you exact start/end per day. (Corrected while implementing issue 0003, which was written from this line's earlier claim of "7 `<trk>` elements". The seven days are real; the element is `<trkseg>`.)
 
 ## Repo conventions you must follow
 
