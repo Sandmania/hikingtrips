@@ -31,3 +31,9 @@ Design record: [handoff](../handoff-temperature-timeline.md) · [glossary](../..
 | # | Issue | Type | Status | Blocked by |
 |---|---|---|---|---|
 | 0008 | [Intermittent TypeError when resize beats the marker import](0008-elevation-marker-race-on-resize.md) | AFK | ready | — |
+
+## Calendar
+
+| # | Issue | Type | Status | Blocked by |
+|---|---|---|---|---|
+| 0009 | [The viewer's timezone decides which month renders](0009-calendar-viewer-timezone-decides-the-month.md) | AFK | ready | — |
