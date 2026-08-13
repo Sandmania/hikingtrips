@@ -1,7 +1,7 @@
 # 0004 — Weather Timeline: summary tiles and the direct-sun footnote
 
 - **Type**: AFK
-- **Status**: ready
+- **Status**: done
 - **Blocked by**: 0003
 
 ## What to build
@@ -22,11 +22,48 @@ Extremes are computed over the trimmed Trip Window, not the full Sensor Log, or 
 
 ## Acceptance criteria
 
-- [ ] Three tiles render with value, date and time in trip-local time
-- [ ] For muotka2025 they read 3.1, 8.6 and 30.5 °C at the times above
-- [ ] The warmest tile carries a marker tied to a visible caption about the sensor being in direct sun
-- [ ] Tiles are computed from the trimmed record, never the full log
-- [ ] Fixture test covers extreme selection, including that the walking minimum only considers samples inside Walking Windows
+- [x] Three tiles render with value, date and time in trip-local time
+- [x] For muotka2025 they read 3.1, 8.6 and 30.5 °C at the times above
+- [x] The warmest tile carries a marker tied to a visible caption about the sensor being in direct sun
+- [x] Tiles are computed from the trimmed record, never the full log
+- [x] Fixture test covers extreme selection, including that the walking minimum only considers samples inside Walking Windows
+
+## Implementation notes
+
+The extremes are their own module, `extremes.js`, beside `exposureRecord.js` and
+`actualRoute.js`: `extremes(record, walkingWindows)` returns the three chosen
+samples whole, rather than a reduced value-and-time shape, so a later slice that
+wants the humidity or dew point at the trip's maximum already has it. Choosing
+happens on the Exposure Record the component already holds, so "computed from
+the trimmed record" is structural — there is no path by which the full Sensor
+Log could reach it. The walking minimum filters by instant against the Walking
+Window bounds, inclusively: the logger's half-hour cadence lands exactly on a
+window edge often enough that excluding those would silently drop real readings.
+
+**A trip can have no walking reading at all** — a logger that only ran in Camp.
+`coldestWalking` is then null and that tile is left out rather than rendered
+empty, because the alternative found while writing the test was worse: the
+`reduce` threw, the exception escaped `_render`, and the whole chart was
+replaced by an error toast over a trip whose other two readings were fine.
+
+The footnote marker sits on the value (`30.5 °C†`), not after the timestamp as
+the sketch in this issue had it. What is being qualified is the reading, and at
+the end of the row it reads as attaching to the date instead. The caption it
+ties to now says outright that the warmest reading is not the air temperature
+the trip reached, rather than only explaining where the sensor hung.
+
+`clear()` empties the tiles along with the chart. Numbers outlive a chart
+quietly: three tiles reading 3.1 / 8.6 / 30.5 left standing above the next
+trip's blank plot would be read as that trip's.
+
+The tiles are uncoloured — grey rule, grey ground. The two series own the colour
+channel in this component, and a blue tile beside the blue humidity area would
+be read as belonging to it.
+
+Verified against the real files, not only the fixtures: 7 Walking Windows, the
+same 295 samples issue 0001 established, and 3.1 °C at 06 Jul 01:00, 8.6 °C at
+07 Jul 13:00, 30.5 °C at 10 Jul 12:30 — the three numbers this issue asks for,
+including the 8.6 that the elevation profile rounds to the 9 it displays.
 
 ## Blocked by
 

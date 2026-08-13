@@ -58,6 +58,24 @@ const FOG_LOG = [
     ''
 ].join('\n');
 
+/**
+ * The trip in miniature, against MUOTKA_TRACK's seven Walking Windows: an
+ * indoor spike before the walk-in, a night in Camp colder than any walking
+ * hour, and a midday peak with the sensor in full sun.
+ */
+const CAMP_AND_SUN_LOG = [
+    '"Device Name","SandWeather"',
+    '"FORMATTED DATE_TIME","Temperature","Relative Humidity","Heat Index","Dew Point","Data Type"',
+    '"YYYY-MM-DD HH:MM:SS","°C","%","°C","°C"',
+    '"2025-07-05 12:30:00 PM","30.5","24.0","30.0","8.2","point"',
+    '"2025-07-05 11:00:00 AM","8.6","95.0","8.5","7.9","point"',
+    '"2025-07-05 01:00:00 AM","3.1","88.0","3.0","1.3","point"',
+    '"2025-07-04 01:00:00 PM","21.4","48.0","21.0","9.8","point"',
+    '"2025-07-04 11:30:00 AM","17.2","64.2","17.0","10.3","point"',
+    '"2025-07-04 09:00:00 AM","39.7","18.0","38.9","5.5","point"',
+    ''
+].join('\n');
+
 /** Serve the fixtures, and record what was asked for. */
 function stubFetch(requested, sensorLog = SENSOR_LOG, track = TRACK) {
     return (url) => {
@@ -412,6 +430,155 @@ describe('WeatherTimeline', () => {
         // And the strip spans the axis it is read against, edge to edge.
         expect(spans[0].start).to.be.closeTo(0, 0.5);
         expect(spans[6].end).to.be.closeTo(874, 0.5); // 960 less the two margins
+    });
+
+    it('summarises the trip as three tiles: coldest, coldest walking, warmest', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], CAMP_AND_SUN_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const tiles = await waitFor(
+            () => {
+                const found = Array.from(el.shadowRoot.querySelectorAll('.tile'));
+                expect(found).to.have.lengthOf(3);
+                return found;
+            },
+            { timeout: 15000 }
+        );
+
+        const read = selector => tiles.map(tile => tile.querySelector(selector).textContent.trim());
+
+        expect(read('.tile-label')).to.deep.equal(['Coldest', 'Coldest walking', 'Warmest']);
+        // The middle one is the whole point: 8.6 °C is the coldest hour spent
+        // moving, and it is nowhere near the 3.1 °C the trip actually reached.
+        // The maximum carries its footnote marker; what that ties to is below.
+        expect(read('.tile-value')).to.deep.equal(['3.1 °C', '8.6 °C', '30.5 °C†']);
+    });
+
+    it('dates each tile in the trip\'s own time, not the viewer\'s', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], CAMP_AND_SUN_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const when = await waitFor(
+            () => {
+                const texts = Array.from(
+                    el.shadowRoot.querySelectorAll('.tile .tile-when'),
+                    text => text.textContent.trim()
+                );
+                expect(texts).to.have.lengthOf(3);
+                return texts;
+            },
+            { timeout: 15000 }
+        );
+
+        // 01:00 Helsinki is 22:00 UTC the day before: a viewer's clock would
+        // move both the hour and the date of the trip's coldest hour.
+        expect(when).to.deep.equal(['05 Jul 01:00', '05 Jul 11:00', '05 Jul 12:30']);
+    });
+
+    it('marks the warmest tile, and only that one, back to the sun caption', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], CAMP_AND_SUN_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const tiles = await waitFor(
+            () => {
+                const found = Array.from(el.shadowRoot.querySelectorAll('.tile'));
+                expect(found).to.have.lengthOf(3);
+                return found;
+            },
+            { timeout: 15000 }
+        );
+
+        // 30.5 °C is the pack in full sun, not the air: temperature jumps ~9 °C
+        // while the dew point stays flat, which no air mass does. Only that
+        // tile is qualified, and the mark has to lead somewhere.
+        const marks = tiles.map(tile => tile.querySelector('.tile-footnote'));
+        expect(marks[0]).to.not.exist;
+        expect(marks[1]).to.not.exist;
+        expect(marks[2]).to.exist;
+
+        const caption = el.shadowRoot.querySelector('.caption');
+        expect(caption.textContent).to.include(marks[2].textContent.trim());
+        expect(caption.textContent).to.match(/sun/i);
+    });
+
+    it('summarises the trimmed record, so the indoor spike is not the trip maximum', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([]); // SENSOR_LOG: 39.7 °C at 09:00, before the first trackpoint
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const values = await waitFor(
+            () => {
+                const texts = Array.from(
+                    el.shadowRoot.querySelectorAll('.tile .tile-value'),
+                    value => value.textContent.trim()
+                );
+                expect(texts).to.have.lengthOf(3);
+                return texts;
+            },
+            { timeout: 15000 }
+        );
+
+        expect(values.join(' ')).to.not.include('39.7');
+        expect(values[2]).to.include('21.4 °C');
+    });
+
+    it('still draws a trip whose logger never ran while the watch did', async function () {
+        this.timeout(20000);
+        // Every reading falls between the Walking Windows, so there is no
+        // coldest walking hour to report.
+        const campOnly = [
+            '"Device Name","SandWeather"',
+            '"FORMATTED DATE_TIME","Temperature","Relative Humidity","Heat Index","Dew Point","Data Type"',
+            '"YYYY-MM-DD HH:MM:SS","°C","%","°C","°C"',
+            '"2025-07-05 01:00:00 AM","3.1","88.0","3.0","1.3","point"',
+            '"2025-07-04 11:00:00 PM","5.2","84.0","5.0","2.7","point"',
+            ''
+        ].join('\n');
+        window.fetch = stubFetch([], campOnly, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const tiles = await waitFor(
+            () => {
+                expect(el.shadowRoot.querySelector('path.temperature')).to.exist;
+                return Array.from(el.shadowRoot.querySelectorAll('.tile-label'), t => t.textContent);
+            },
+            { timeout: 15000 }
+        );
+
+        // The missing tile is left out rather than shown empty, and it takes
+        // the chart with it under no circumstances.
+        expect(tiles).to.deep.equal(['Coldest', 'Warmest']);
+    });
+
+    it('drops the tiles with the chart when the trip is closed', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], CAMP_AND_SUN_LOG, MUOTKA_TRACK);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+        await waitFor(
+            () => { expect(el.shadowRoot.querySelectorAll('.tile')).to.have.lengthOf(3); },
+            { timeout: 15000 }
+        );
+
+        document.dispatchEvent(new CustomEvent('trip-cleanup'));
+
+        // Numbers outlive a chart quietly: three tiles reading 3.1 / 8.6 / 30.5
+        // above another trip's blank chart would be read as that trip's.
+        expect(el.shadowRoot.querySelectorAll('.tile')).to.be.empty;
     });
 
     it('surfaces a missing sensor log as an error rather than an empty block', async () => {

@@ -1,6 +1,7 @@
 import { showError } from '../../js/error.js';
 import { toExposureRecord, instantToWallTime } from './exposureRecord.js';
 import { parseActualRoute } from './actualRoute.js';
+import { extremes } from './extremes.js';
 
 // Per ADR-0001 we share leaflet-elevation's d3 rather than shipping our own.
 // This is the URL that library loads, so loadScript's dedupe by URL means
@@ -17,6 +18,11 @@ const D3_URL = 'https://unpkg.com/d3@7.8.4/dist/d3.min.js';
 const VIEW = { width: 960, height: 280 };
 const MARGIN = { top: 12, right: 40, bottom: 46, left: 46 };
 const STRIP = { height: 12, gap: 8 };
+
+// Ties the warmest tile to the caption qualifying it. A dagger rather than an
+// asterisk: it reads as a reference to a note, not as a correction or a
+// disclaimer, and the caption is neither.
+const FOOTNOTE = '†';
 
 class WeatherTimeline extends HTMLElement {
     constructor() {
@@ -35,9 +41,11 @@ class WeatherTimeline extends HTMLElement {
               <span class="key key-humidity"><span class="swatch"></span>Relative humidity (%, right)</span>
               <span class="key key-walking-windows"><span class="swatch"></span>Walking (bars below the axis; gaps are Camp)</span>
             </p>
+            <div id="tiles"></div>
             <div id="chart"></div>
-            <p class="caption">Measured by a sensor carried on the outside of the pack, so
-              midday peaks include full sun rather than shade air temperature.</p>
+            <p class="caption">${FOOTNOTE} Measured by a sensor carried on the outside of the pack,
+              so midday peaks are full sun on the sensor rather than shade air temperature: the
+              warmest reading is not the air temperature the trip reached.</p>
           </div>
         `;
     }
@@ -68,6 +76,9 @@ class WeatherTimeline extends HTMLElement {
     clear() {
         this.trip = null;
         this.shadowRoot.querySelector('#chart').innerHTML = '';
+        // The tiles go with the chart: three readings left standing above the
+        // next trip's blank plot would be read as that trip's.
+        this.shadowRoot.querySelector('#tiles').innerHTML = '';
         this.shadowRoot.querySelector('#weather-timeline').classList.add('hidden');
     }
 
@@ -190,6 +201,46 @@ class WeatherTimeline extends HTMLElement {
             .attr('d', d3.line().x(p => x(p.at)).y(p => celsius(p.temperature)));
 
         this._renderWalkingWindows(plot, walkingWindows, at => x(onPlot(at)), plotHeight);
+        this._renderTiles(record, walkingWindows);
+    }
+
+    /**
+     * The trip's three extremes, above the chart.
+     *
+     * The middle tile is why they are here: the elevation profile reports a
+     * minimum of 9 °C because it can only show values at trackpoints, and the
+     * watch only ran while walking. Both numbers are right, and reading them
+     * side by side is what stops them looking like a contradiction.
+     */
+    _renderTiles(record, walkingWindows) {
+        const { coldest, coldestWalking, warmest } = extremes(record, walkingWindows);
+
+        const host = this.shadowRoot.querySelector('#tiles');
+        host.innerHTML = '';
+
+        for (const [label, sample, footnote] of [
+            ['Coldest', coldest],
+            ['Coldest walking', coldestWalking],
+            // The maximum is the one reading the page must not let stand on its
+            // own: it is the sensor in direct sun, not the air temperature.
+            ['Warmest', warmest, FOOTNOTE]
+        ]) {
+            // A trip can be missing the walking reading — a logger that never
+            // ran while the watch did. Better an absent tile than an empty one.
+            if (!sample) continue;
+
+            const value = span('tile-value', `${sample.temperature.toFixed(1)} °C`);
+            if (footnote) value.append(span('tile-footnote', footnote));
+
+            const tile = document.createElement('div');
+            tile.className = 'tile';
+            tile.append(
+                span('tile-label', label),
+                value,
+                span('tile-when', formatTripLocalMoment(sample.wallTime))
+            );
+            host.append(tile);
+        }
     }
 
     /**
@@ -227,6 +278,13 @@ class WeatherTimeline extends HTMLElement {
     }
 }
 
+function span(className, text) {
+    const element = document.createElement('span');
+    element.className = className;
+    element.textContent = text;
+    return element;
+}
+
 /**
  * Read a trip-local wall time as if it were UTC. The resulting Date is not the
  * instant the reading was taken — it is a position on a trip-local clock, which
@@ -235,6 +293,17 @@ class WeatherTimeline extends HTMLElement {
 function wallTimeAsPlotDate(wallTime) {
     const [date, time] = wallTime.split(' ');
     return new Date(`${date}T${time}Z`);
+}
+
+/**
+ * A sample's own wall time, as `05 Jul 01:00`. The day matters as much as the
+ * hour — the trip's coldest reading is at 01:00, and on a viewer's clock that
+ * moment can belong to the day before.
+ */
+function formatTripLocalMoment(wallTime) {
+    const day = wallTimeAsPlotDate(wallTime)
+        .toLocaleDateString('en-GB', { day: '2-digit', month: 'short', timeZone: 'UTC' });
+    return `${day} ${wallTime.slice(11, 16)}`;
 }
 
 /** Date at midnight, time otherwise, so multi-day spans stay readable. */
