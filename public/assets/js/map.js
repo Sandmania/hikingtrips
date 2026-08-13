@@ -1,6 +1,7 @@
 import { showError } from './error.js'
 import { packDetailsControl } from './leaflet/packDetailsControl.js'
 import { mealPlanControl } from './leaflet/mealPlanControl.js'
+import { weatherControl } from './leaflet/weatherControl.js'
 import { galleryControl } from './leaflet/galleryControl.js'
 import { calendarControl } from './leaflet/calendarControl.js'
 import { infoControl } from './leaflet/infoControl.js'
@@ -120,6 +121,10 @@ export function initMap(fullConfiguration) {
     infoControl(({tripInfo: globalConfiguration.trip})).addTo(map);
     packDetailsControl({csvUrl: globalConfiguration?.packDetails?.csvUrl}).addTo(map);
     mealPlanControl({csvUrl: globalConfiguration?.mealPlan?.csvUrl}).addTo(map);
+    weatherControl({
+        csvUrl: globalConfiguration?.weather?.csvUrl,
+        gpxUrl: globalConfiguration?.actualRoute?.gpx
+    }).addTo(map);
     galleryControl({url: globalConfiguration?.photo_info?.galleryUrl}).addTo(map);
     calendarControl({travelInfo: globalConfiguration.travel_info}).addTo(map);
     

@@ -1,0 +1,44 @@
+/* A full-width block under the elevation profile, not a floating card: the
+   Exposure Record spans the whole trip and wants the whole width. */
+#weather-timeline {
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  padding: 8px 12px 4px;
+  font-family: 'Arial', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+#weather-timeline.hidden {
+  display: none;
+}
+
+#chart svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+path.temperature {
+  stroke: #c2185b;
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.axis text {
+  font-size: 11px;
+  fill: #555;
+}
+
+.axis path,
+.axis line {
+  stroke: #ccc;
+}
+
+/* The sensor hung off the outside of a pack, so midday readings include full
+   sun. The caption says so rather than letting the maximum pass as air temp. */
+.caption {
+  margin: 0;
+  font-size: 11px;
+  color: #777;
+}

@@ -17,6 +17,9 @@
     <script type="module" defer>
         mocha.setup('bdd');
         mocha.checkLeaks();
+        // The weather timeline shares leaflet-elevation's d3 global (ADR-0001),
+        // so d3 appearing on window is the design, not a leak.
+        mocha.globals(['d3']);
     </script>
 
     <script type="module" src="./packDetails.test.js" defer></script>
@@ -24,6 +27,8 @@
     <script type="module" src="./tripCard.test.js" defer></script>
     <script type="module" src="./tripGrid.test.js" defer></script>
     <script type="module" src="./mealPlan.test.js" defer></script>
+    <script type="module" src="./exposureRecord.test.js" defer></script>
+    <script type="module" src="./weatherTimeline.test.js" defer></script>
 
     <!-- include more tests here -->
 

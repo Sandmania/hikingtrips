@@ -1,7 +1,7 @@
 # 0001 — Weather Timeline: temperature line end to end
 
 - **Type**: HITL
-- **Status**: ready
+- **Status**: awaiting review
 - **Blocked by**: none — can start immediately
 
 ## What to build
@@ -24,12 +24,24 @@ HITL: this slice fixes the chart's margins, tick density and aspect ratio, which
 
 ## Acceptance criteria
 
-- [ ] A trip with `weather.csvUrl` and an actual route shows the control button; a trip missing either shows no button and logs no error
-- [ ] Clicking the button toggles the block; the CSV and GPX are fetched on first open only
-- [ ] The plotted series is trimmed to the Trip Window — 295 samples for muotka2025, with nothing from the pre-trip indoor stretch and no 39.7 °C spike on the axis
-- [ ] Times render identically regardless of the viewer's own timezone
-- [ ] The chart works whether the elevation profile has loaded d3 first or not
-- [ ] Fixture tests cover Sensor Log parsing, wall-time→instant conversion, and Trip Window trimming, registered in the test index page
+- [x] A trip with `weather.csvUrl` and an actual route shows the control button; a trip missing either shows no button and logs no error
+- [x] Clicking the button toggles the block; the CSV and GPX are fetched on first open only
+- [x] The plotted series is trimmed to the Trip Window — 295 samples for muotka2025, with nothing from the pre-trip indoor stretch and no 39.7 °C spike on the axis
+- [x] Times render identically regardless of the viewer's own timezone
+- [x] The chart works whether the elevation profile has loaded d3 first or not
+- [x] Fixture tests cover Sensor Log parsing, wall-time→instant conversion, and Trip Window trimming, registered in the test index page
+
+## Review notes
+
+The margins, tick density and aspect ratio a human is asked to sign off on live in
+`VIEW` and `MARGIN` at the top of `WeatherTimeline.js`: a 960×260 viewBox
+(≈3.7:1), 46 px left gutter for the `n °C` labels, daily ticks on the time axis
+(`.ticks(8)`, which d3 resolves to one per day over a six-day trip).
+
+The direct-sun caption overlaps issue 0004, which owns the footnote proper. It is
+here because this slice already puts the 30.5 °C peak on screen and CONTEXT.md
+resolves that the chart must not present its maximum as an air temperature; 0004
+should replace it with the `†`-marked version tied to the warmest tile.
 
 ## Blocked by
 

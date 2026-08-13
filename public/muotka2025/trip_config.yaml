@@ -175,3 +175,9 @@ photo_info:
 
 packDetails:
   csvUrl: lighterpack.csv
+
+weather:
+  csvUrl: "SandWeather_Jul_10,_2025___17_00_00.csv"
+  # The Kestrel writes naive local wall times with no offset, so the zone the
+  # trip happened in has to be stated here.
+  timezone: Europe/Helsinki
