@@ -98,3 +98,21 @@ trip-view {
   background-repeat: no-repeat;
   background-position: center;
 }
+
+/* Where the hiker was at the moment the Weather Timeline is being hovered.
+   Two states, because they are two different claims: while walking the watch
+   recorded that spot at about that minute, so the mark is solid; in Camp the
+   position is held — the last trackpoint of the day that ended there, standing
+   for the whole night — so the mark is hollow and dashed. */
+.weather-hover-position.walking {
+  fill: #4a5560;
+  fill-opacity: 1;
+  stroke: #fff;
+}
+
+.weather-hover-position.camp {
+  fill: #fff;
+  fill-opacity: 0.9;
+  stroke: #4a5560;
+  stroke-dasharray: 3 2;
+}

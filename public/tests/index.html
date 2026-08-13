@@ -12,14 +12,20 @@
     <!-- https://unpkg.com/@testing-library/dom@8.17.1/dist/@testing-library/dom.umd.js -->
     <script src="https://unpkg.com/@testing-library/dom@8.17.1/dist/@testing-library/dom.umd.js" defer></script>
 
+    <!-- The same Leaflet the trip view loads, so the map's own modules — the
+         hover marker — can be tested against a real map rather than a stand-in. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js" defer></script>
+
     <script src="../assets/js/loadAssets.js" defer></script>
 
     <script type="module" defer>
         mocha.setup('bdd');
         mocha.checkLeaks();
         // The weather timeline shares leaflet-elevation's d3 global (ADR-0001),
-        // so d3 appearing on window is the design, not a leak.
-        mocha.globals(['d3']);
+        // so d3 appearing on window is the design, not a leak. Leaflet keeps its
+        // own window listeners under _leaflet_events once a map exists.
+        mocha.globals(['d3', '_leaflet_events']);
     </script>
 
     <script type="module" src="./packDetails.test.js" defer></script>
@@ -31,6 +37,8 @@
     <script type="module" src="./exposureRecord.test.js" defer></script>
     <script type="module" src="./extremes.test.js" defer></script>
     <script type="module" src="./nearestSample.test.js" defer></script>
+    <script type="module" src="./positionAt.test.js" defer></script>
+    <script type="module" src="./hoverMarker.test.js" defer></script>
     <script type="module" src="./weatherTimeline.test.js" defer></script>
 
     <!-- include more tests here -->

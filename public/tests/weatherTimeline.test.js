@@ -198,13 +198,28 @@ describe('WeatherTimeline', () => {
 
     let el;
     let originalFetch;
+    // What the timeline tells the rest of the page about the hover. In the app
+    // the map is on the other end of these; here nothing is, which is the point
+    // — the chart has to work with no map present.
+    let hovers;
+    let onHover;
+    let onHoverEnd;
+
     beforeEach(() => {
         el = render(document.createElement('tt-weather-timeline'));
         originalFetch = window.fetch;
+
+        hovers = [];
+        onHover = event => hovers.push(event.detail);
+        onHoverEnd = () => hovers.push(null);
+        document.addEventListener('weather-hover', onHover);
+        document.addEventListener('weather-hover-end', onHoverEnd);
     });
 
     afterEach(() => {
         window.fetch = originalFetch;
+        document.removeEventListener('weather-hover', onHover);
+        document.removeEventListener('weather-hover-end', onHoverEnd);
     });
 
     it('stays hidden until the control is clicked', () => {
@@ -708,7 +723,7 @@ describe('WeatherTimeline', () => {
 
         // The trip's own clock, both units named: two series on two axes, so a
         // bare pair of numbers would leave the reader matching them up.
-        expect(readout(el)).to.deep.equal(['05 Jul 12:30', '30.5 °C', '24 %']);
+        expect(readout(el)).to.deep.equal(['05 Jul 12:30', '30.5 °C', '24 %', 'Walking']);
     });
 
     it('stands on the reading it reports, rather than between two of them', async function () {
@@ -721,7 +736,7 @@ describe('WeatherTimeline', () => {
         // The line the cursor crosses at 12:30 is at about 19.5 °C, which is a
         // temperature the device never recorded. The reading is the 13:00 one,
         // and the hairline stands there to say so.
-        expect(readout(el)).to.deep.equal(['04 Jul 13:00', '21.4 °C', '48 %']);
+        expect(readout(el)).to.deep.equal(['04 Jul 13:00', '21.4 °C', '48 %', 'Walking']);
         expect(hairlineX(el)).to.be.closeTo(fractionOf('2025-07-04 13:00:00') * PLOT_WIDTH, 0.5);
     });
 
@@ -736,7 +751,7 @@ describe('WeatherTimeline', () => {
 
         pointAt(el, fractionOf(night));
 
-        expect(readout(el)).to.deep.equal(['06 Jul 01:00', '3.1 °C', '88 %']);
+        expect(readout(el)).to.deep.equal(['06 Jul 01:00', '3.1 °C', '88 %', 'Camp']);
     });
 
     it('takes the hairline away when the cursor leaves the plot', async function () {
@@ -762,7 +777,7 @@ describe('WeatherTimeline', () => {
         pointAt(el, fractionOf('2025-07-06 01:00:00'), { type: 'pointerdown', pointerType: 'touch' });
 
         expect(isHoverShown(el)).to.be.true;
-        expect(readout(el)).to.deep.equal(['06 Jul 01:00', '3.1 °C', '88 %']);
+        expect(readout(el)).to.deep.equal(['06 Jul 01:00', '3.1 °C', '88 %', 'Camp']);
     });
 
     it('does not leave the hairline stuck where a finger was lifted', async function () {
@@ -794,6 +809,91 @@ describe('WeatherTimeline', () => {
 
         expect(readoutSpan(el).right).to.be.at.most(PLOT_WIDTH);
         expect(readoutSpan(el).left).to.be.below(hairlineX(el));
+    });
+
+    it('says where the hiker was, at the trackpoint nearest the hovered hour', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        // 12:30 on the trip's clock is 09:30 UTC, inside day 2's window.
+        const walking = '2025-07-05 12:30:00';
+        expect(isWalking(walking)).to.be.true;
+
+        pointAt(el, fractionOf(walking));
+
+        // Day 2 ran 06:55 to 13:57 UTC, so 09:30 is nearer where it started.
+        // The position is dispatched rather than placed: the component holds no
+        // map, and hovering has to work whether or not there is one.
+        expect(hovers).to.have.lengthOf(1);
+        expect(hovers[0].latitude).to.equal(69.301);
+        expect(hovers[0].longitude).to.equal(26.101);
+        expect(hovers[0].camp).to.be.false;
+    });
+
+    it('calls the hover off when the cursor leaves the plot', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        pointAt(el, 0.4);
+        expect(hovers[hovers.length - 1]).to.not.be.null;
+
+        pointAt(el, 0.4, { type: 'pointerleave' });
+
+        // A marker left standing on the map claims the hiker is being asked
+        // about when nobody is asking.
+        expect(hovers[hovers.length - 1]).to.be.null;
+    });
+
+    it('calls the hover off when the timeline is shut, and when the trip closes', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        pointAt(el, 0.4);
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        // The chart the marker was answering is gone from the page, so a marker
+        // left on the map has nothing left to explain it.
+        expect(hovers[hovers.length - 1]).to.be.null;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+        pointAt(el, 0.4);
+        document.dispatchEvent(new CustomEvent('trip-cleanup'));
+
+        expect(hovers[hovers.length - 1]).to.be.null;
+    });
+
+    it('says whether the position is one the watch recorded or one held at Camp', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        pointAt(el, fractionOf('2025-07-05 12:30:00'));
+        expect(readout(el)).to.include('Walking');
+
+        // A held position is a weaker claim than a tracked one — the hiker was
+        // at the camp all night, not at that spot at that minute — so the
+        // readout has to say which of the two is being shown.
+        pointAt(el, fractionOf('2025-07-06 01:00:00'));
+        expect(readout(el)).to.include('Camp');
+        expect(readout(el)).to.not.include('Walking');
+    });
+
+    it('marks the camp of 05-06 Jul when the trip\'s coldest hour is hovered', async function () {
+        this.timeout(20000);
+        await openTimeline(el, WHOLE_TRIP_LOG, MUOTKA_TRACK);
+
+        // 3.1 °C at 01:00, the trip's low: the watch was off, and the hiker was
+        // in the tent where day 2 ended.
+        const coldest = '2025-07-06 01:00:00';
+        expect(isWalking(coldest)).to.be.false;
+
+        pointAt(el, fractionOf(coldest));
+
+        expect(readout(el)).to.include('3.1 °C');
+        expect(hovers).to.have.lengthOf(1);
+        expect(hovers[0].camp).to.be.true;
+        // Day 2's last trackpoint, which is what that camp's position is.
+        expect(hovers[0].latitude).to.equal(69.311);
+        expect(hovers[0].longitude).to.equal(26.111);
     });
 
     it('surfaces a missing sensor log as an error rather than an empty block', async () => {

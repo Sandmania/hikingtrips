@@ -104,6 +104,13 @@ rect.readout-box {
   fill: #777;
 }
 
+/* Quiet, like the moment above it: it says what the marker on the map means,
+   not what the device read. */
+.readout-where {
+  font-size: 10px;
+  fill: #777;
+}
+
 .axis text {
   font-size: 11px;
   fill: #555;

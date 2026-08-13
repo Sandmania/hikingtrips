@@ -5,6 +5,7 @@ import { weatherControl } from './leaflet/weatherControl.js'
 import { galleryControl } from './leaflet/galleryControl.js'
 import { calendarControl } from './leaflet/calendarControl.js'
 import { infoControl } from './leaflet/infoControl.js'
+import { hoverMarker } from './leaflet/hoverMarker.js'
 import { initializeConfiguredBasemaps } from './leaflet/baseMaps.js'
 
 let map;
@@ -18,6 +19,7 @@ let actualRouteLayer;
 
 let selectedTripConfiguration;
 let pendingElevationListener;
+let weatherHoverMarker;
 
 document.addEventListener('alternatives-change', (event) => {
     if (!map) return;
@@ -28,6 +30,10 @@ document.addEventListener('alternatives-change', (event) => {
 });
 
 export function destroyMap() {
+    if (weatherHoverMarker) {
+        weatherHoverMarker.remove();
+        weatherHoverMarker = null;
+    }
     if (map) {
         map.remove();
         map = null;
@@ -125,6 +131,9 @@ export function initMap(fullConfiguration) {
         csvUrl: globalConfiguration?.weather?.csvUrl,
         gpxUrl: globalConfiguration?.actualRoute?.gpx
     }).addTo(map);
+    // The timeline says where the hiker was as it is hovered; the marker is the
+    // map's own answer to that, so it is owned here rather than by the chart.
+    weatherHoverMarker = hoverMarker(map);
     galleryControl({url: globalConfiguration?.photo_info?.galleryUrl}).addTo(map);
     calendarControl({travelInfo: globalConfiguration.travel_info}).addTo(map);
     

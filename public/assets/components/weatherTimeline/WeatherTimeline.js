@@ -1,8 +1,9 @@
 import { showError } from '../../js/error.js';
-import { toExposureRecord, instantToWallTime } from './exposureRecord.js';
+import { toExposureRecord, instantToWallTime, wallTimeToInstant } from './exposureRecord.js';
 import { parseActualRoute } from './actualRoute.js';
 import { extremes } from './extremes.js';
 import { nearestSample } from './nearestSample.js';
+import { positionAt } from './positionAt.js';
 
 // Per ADR-0001 we share leaflet-elevation's d3 rather than shipping our own.
 // This is the URL that library loads, so loadScript's dedupe by URL means
@@ -19,8 +20,9 @@ const D3_URL = 'https://unpkg.com/d3@7.8.4/dist/d3.min.js';
 const VIEW = { width: 960, height: 280 };
 const MARGIN = { top: 12, right: 40, bottom: 46, left: 46 };
 const STRIP = { height: 12, gap: 8 };
-// The hover readout: two lines of text in a box beside the hairline.
-const READOUT = { width: 104, height: 36, padding: 7, offset: 8 };
+// The hover readout: three lines of text in a box beside the hairline — the
+// moment, the two readings taken at it, and where the hiker was.
+const READOUT = { width: 104, height: 50, padding: 7, offset: 8 };
 
 // Ties the warmest tile to the caption qualifying it. A dagger rather than an
 // asterisk: it reads as a reference to a note, not as a correction or a
@@ -78,6 +80,7 @@ class WeatherTimeline extends HTMLElement {
 
     clear() {
         this.trip = null;
+        this._endHover();
         this.shadowRoot.querySelector('#chart').innerHTML = '';
         // The tiles go with the chart: three readings left standing above the
         // next trip's blank plot would be read as that trip's.
@@ -88,7 +91,18 @@ class WeatherTimeline extends HTMLElement {
     toggle() {
         const block = this.shadowRoot.querySelector('#weather-timeline');
         block.classList.toggle('hidden');
-        if (!block.classList.contains('hidden')) this._show();
+        if (block.classList.contains('hidden')) this._endHover();
+        else this._show();
+    }
+
+    /**
+     * Say that nothing is being pointed at any more. The map's marker answers
+     * the hover, so it has to go when the chart it was answering does — a
+     * hidden chart takes its hairline with it and would otherwise leave the
+     * marker standing on the map with nothing to explain it.
+     */
+    _endHover() {
+        document.dispatchEvent(new CustomEvent('weather-hover-end'));
     }
 
     /** Load on first open: a timeline nobody opens costs nothing. */
@@ -205,7 +219,7 @@ class WeatherTimeline extends HTMLElement {
             .attr('d', d3.line().x(p => x(p.at)).y(p => celsius(p.temperature)));
 
         this._renderWalkingWindows(plot, walkingWindows, at => x(onPlot(at)), plotHeight);
-        this._renderHover(plot, points, x, plotWidth, plotHeight);
+        this._renderHover(plot, points, x, plotWidth, plotHeight, walkingWindows);
         this._renderTiles(record, walkingWindows);
     }
 
@@ -213,10 +227,12 @@ class WeatherTimeline extends HTMLElement {
      * A hairline standing on the reading nearest the cursor, and a readout of
      * what the device recorded there.
      *
-     * Self-contained: the surface catches the pointer and nothing leaves this
-     * component, so hovering works whether or not there is a map on the page.
+     * The surface catches the pointer; what leaves the component is an
+     * announcement of where the hiker was at that moment, on the document. The
+     * map listens for it and moves its own marker, so hovering works whether or
+     * not there is a map on the page.
      */
-    _renderHover(plot, points, x, plotWidth, plotHeight) {
+    _renderHover(plot, points, x, plotWidth, plotHeight, walkingWindows) {
         const hover = plot.append('g')
             .attr('class', 'hover')
             .attr('display', 'none');
@@ -238,7 +254,10 @@ class WeatherTimeline extends HTMLElement {
             // defaults to black, which would be the whole plot painted over.
             .attr('fill', 'transparent');
 
-        const hide = () => hover.attr('display', 'none');
+        const hide = () => {
+            hover.attr('display', 'none');
+            this._endHover();
+        };
 
         // pointerdown as well as pointermove: a tap is a touch that never moves,
         // so a plot listening only for movement answers a mouse and not a finger.
@@ -257,9 +276,18 @@ class WeatherTimeline extends HTMLElement {
             // units of the plot's 874, so it still follows the cursor.
             const position = x(sample.at);
 
+            // Where the hiker was at that reading: inside a Walking Window the
+            // trackpoint nearest it, outside one the Camp the hour was spent at.
+            const at = wallTimeToInstant(sample.wallTime, this._trip.timeZone);
+            const where = positionAt(walkingWindows, at);
+
             hover.attr('display', null);
             hairline.attr('x1', position).attr('x2', position);
-            readout.show(sample, position);
+            readout.show(sample, position, where);
+
+            document.dispatchEvent(new CustomEvent('weather-hover', {
+                detail: { ...where, at }
+            }));
         });
 
         // A mouse leaves the plot; a finger stops existing where it was, sending
@@ -346,7 +374,8 @@ class WeatherTimeline extends HTMLElement {
 }
 
 /**
- * The box beside the hairline: one moment, and the two readings taken at it.
+ * The box beside the hairline: one moment, the two readings taken at it, and
+ * where the hiker was — which is also what the map's marker is showing.
  *
  * Returns only `show`, so where the box sits and how it is laid out stays in
  * here rather than being spread through the pointer handler.
@@ -375,14 +404,22 @@ function appendReadout(hover, plotWidth) {
         .attr('class', 'readout-humidity')
         .attr('x', READOUT.width / 2 + READOUT.padding)
         .attr('y', 29);
+    // A held position is a weaker claim than a tracked one — the hiker was at
+    // the Camp all night rather than at that spot at that minute — so the box
+    // says which of the two the marker on the map is showing.
+    const whereLine = group.append('text')
+        .attr('class', 'readout-where')
+        .attr('x', READOUT.padding)
+        .attr('y', 43);
 
     return {
-        show(sample, position) {
+        show(sample, position, where) {
             when.text(formatTripLocalMoment(sample.wallTime));
             temperature.text(`${sample.temperature.toFixed(1)} °C`);
             // Whole percent: the device reports a tenth, but a tenth of a
             // percent of saturation is finer than the reading means anything at.
             humidity.text(`${Math.round(sample.relativeHumidity)} %`);
+            whereLine.text(where.camp ? 'Camp' : 'Walking');
 
             // Beside the hairline, on whichever side of it the plot has room
             // for: the last hours of a trip are worth reading, and a readout
