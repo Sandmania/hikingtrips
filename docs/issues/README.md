@@ -25,3 +25,9 @@ Design record: [handoff](../handoff-temperature-timeline.md) · [glossary](../..
       │        └─ 0006
       └─ 0005 ─────┘
 ```
+
+## Elevation profile
+
+| # | Issue | Type | Status | Blocked by |
+|---|---|---|---|---|
+| 0008 | [Intermittent TypeError when resize beats the marker import](0008-elevation-marker-race-on-resize.md) | AFK | ready | — |
