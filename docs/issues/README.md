@@ -11,7 +11,7 @@ Design record: [handoff](../handoff-temperature-timeline.md) · [glossary](../..
 | # | Issue | Type | Status | Blocked by |
 |---|---|---|---|---|
 | 0001 | [Temperature line end to end](0001-weather-timeline-temperature-line.md) | HITL | awaiting review | — |
-| 0002 | [Humidity area on a fixed 0–100 % axis](0002-humidity-area.md) | AFK | ready | 0001 |
+| 0002 | [Humidity area on a fixed 0–100 % axis](0002-humidity-area.md) | AFK | done | 0001 |
 | 0003 | [Walking Window bar strip](0003-walking-window-strip.md) | AFK | ready | 0001 |
 | 0004 | [Summary tiles and the direct-sun footnote](0004-summary-tiles.md) | AFK | ready | 0003 |
 | 0005 | [Hover hairline and readout](0005-hover-readout.md) | AFK | ready | 0001 |

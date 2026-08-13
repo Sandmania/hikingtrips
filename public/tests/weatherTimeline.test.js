@@ -46,13 +46,31 @@ const TRACK = `<?xml version="1.0" encoding="UTF-8"?>
 
 const MUOTKA = { csvUrl: 'trip/sand.csv', gpxUrl: 'trip/combined.gpx', timeZone: 'Europe/Helsinki' };
 
+/** A day in cloud: 95 % relative humidity at 9.9 °C, drying out by mid-afternoon. */
+const FOG_LOG = [
+    '"Device Name","SandWeather"',
+    '"FORMATTED DATE_TIME","Temperature","Relative Humidity","Heat Index","Dew Point","Data Type"',
+    '"YYYY-MM-DD HH:MM:SS","°C","%","°C","°C"',
+    '"2025-07-04 02:00:00 PM","9.9","30.0","9.5","-7.0","point"',
+    '"2025-07-04 01:00:00 PM","9.5","69.0","9.2","4.2","point"',
+    '"2025-07-04 12:00:00 PM","9.9","95.0","9.8","9.2","point"',
+    ''
+].join('\n');
+
 /** Serve the fixtures, and record what was asked for. */
-function stubFetch(requested) {
+function stubFetch(requested, sensorLog = SENSOR_LOG) {
     return (url) => {
         requested.push(String(url));
-        const body = String(url).endsWith('.csv') ? SENSOR_LOG : TRACK;
+        const body = String(url).endsWith('.csv') ? sensorLog : TRACK;
         return Promise.resolve({ ok: true, text: () => Promise.resolve(body) });
     };
+}
+
+/** The y coordinates an SVG path passes through, in user units. */
+function pathYs(path) {
+    return path.getAttribute('d')
+        .match(/-?[\d.]+,-?[\d.]+/g)
+        .map(pair => parseFloat(pair.split(',')[1]));
 }
 
 describe('WeatherTimeline', () => {
@@ -188,6 +206,100 @@ describe('WeatherTimeline', () => {
             },
             { timeout: 15000 }
         );
+    });
+
+    it('draws humidity as a filled area behind the temperature line', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([]);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const marks = await waitFor(
+            () => {
+                const paths = Array.from(el.shadowRoot.querySelectorAll('path.humidity, path.temperature'));
+                expect(paths).to.have.lengthOf(2);
+                return paths;
+            },
+            { timeout: 15000 }
+        );
+
+        // Painted first, so the line reads on top of it rather than under it.
+        expect(marks[0].classList.contains('humidity')).to.be.true;
+        expect(marks[0].getAttribute('d')).to.match(/^M[\d.-]/);
+        expect(marks[0].getAttribute('d')).to.match(/Z$/); // closed: an area, not a line
+    });
+
+    it('pins the humidity axis to 0-100 %, whatever range the trip happened to have', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([]);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const labels = await waitFor(
+            () => {
+                const texts = Array.from(
+                    el.shadowRoot.querySelectorAll('.axis-humidity .tick text'),
+                    text => text.textContent
+                );
+                expect(texts).to.not.be.empty;
+                return texts;
+            },
+            { timeout: 15000 }
+        );
+
+        // The trip's readings only span 48-64 %; the axis must still run the
+        // whole share of saturation, so 64 % reads as the middling value it is.
+        expect(labels[0]).to.equal('0 %');
+        expect(labels[labels.length - 1]).to.equal('100 %');
+    });
+
+    it('says which series each axis belongs to, so neither has to be guessed', () => {
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const legend = el.shadowRoot.querySelector('.legend');
+
+        expect(legend).to.exist;
+        const temperature = legend.querySelector('.key-temperature').textContent;
+        expect(temperature).to.match(/temperature/i);
+        expect(temperature).to.match(/°C/);
+        expect(temperature).to.match(/left/i);
+
+        const humidity = legend.querySelector('.key-humidity').textContent;
+        expect(humidity).to.match(/humidity/i);
+        expect(humidity).to.match(/%/);
+        expect(humidity).to.match(/right/i);
+    });
+
+    it('fills nearly the whole plot when the air is nearly saturated', async function () {
+        this.timeout(20000);
+        window.fetch = stubFetch([], FOG_LOG);
+        el.trip = MUOTKA;
+
+        document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+        const area = await waitFor(
+            () => {
+                const path = el.shadowRoot.querySelector('path.humidity');
+                expect(path).to.exist;
+                return path;
+            },
+            { timeout: 15000 }
+        );
+
+        // Each reading stands as tall as its share of saturation, so the 95 %
+        // hour towers over the 30 % one instead of the two being stretched
+        // apart to fill the plot between them.
+        const ys = pathYs(area);
+        const baseline = Math.max(...ys); // 0 %, the foot of the area
+        const heights = [...new Set(ys)].map(y => (baseline - y) / baseline).sort();
+
+        expect(heights).to.have.lengthOf(4); // three readings plus the baseline
+        expect(heights[0]).to.equal(0);
+        expect(heights[1]).to.be.closeTo(0.30, 0.01);
+        expect(heights[2]).to.be.closeTo(0.69, 0.01);
+        expect(heights[3]).to.be.closeTo(0.95, 0.01);
     });
 
     it('surfaces a missing sensor log as an error rather than an empty block', async () => {

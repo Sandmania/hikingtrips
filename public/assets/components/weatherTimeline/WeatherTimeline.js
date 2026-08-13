@@ -9,7 +9,7 @@ const D3_URL = 'https://unpkg.com/d3@7.8.4/dist/d3.min.js';
 // The chart is drawn once at this size and scaled by viewBox, so these are
 // aspect ratios rather than pixels.
 const VIEW = { width: 960, height: 260 };
-const MARGIN = { top: 12, right: 16, bottom: 26, left: 46 };
+const MARGIN = { top: 12, right: 40, bottom: 26, left: 46 };
 
 class WeatherTimeline extends HTMLElement {
     constructor() {
@@ -21,6 +21,10 @@ class WeatherTimeline extends HTMLElement {
         this.shadowRoot.innerHTML = `
           <link rel="stylesheet" href="assets/components/weatherTimeline/WeatherTimeline.css">
           <div id="weather-timeline" class="hidden">
+            <p class="legend">
+              <span class="key key-temperature"><span class="swatch"></span>Temperature (°C, left)</span>
+              <span class="key key-humidity"><span class="swatch"></span>Relative humidity (%, right)</span>
+            </p>
             <div id="chart"></div>
             <p class="caption">Measured by a sensor carried on the outside of the pack, so
               midday peaks include full sun rather than shade air temperature.</p>
@@ -105,15 +109,24 @@ class WeatherTimeline extends HTMLElement {
         // the axis, so the chart reads the same wherever it is opened from.
         const points = record.map(sample => ({
             at: wallTimeAsPlotDate(sample.wallTime),
-            temperature: sample.temperature
+            temperature: sample.temperature,
+            relativeHumidity: sample.relativeHumidity
         }));
 
         const x = d3.scaleUtc()
             .domain([points[0].at, points[points.length - 1].at])
             .range([0, plotWidth]);
-        const y = d3.scaleLinear()
+        // Two vertical scales, so neither is called y: temperature is fitted to
+        // the trip, humidity is not.
+        const celsius = d3.scaleLinear()
             .domain(d3.extent(points, p => p.temperature))
             .nice()
+            .range([plotHeight, 0]);
+        // Relative humidity is a share of saturation, so its axis is the whole
+        // share. Fitting it to the data would make a 95 % reading — air that
+        // wets everything it touches — look like an unremarkable middle value.
+        const humidity = d3.scaleLinear()
+            .domain([0, 100])
             .range([plotHeight, 0]);
 
         const host = this.shadowRoot.querySelector('#chart');
@@ -133,13 +146,27 @@ class WeatherTimeline extends HTMLElement {
 
         plot.append('g')
             .attr('class', 'axis axis-temperature')
-            .call(d3.axisLeft(y).ticks(5).tickFormat(degrees => `${degrees} °C`));
+            .call(d3.axisLeft(celsius).ticks(5).tickFormat(degrees => `${degrees} °C`));
+
+        plot.append('g')
+            .attr('class', 'axis axis-humidity')
+            .attr('transform', `translate(${plotWidth},0)`)
+            .call(d3.axisRight(humidity).ticks(5).tickFormat(share => `${share} %`));
+
+        // Humidity first, so the temperature line is drawn over it.
+        plot.append('path')
+            .datum(points)
+            .attr('class', 'humidity')
+            .attr('d', d3.area()
+                .x(p => x(p.at))
+                .y0(humidity(0))
+                .y1(p => humidity(p.relativeHumidity)));
 
         plot.append('path')
             .datum(points)
             .attr('class', 'temperature')
             .attr('fill', 'none')
-            .attr('d', d3.line().x(p => x(p.at)).y(p => y(p.temperature)));
+            .attr('d', d3.line().x(p => x(p.at)).y(p => celsius(p.temperature)));
     }
 }
 

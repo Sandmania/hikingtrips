@@ -1,6 +1,8 @@
 /* A full-width block under the elevation profile, not a floating card: the
    Exposure Record spans the whole trip and wants the whole width. */
 #weather-timeline {
+  --temperature: #c2185b;
+  --humidity: #2a78d6;
   width: 100%;
   box-sizing: border-box;
   background: #fff;
@@ -18,8 +20,16 @@
   height: auto;
 }
 
+/* Pale enough that the temperature line stays legible where they overlap, and
+   a different mark type so neither needs a legend lookup to tell them apart. */
+path.humidity {
+  fill: var(--humidity);
+  fill-opacity: 0.16;
+  stroke: none;
+}
+
 path.temperature {
-  stroke: #c2185b;
+  stroke: var(--temperature);
   stroke-width: 1.5;
   stroke-linejoin: round;
   stroke-linecap: round;
@@ -33,6 +43,37 @@ path.temperature {
 .axis path,
 .axis line {
   stroke: #ccc;
+}
+
+/* Two axes on one plot, so each key names the axis its series is read against.
+   The swatches repeat the mark shapes — a stroke and a filled block — so the
+   legend confirms the reading rather than being the only way to make it. */
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+  margin: 0 0 2px;
+  font-size: 11px;
+  color: #555;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.key-temperature .swatch {
+  width: 14px;
+  height: 2px;
+  background: var(--temperature);
+}
+
+.key-humidity .swatch {
+  width: 14px;
+  height: 9px;
+  background: var(--humidity);
+  opacity: 0.28;
 }
 
 /* The sensor hung off the outside of a pack, so midday readings include full
