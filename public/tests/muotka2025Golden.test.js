@@ -53,10 +53,10 @@ describe('muotka2025, as walked', () => {
         expect(record.length, 'samples in the Trip Window').to.equal(295);
     });
 
-    // Seven days walked, one <trk> each: the actual route gives each day its own
-    // track deliberately, to work around a per-segment extension bug in the
-    // togeojson version leaflet-elevation pins. Anyone flattening that structure
-    // loses the Camps between the days, and this count is what catches it.
+    // Seven days walked, one <trkseg> each: combined.gpx is a single <trk>
+    // holding a segment per day, and the breaks between those segments are the
+    // nights in Camp. Anyone merging them into one segment loses the Camps —
+    // the trip becomes one unbroken walk — and this count is what catches it.
     it('was walked in 7 Walking Windows, one per day', () => {
         expect(route.walkingWindows.length, 'Walking Windows').to.equal(7);
     });

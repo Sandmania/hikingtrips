@@ -47,6 +47,10 @@ const TRACK = `<?xml version="1.0" encoding="UTF-8"?>
   </trkseg></trk>
 </gpx>`;
 
+// A parseable log that happens to be another trip's: a week before TRACK, so
+// the trim leaves nothing and there is nothing to draw.
+const LOG_FROM_ANOTHER_TRIP = SENSOR_LOG.replaceAll('2025-07-04', '2025-06-27');
+
 const MUOTKA = { csvUrl: 'trip/sand.csv', gpxUrl: 'trip/combined.gpx', timeZone: 'Europe/Helsinki' };
 
 /** The plot's own width in view units: the 960 viewBox less the two margins. */
@@ -944,6 +948,31 @@ describe('WeatherTimeline', () => {
                 expect(errors).to.have.lengthOf(1);
                 expect(errors[0]).to.match(/sensor log|actual route/i);
             });
+        } finally {
+            document.removeEventListener('show-error', listener);
+        }
+    });
+
+    it('surfaces a sensor log that misses the trip as an error, not as a blank chart', async function () {
+        this.timeout(20000); // the fetches succeed, so this one gets as far as d3
+        window.fetch = stubFetch([], LOG_FROM_ANOTHER_TRIP, TRACK);
+        const errors = [];
+        const listener = e => errors.push(e.detail.message);
+        document.addEventListener('show-error', listener);
+
+        try {
+            el.trip = MUOTKA;
+            document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+            await waitFor(() => {
+                expect(errors).to.have.lengthOf(1);
+                expect(errors[0]).to.match(/outside the trip/i);
+            }, { timeout: 15000 });
+
+            // The panel is open, so nothing may be left standing in it for the
+            // legend and the sun caption to frame.
+            expect(el.shadowRoot.querySelector('#chart').innerHTML, 'chart').to.equal('');
+            expect(el.shadowRoot.querySelector('#tiles').innerHTML, 'tiles').to.equal('');
         } finally {
             document.removeEventListener('show-error', listener);
         }

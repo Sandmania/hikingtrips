@@ -134,6 +134,22 @@ const LOG_STARTING_INDOORS = [
     ''
 ].join('\n');
 
+// The same device's export from a trip a week earlier: the shape a weather.csvUrl
+// pointed at the wrong trip's log produces, since both parse perfectly well.
+const LOG_FROM_ANOTHER_TRIP = [
+    '"Device Name","SandWeather"',
+    '"FORMATTED DATE_TIME","Temperature","Relative Humidity","Heat Index","Dew Point","Data Type"',
+    '"YYYY-MM-DD HH:MM:SS","°C","%","°C","°C"',
+    '"2025-06-27 02:00:00 PM","19.5","55.0","19.2","10.1","point"',
+    '"2025-06-27 11:00:00 AM","16.0","70.1","15.9","10.6","point"',
+    ''
+].join('\n');
+
+// A logger switched on and exported without ever taking a reading: header and
+// units rows, and nothing under them.
+const LOG_WITH_NO_READINGS = LOG_FROM_ANOTHER_TRIP
+    .split('\n').filter(line => !line.includes('point')).join('\n');
+
 describe('Exposure Record', () => {
 
     it('drops samples taken before the trip started', () => {
@@ -166,6 +182,23 @@ describe('Exposure Record', () => {
         // would otherwise trim and label by where the page was opened.
         expect(() => toExposureRecord(LOG_STARTING_INDOORS, { tripWindow: TRIP_WINDOW }))
             .to.throw('weather.timezone must be set');
+    });
+
+    it('refuses a log that misses the trip, naming both spans so the miss can be seen', () => {
+        // Empty is not a quiet trip: it is the wrong file, and returning it
+        // would draw a legend and a caption around a blank plot.
+        expect(() => toExposureRecord(LOG_FROM_ANOTHER_TRIP, {
+            timeZone: 'Europe/Helsinki',
+            tripWindow: TRIP_WINDOW
+        })).to.throw('Sensor log covers 2025-06-27 11:00 to 2025-06-27 14:00, ' +
+            'outside the trip\'s 2025-07-04 11:09 to 2025-07-05 14:56');
+    });
+
+    it('refuses a log that took no readings at all', () => {
+        expect(() => toExposureRecord(LOG_WITH_NO_READINGS, {
+            timeZone: 'Europe/Helsinki',
+            tripWindow: TRIP_WINDOW
+        })).to.throw('Sensor log has no readings');
     });
 
     it('carries the trip-local wall time alongside the instant', () => {

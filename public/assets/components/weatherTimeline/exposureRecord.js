@@ -103,10 +103,15 @@ export function parseSensorLog(csvText) {
  * instant, so a chart can render trip-local times without consulting `Intl`
  * again — or the viewer's clock.
  *
+ * Never empty: a log that leaves nothing inside the Trip Window is refused
+ * rather than returned, so everything downstream can count on having something
+ * to draw and to read a hover off.
+ *
  * @param {string} csvText the Sensor Log export, verbatim
  * @param {{timeZone: string, tripWindow: {start: Date, end: Date}}} trip
  * @returns {Array<{instant: Date, wallTime: string, temperature: number,
  *                  relativeHumidity: number, heatIndex: number, dewPoint: number}>}
+ * @throws if the log states no zone, or does not overlap the Trip Window
  */
 export function toExposureRecord(csvText, { timeZone, tripWindow }) {
     // Without a zone `Intl` answers on the viewer's clock, which trims the
@@ -116,9 +121,34 @@ export function toExposureRecord(csvText, { timeZone, tripWindow }) {
         throw new Error('Sensor log states no offset, so weather.timezone must be set for this trip');
     }
 
-    return parseSensorLog(csvText)
-        .map(sample => ({ ...sample, instant: wallTimeToInstant(sample.wallTime, timeZone) }))
-        .filter(sample => sample.instant >= tripWindow.start && sample.instant <= tripWindow.end);
+    const samples = parseSensorLog(csvText)
+        .map(sample => ({ ...sample, instant: wallTimeToInstant(sample.wallTime, timeZone) }));
+    if (!samples.length) {
+        throw new Error('Sensor log has no readings');
+    }
+
+    const record = samples.filter(
+        sample => sample.instant >= tripWindow.start && sample.instant <= tripWindow.end);
+
+    // Nothing left after the trim is not a quiet trip: it is another trip's log,
+    // or a trip pointed at the wrong one. Returned empty it draws a legend and a
+    // sun caption around a blank plot, which reads as a trip that had no weather
+    // rather than as the wrong file. Both spans are named on the trip's own
+    // clock, so which way they miss can be read off the message.
+    if (!record.length) {
+        throw new Error(
+            `Sensor log covers ${onTripClock(samples[0].instant, timeZone)} to ` +
+            `${onTripClock(samples[samples.length - 1].instant, timeZone)}, ` +
+            `outside the trip's ${onTripClock(tripWindow.start, timeZone)} to ` +
+            `${onTripClock(tripWindow.end, timeZone)}`);
+    }
+
+    return record;
+}
+
+/** An instant on the trip's clock to the minute, for naming a span in an error. */
+function onTripClock(instant, timeZone) {
+    return instantToWallTime(instant, timeZone).slice(0, 16);
 }
 
 /**

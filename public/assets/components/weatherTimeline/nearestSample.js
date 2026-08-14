@@ -7,9 +7,11 @@
  * half hour, and a value computed between two of them would be a reading the
  * device never took.
  *
- * @param {Array<{at: Date}>} samples in time order
+ * @param {Array<{at: Date}>} samples in time order, and never empty — an
+ *        Exposure Record with nothing in it is refused where it is built, so
+ *        there is no such thing as a chart with no reading to point at
  * @param {Date} at the moment being read
- * @returns {object|null} the sample itself
+ * @returns {object} the sample itself
  */
 export function nearestSample(samples, at) {
     return samples.reduce((nearest, sample) =>

@@ -145,7 +145,6 @@ class WeatherTimeline extends HTMLElement {
 
     _render(d3) {
         const { record, walkingWindows, tripWindow } = this._data ?? {};
-        if (!record?.length) return;
 
         const plotWidth = VIEW.width - MARGIN.left - MARGIN.right;
         const plotHeight = VIEW.height - MARGIN.top - MARGIN.bottom;
@@ -482,7 +481,15 @@ async function loadD3() {
     // leaflet-elevation guards its own load the same way, so sharing works in
     // both directions: whichever chart is drawn first loads the one copy.
     if (typeof window.d3 !== 'object' || window.d3 === null) {
-        await loadScript(D3_URL);
+        try {
+            await loadScript(D3_URL);
+        } catch (event) {
+            // loadScript rejects with the script tag's error event, which has no
+            // message: shown to the viewer that is the word "[object Event]".
+            // Say which of the page's downloads failed instead.
+            throw new Error('Failed to load d3, which the Weather Timeline is drawn with',
+                { cause: event });
+        }
     }
     return window.d3;
 }
