@@ -135,6 +135,10 @@ class WeatherTimeline extends HTMLElement {
             this._render(d3);
         } catch (error) {
             if (this._trip !== trip) return;
+            // A failed load must not latch: the fetches or the CDN may simply
+            // have been unlucky, and _show() would otherwise read the settled
+            // promise as "already loaded" and never try again this trip.
+            this._loading = null;
             showError(error);
         }
     }

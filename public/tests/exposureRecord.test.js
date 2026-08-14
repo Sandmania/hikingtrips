@@ -42,6 +42,38 @@ describe('Sensor Log parsing', () => {
         expect(samples.map(s => s.temperature)).to.not.include(99.9);
     });
 
+    it('says which plotted column is missing rather than reading it as nulls', () => {
+        // A log the device wrote with humidity logging switched off. Left to
+        // itself the column becomes nulls and the chart draws an empty plot.
+        const withoutHumidity = [
+            '"Device Name","SandWeather"',
+            '"FORMATTED DATE_TIME","Temperature","Heat Index","Dew Point","Data Type"',
+            '"YYYY-MM-DD HH:MM:SS","°C","°C","°C"',
+            '"2025-07-04 12:00:00 PM","18.4","18.1","10.6","point"',
+            ''
+        ].join('\n');
+
+        expect(() => parseSensorLog(withoutHumidity))
+            .to.throw('Sensor log has no Relative Humidity column');
+    });
+
+    it('still reads a log without the columns nothing renders yet', () => {
+        const withoutDerived = [
+            '"Device Name","SandWeather"',
+            '"FORMATTED DATE_TIME","Temperature","Relative Humidity","Data Type"',
+            '"YYYY-MM-DD HH:MM:SS","°C","%"',
+            '"2025-07-04 12:00:00 PM","18.4","61.0","point"',
+            '"2025-07-04 11:30:00 AM","17.2","64.2","point"',
+            ''
+        ].join('\n');
+
+        const samples = parseSensorLog(withoutDerived);
+
+        expect(samples.map(s => s.temperature)).to.have.members([18.4, 17.2]);
+        expect(samples[0].heatIndex).to.be.null;
+        expect(samples[0].dewPoint).to.be.null;
+    });
+
     it('sorts ascending, since the export is newest-first', () => {
         const samples = parseSensorLog(SENSOR_LOG);
 
@@ -127,6 +159,13 @@ describe('Exposure Record', () => {
             '2025-07-04 11:30:00',
             '2025-07-05 09:00:00'
         ]);
+    });
+
+    it('refuses a trip with no timezone rather than falling back to the viewer\'s', () => {
+        // `Intl` answers on the viewer's clock when given no zone, so this
+        // would otherwise trim and label by where the page was opened.
+        expect(() => toExposureRecord(LOG_STARTING_INDOORS, { tripWindow: TRIP_WINDOW }))
+            .to.throw('weather.timezone must be set');
     });
 
     it('carries the trip-local wall time alongside the instant', () => {

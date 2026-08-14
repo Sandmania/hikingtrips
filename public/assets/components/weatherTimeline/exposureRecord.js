@@ -10,6 +10,18 @@ const HEADER_MARKER = 'DATE_TIME';
 
 const TIMESTAMP = /^(\d{4})-(\d{2})-(\d{2})[ T](\d{1,2}):(\d{2}):(\d{2})(?:\s*([AaPp])\.?[Mm]\.?)?$/;
 
+// The reading taken from each row, by the header the device writes it under.
+const COLUMNS = {
+    temperature: 'Temperature',
+    relativeHumidity: 'Relative Humidity',
+    heatIndex: 'Heat Index',
+    dewPoint: 'Dew Point'
+};
+
+// What the Weather Timeline plots. Heat index and dew point are read too, but
+// nothing renders them yet, so a log without those columns still draws.
+const RENDERED = ['temperature', 'relativeHumidity'];
+
 function parseCsvRow(line) {
     const cells = [];
     let cell = '';
@@ -52,12 +64,16 @@ export function parseSensorLog(csvText) {
     const header = rows[headerIndex].map(cell => cell.toLowerCase());
     const columnIndex = name => header.indexOf(name);
 
-    const fields = {
-        temperature: columnIndex('temperature'),
-        relativeHumidity: columnIndex('relative humidity'),
-        heatIndex: columnIndex('heat index'),
-        dewPoint: columnIndex('dew point')
-    };
+    const fields = Object.fromEntries(Object.entries(COLUMNS)
+        .map(([field, column]) => [field, columnIndex(column.toLowerCase())]));
+
+    // Say a column is missing rather than let it become a column of nulls: the
+    // chart draws those as a broken line or an empty plot, which reads as a bad
+    // trip rather than as a bad file.
+    const missing = RENDERED.filter(field => fields[field] === -1).map(field => COLUMNS[field]);
+    if (missing.length) {
+        throw new Error(`Sensor log has no ${missing.join(' or ')} column`);
+    }
 
     const dataTypeIndex = columnIndex('data type');
 
@@ -93,6 +109,13 @@ export function parseSensorLog(csvText) {
  *                  relativeHumidity: number, heatIndex: number, dewPoint: number}>}
  */
 export function toExposureRecord(csvText, { timeZone, tripWindow }) {
+    // Without a zone `Intl` answers on the viewer's clock, which trims the
+    // record and labels the axis by where the page was opened rather than by
+    // where the trip happened — wrong, and plausible enough to go unnoticed.
+    if (!timeZone) {
+        throw new Error('Sensor log states no offset, so weather.timezone must be set for this trip');
+    }
+
     return parseSensorLog(csvText)
         .map(sample => ({ ...sample, instant: wallTimeToInstant(sample.wallTime, timeZone) }))
         .filter(sample => sample.instant >= tripWindow.start && sample.instant <= tripWindow.end);

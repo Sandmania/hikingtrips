@@ -255,6 +255,40 @@ describe('WeatherTimeline', () => {
         expect(requested).to.have.lengthOf(2);
     });
 
+    it('tries again on the next open when the first load fails', async function () {
+        this.timeout(20000);
+        const serve = stubFetch([], CAMP_AND_SUN_LOG, MUOTKA_TRACK);
+        let sensorLogFetches = 0;
+        // The sensor log is unreachable on the first open and there on the
+        // second, as a blip in the network or the CDN would have it.
+        window.fetch = url => String(url).endsWith('.csv') && sensorLogFetches++ === 0
+            ? Promise.resolve({ ok: false, statusText: 'Service Unavailable' })
+            : serve(url);
+
+        const errors = [];
+        const onError = event => errors.push(event.detail.message);
+        document.addEventListener('show-error', onError);
+
+        try {
+            el.trip = MUOTKA;
+            document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+            await waitFor(() => { expect(errors).to.have.lengthOf(1); });
+
+            // Closing and opening again is the whole retry a viewer gets: an
+            // attempt that failed must not leave the timeline counting as
+            // loaded and showing a blank plot until the page is reloaded.
+            document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+            document.dispatchEvent(new CustomEvent('toggle-weather-timeline'));
+
+            await waitFor(
+                () => { expect(el.shadowRoot.querySelector('path.temperature')).to.exist; },
+                { timeout: 15000 }
+            );
+        } finally {
+            document.removeEventListener('show-error', onError);
+        }
+    });
+
     it('draws one temperature line, scaled by viewBox rather than fixed pixels', async function () {
         this.timeout(20000); // may have to fetch d3 from unpkg
         window.fetch = stubFetch([]);
