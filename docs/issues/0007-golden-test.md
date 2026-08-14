@@ -1,7 +1,7 @@
 # 0007 — Golden test: the muotka2025 Exposure Record
 
 - **Type**: AFK
-- **Status**: ready
+- **Status**: done
 - **Blocked by**: 0003
 
 ## What to build
@@ -24,10 +24,10 @@ Related: the actual route GPX gives each day its own `<trk>` deliberately, to wo
 
 ## Acceptance criteria
 
-- [ ] The test loads the committed muotka2025 CSV and GPX, not fixtures
-- [ ] All five figures above are asserted, times compared in trip-local time
-- [ ] The test is registered in the test index page and passes alongside the existing suite
-- [ ] Failure messages identify which figure diverged
+- [x] The test loads the committed muotka2025 CSV and GPX, not fixtures
+- [x] All five figures above are asserted, times compared in trip-local time
+- [x] The test is registered in the test index page and passes alongside the existing suite
+- [x] Failure messages identify which figure diverged
 
 ## Blocked by
 
