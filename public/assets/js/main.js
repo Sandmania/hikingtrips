@@ -37,6 +37,7 @@ export async function initTrip() {
         initializeLegAlternatives(config);
         initializePackDetails(config, signal);
         initializeMealPlan(config, signal);
+        initializeWeatherTimeline(config);
 
         if (config?.travel_info) {
             renderTripCalendar(config.travel_info);
@@ -82,6 +83,25 @@ function initializeMealPlan(config, signal) {
     mealPlan.loadCsv(config.mealPlan.csvUrl, signal);
 }
 
+function initializeWeatherTimeline(config) {
+    const weatherTimeline = document.querySelector('tt-weather-timeline');
+    if(!weatherTimeline) {
+        console.log("Weather timeline web component not available.")
+        return;
+    }
+    // Per ADR-0002 the Trip Window comes from the track, so both are needed.
+    // The component fetches neither until someone opens it.
+    if (!config?.weather?.csvUrl || !config?.actualRoute?.gpx) {
+        weatherTimeline.trip = null;
+        return;
+    }
+    weatherTimeline.trip = {
+        csvUrl: config.weather.csvUrl,
+        gpxUrl: config.actualRoute.gpx,
+        timeZone: config.weather.timezone
+    };
+}
+
 function resolveRelativePaths(config, tripId) {
     function resolvePath(path) {
         if (!path || path.startsWith('http://') || path.startsWith('https://') || path.startsWith('/')) return path;
@@ -112,4 +132,5 @@ function resolveRelativePaths(config, tripId) {
     if (config.photo_info?.galleryUrl) config.photo_info.galleryUrl = resolvePath(config.photo_info.galleryUrl);
     if (config.packDetails?.csvUrl) config.packDetails.csvUrl = resolvePath(config.packDetails.csvUrl);
     if (config.mealPlan?.csvUrl) config.mealPlan.csvUrl = resolvePath(config.mealPlan.csvUrl);
+    if (config.weather?.csvUrl) config.weather.csvUrl = resolvePath(config.weather.csvUrl);
 }
