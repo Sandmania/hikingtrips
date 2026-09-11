@@ -23,9 +23,6 @@ class ElevationProfile extends HTMLElement {
 
         await this._loadDeps();
 
-        const routeLayer = L.featureGroup();
-        let photoLayer = null;
-
         this._elevationControl = L.control.elevation({
             edgeScale: false,
             theme: "magenta-theme",
@@ -36,25 +33,28 @@ class ElevationProfile extends HTMLElement {
             followMarker: false,
             downloadLink: false,
             distanceMarkers: false,
-            hotline: false
+            hotline: false,
+            // The waypoints are handed on as data and drawn by the map, which
+            // merges the ones that crowd each other — see waypointLayer.js.
+            // The chart keeps its own dots for them either way.
+            wptIcons: false
         }).addTo(mapInstance);
 
-        this._elevationControl.on('eledata_loaded', ({ layer }) => {
+        this._elevationControl.on('eledata_loaded', ({ layer, data }) => {
             if (!this._mapInstance) return;
 
+            // Built per load rather than once: switching the route overlay off
+            // and on reads the GPX again, and the second reading must replace
+            // the first rather than stack a second track on top of it.
+            const routeLayer = L.featureGroup();
             layer.eachLayer((trkseg) => {
                 if (trkseg.feature.geometry.type !== "Point") {
                     routeLayer.addLayer(trkseg);
-                } else if (trkseg.feature.properties.sym === "Photo") {
-                    if (!photoLayer) {
-                        photoLayer = L.featureGroup();
-                    }
-                    photoLayer.addLayer(trkseg);
                 }
             });
 
             document.dispatchEvent(new CustomEvent('elevation-layers-ready', {
-                detail: { routeLayer, photoLayer }
+                detail: { routeLayer, waypoints: waypointsIn(data) }
             }));
         });
 
@@ -91,6 +91,26 @@ class ElevationProfile extends HTMLElement {
         this._mapInstance = null;
         this._gpxPath = null;
     }
+}
+
+/**
+ * A trip's waypoints, as plain positions and text.
+ *
+ * The component holds no map, so it hands the waypoints on as data and lets the
+ * map decide how they are drawn.
+ *
+ * @param {Object} geojson what leaflet-elevation read the GPX into
+ * @returns {Array<{latitude: number, longitude: number, sym: string, name: string, desc: string}>}
+ */
+function waypointsIn(geojson) {
+    const features = geojson?.features ?? (geojson ? [geojson] : []);
+    return features
+        .filter(feature => feature.geometry?.type === "Point")
+        .map(feature => {
+            const [longitude, latitude] = feature.geometry.coordinates;
+            const { sym = '', name = '', desc = '' } = feature.properties ?? {};
+            return { latitude, longitude, sym, name, desc };
+        });
 }
 
 customElements.define('elevation-profile', ElevationProfile);

@@ -15,12 +15,63 @@ elevation-profile,
     display: none;
 }
 
-.elevation-waypoint-icon::before {
-    background-image: url(../../images/bonfire-outline.svg) !important;
+/* The waypoints the map draws itself (waypointLayer.js). leaflet-elevation is
+   told not to draw its own, so these are not overrides of its icon — they are
+   the only rules there are. */
+.waypoint-icon {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: no-repeat center center / contain;
 }
 
-.elevation-waypoint-icon.photo::before {
-    background-image: url(../../images/camera.svg) !important;
+.waypoint-icon.camp {
+    background-image: url(../../images/bonfire-outline.svg);
+}
+
+.waypoint-icon.photo {
+    background-image: url(../../images/camera.svg);
+}
+
+/* On a camp that also holds photos. Bottom right rather than bottom left: the
+   icon is anchored at [8, 30], so the left corner is the waypoint's own
+   position and nothing decorative belongs on it. */
+.waypoint-also {
+    position: absolute;
+    /* The count's own offset, mirrored: the two hang off the same corner of the
+       icon, one above and one below, and read as a pair. */
+    bottom: -4px;
+    right: -6px;
+    /* The count is 18 px tall — 16 px of line plus its border — so the mark is
+       an 18 px circle rather than a size of its own. */
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: #fff no-repeat center center / 12px 12px;
+    border: 1px solid #666;
+    box-sizing: border-box;
+}
+
+.waypoint-also.photo {
+    background-image: url(../../images/camera.svg);
+}
+
+/* How many things the marker stands for. The marker element is positioned by
+   Leaflet, so the badge hangs off that without a positioning context of its
+   own. */
+.waypoint-count {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 16px;
+    padding: 0 3px;
+    box-sizing: border-box;
+    border-radius: 8px;
+    background: #fff;
+    border: 1px solid #666;
+    color: #333;
+    font: 600 11px/16px sans-serif;
+    text-align: center;
 }
 
 /**
@@ -31,7 +82,7 @@ elevation-profile,
     display: none;
 }
 
-.elevation-tooltip.leaflet-tooltip {
+.waypoint-tooltip.leaflet-tooltip {
     white-space: normal;
     padding: 0;
     margin: 0;
