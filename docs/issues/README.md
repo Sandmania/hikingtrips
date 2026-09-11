@@ -32,6 +32,12 @@ Design record: [handoff](../handoff-temperature-timeline.md) · [glossary](../..
 |---|---|---|---|---|
 | 0008 | [Intermittent TypeError when resize beats the marker import](0008-elevation-marker-race-on-resize.md) | AFK | ready | — |
 
+## Actual route waypoints
+
+| # | Issue | Type | Status | Blocked by |
+|---|---|---|---|---|
+| 0010 | [Waypoints that crowd each other are drawn as one](0010-crowded-waypoint-icons.md) | AFK | done | — |
+
 ## Calendar
 
 | # | Issue | Type | Status | Blocked by |

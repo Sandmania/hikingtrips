@@ -6,6 +6,7 @@ import { galleryControl } from './leaflet/galleryControl.js'
 import { calendarControl } from './leaflet/calendarControl.js'
 import { infoControl } from './leaflet/infoControl.js'
 import { hoverMarker } from './leaflet/hoverMarker.js'
+import { waypointLayer } from './leaflet/waypointLayer.js'
 import { initializeConfiguredBasemaps } from './leaflet/baseMaps.js'
 
 let map;
@@ -20,6 +21,7 @@ let actualRouteLayer;
 let selectedTripConfiguration;
 let pendingElevationListener;
 let weatherHoverMarker;
+let waypointMarkers;
 
 document.addEventListener('alternatives-change', (event) => {
     if (!map) return;
@@ -30,6 +32,10 @@ document.addEventListener('alternatives-change', (event) => {
 });
 
 export function destroyMap() {
+    if (waypointMarkers) {
+        waypointMarkers.remove();
+        waypointMarkers = null;
+    }
     if (weatherHoverMarker) {
         weatherHoverMarker.remove();
         weatherHoverMarker = null;
@@ -45,7 +51,7 @@ export function destroyMap() {
     legFeatureGroup = L.featureGroup();
     evacuationFeatureGroup = L.featureGroup();
     alternativeFeatureGroup = L.featureGroup();
-    actualRouteLayer = L.featureGroup();
+    actualRouteLayer = null;
     document.dispatchEvent(new CustomEvent('elevation-destroy'));
 }
 
@@ -54,7 +60,8 @@ export function initMap(fullConfiguration) {
     legFeatureGroup = L.featureGroup();
     evacuationFeatureGroup = L.featureGroup();
     alternativeFeatureGroup = L.featureGroup();
-    actualRouteLayer = L.featureGroup();
+    actualRouteLayer = null;
+    waypointMarkers = null;
     console.log("Initializing map. Global config is: ", fullConfiguration);
     map = new L.map("map").setView([66.50, 25.72], 6);
 
@@ -84,35 +91,55 @@ export function initMap(fullConfiguration) {
     if (globalConfiguration?.actualRoute?.gpx) {
         const gpxPath = globalConfiguration.actualRoute.gpx;
 
+        // The layers arrive once on load and again every time the route overlay
+        // is switched back on, because switching it on reads the GPX afresh.
+        // Each arrival replaces the last, or the map ends up with a second copy
+        // of the track and a layer control listing both.
         const onLayersReady = (event) => {
-            pendingElevationListener = null;
-            const { routeLayer, photoLayer } = event.detail;
+            const { routeLayer, waypoints } = event.detail;
+
+            if (actualRouteLayer) {
+                layerControl.removeLayer(actualRouteLayer);
+                map.removeLayer(actualRouteLayer);
+            }
+            if (waypointMarkers) {
+                layerControl.removeLayer(waypointMarkers.layer);
+                waypointMarkers.remove();
+                waypointMarkers = null;
+            }
+
             actualRouteLayer = routeLayer;
             routeLayer.addTo(map);
             layerControl.addOverlay(routeLayer, "Actual route");
 
-            if (photoLayer) {
-                photoLayer.addTo(map);
-                layerControl.addOverlay(photoLayer, "Photos");
+            if (waypoints?.length) {
+                // Photos and camps are one overlay because they are one set of
+                // markers: a photo taken at camp is drawn as part of that camp.
+                waypointMarkers = waypointLayer(map, waypoints);
+                waypointMarkers.layer.addTo(map);
+                layerControl.addOverlay(waypointMarkers.layer, "Photos & camps");
             }
-
-            map.on('overlayadd', function(e) {
-                if (e.layer === routeLayer) {
-                    document.dispatchEvent(new CustomEvent('elevation-toggle', {
-                        detail: { visible: true, gpxPath }
-                    }));
-                }
-            });
-            map.on('overlayremove', function(e) {
-                if (e.layer === routeLayer) {
-                    document.dispatchEvent(new CustomEvent('elevation-toggle', {
-                        detail: { visible: false }
-                    }));
-                }
-            });
         };
         pendingElevationListener = onLayersReady;
-        document.addEventListener('elevation-layers-ready', onLayersReady, { once: true });
+        document.addEventListener('elevation-layers-ready', onLayersReady);
+
+        // Registered once, against whichever route layer is current, rather
+        // than once per arrival — a handler per reading would toggle the
+        // elevation profile as many times as the GPX has been read.
+        map.on('overlayadd', function(e) {
+            if (e.layer === actualRouteLayer) {
+                document.dispatchEvent(new CustomEvent('elevation-toggle', {
+                    detail: { visible: true, gpxPath }
+                }));
+            }
+        });
+        map.on('overlayremove', function(e) {
+            if (e.layer === actualRouteLayer) {
+                document.dispatchEvent(new CustomEvent('elevation-toggle', {
+                    detail: { visible: false }
+                }));
+            }
+        });
 
         document.dispatchEvent(new CustomEvent('elevation-init', {
             detail: { mapInstance: map, gpxPath }
