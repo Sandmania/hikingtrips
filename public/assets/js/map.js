@@ -8,6 +8,7 @@ import { infoControl } from './leaflet/infoControl.js'
 import { hoverMarker } from './leaflet/hoverMarker.js'
 import { waypointLayer } from './leaflet/waypointLayer.js'
 import { initializeConfiguredBasemaps } from './leaflet/baseMaps.js'
+import { trackPointPopup } from './leaflet/trackPointPopup.js'
 
 let map;
 let layerControl;
@@ -22,6 +23,7 @@ let selectedTripConfiguration;
 let pendingElevationListener;
 let weatherHoverMarker;
 let waypointMarkers;
+let trackPoints;
 
 document.addEventListener('alternatives-change', (event) => {
     if (!map) return;
@@ -52,6 +54,7 @@ export function destroyMap() {
     evacuationFeatureGroup = L.featureGroup();
     alternativeFeatureGroup = L.featureGroup();
     actualRouteLayer = null;
+    trackPoints = null;
     document.dispatchEvent(new CustomEvent('elevation-destroy'));
 }
 
@@ -64,6 +67,9 @@ export function initMap(fullConfiguration) {
     waypointMarkers = null;
     console.log("Initializing map. Global config is: ", fullConfiguration);
     map = new L.map("map").setView([66.50, 25.72], 6);
+
+    // Every track on this map answers a click with the trackpoint it hit.
+    trackPoints = trackPointPopup(map);
 
     var baseMaps = initializeConfiguredBasemaps(globalConfiguration);
     resolveDefaultTileLayer(baseMaps).addTo(map);
@@ -110,6 +116,7 @@ export function initMap(fullConfiguration) {
 
             actualRouteLayer = routeLayer;
             routeLayer.addTo(map);
+            trackPoints.bind(routeLayer);
             layerControl.addOverlay(routeLayer, "Actual route");
 
             if (waypoints?.length) {
@@ -184,6 +191,14 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
         return;
     }
 
+    // The map these routes are being read for. A GPX read cannot be cancelled,
+    // so one that finishes after the trip was closed arrives either at no map
+    // at all — destroyMap has run, initMap has not — or at the next trip's,
+    // which is the worse of the two, because fitting and binding it succeed and
+    // leave the reader on a map flung to the previous trip's bounds.
+    const loadingForMap = map;
+    const stale = () => map !== loadingForMap;
+
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
     
@@ -191,6 +206,7 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     const loadAllRoutes = routesForType.map((leg, index) => {
         return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
+            if (stale()) return;
             setMetadataFromGpxToLegAtIndex(gpx, leg, index);
             createInfoPopupForGpxLayer(gpx, leg);
             // Increase the total distance of specific routes
@@ -201,6 +217,7 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
 
     if (routeType === "trip") {
         Promise.allSettled(loadAllRoutes).then(() => {
+            if (stale()) return;
             console.log("All routes loaded.");
             map.fitBounds(featureGroup.getBounds());
             // Selected trip configuration is displayed in trip information view
@@ -223,13 +240,13 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
 }
 
 function createInfoPopupForGpxLayer(gpx, leg) {
-    gpx.loadedGpx.eachLayer(layer => {
-        let popupContent = `${leg.name}: ${leg.distance.toFixed(2)} km`;
-        if (leg.elevationGain || leg.elevationLoss) {
-            popupContent += ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
-        }
-        layer.bindPopup(popupContent);
-    });
+    let popupContent = `${leg.name}: ${leg.distance.toFixed(2)} km`;
+    if (leg.elevationGain || leg.elevationLoss) {
+        popupContent += ` (+${leg.elevationGain || 0} m / -${leg.elevationLoss || 0} m)`;
+    }
+    // The leg's own line answers with the trackpoint that was clicked, headed
+    // by what the leg is; its start and end icons keep the popup they had.
+    trackPoints.bind(gpx.loadedGpx, popupContent);
 }
 
 function setMetadataFromGpxToLegAtIndex(gpx, leg, index) {
