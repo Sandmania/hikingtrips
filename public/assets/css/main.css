@@ -116,3 +116,48 @@ trip-view {
   stroke: #4a5560;
   stroke-dasharray: 3 2;
 }
+
+/* The trackpoint a click on a track hit. The popup's tip is what marks the
+   point itself, so the panel stays small enough to leave it visible. */
+.trackpoint-heading {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.trackpoint-position {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.trackpoint-coordinates {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.trackpoint-copy {
+  border: 1px solid #c8ccd0;
+  border-radius: 4px;
+  background: #fff;
+  color: #4a5560;
+  font-size: 11px;
+  padding: 1px 6px;
+  cursor: pointer;
+}
+
+.trackpoint-copy:hover {
+  background: #f2f4f6;
+}
+
+.trackpoint-detail {
+  margin-top: 3px;
+  color: #4a5560;
+  font-size: 12px;
+}
+
+.trackpoint-note {
+  margin-top: 2px;
+  color: #8a929a;
+  font-size: 11px;
+}
