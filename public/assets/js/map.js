@@ -191,6 +191,14 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
         return;
     }
 
+    // The map these routes are being read for. A GPX read cannot be cancelled,
+    // so one that finishes after the trip was closed arrives either at no map
+    // at all — destroyMap has run, initMap has not — or at the next trip's,
+    // which is the worse of the two, because fitting and binding it succeed and
+    // leave the reader on a map flung to the previous trip's bounds.
+    const loadingForMap = map;
+    const stale = () => map !== loadingForMap;
+
     const defaultOptionsForRouteType = globalConfiguration.defaults[routeType];
     const totalNumberOfRoutesForType = routesForType.length;
     
@@ -198,6 +206,7 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
     console.log("Adding routes of type " + routeType + ". Total number of routes for type: " + totalNumberOfRoutesForType);
     const loadAllRoutes = routesForType.map((leg, index) => {
         return loadGPX(leg, true, featureGroup, defaultOptionsForRouteType).then((gpx) => {
+            if (stale()) return;
             setMetadataFromGpxToLegAtIndex(gpx, leg, index);
             createInfoPopupForGpxLayer(gpx, leg);
             // Increase the total distance of specific routes
@@ -208,6 +217,7 @@ export function addRoutesToFeatureGroup(routeType, routesForType, featureGroup) 
 
     if (routeType === "trip") {
         Promise.allSettled(loadAllRoutes).then(() => {
+            if (stale()) return;
             console.log("All routes loaded.");
             map.fitBounds(featureGroup.getBounds());
             // Selected trip configuration is displayed in trip information view
