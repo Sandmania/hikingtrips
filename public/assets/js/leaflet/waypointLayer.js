@@ -22,16 +22,22 @@ const ICON = {
 const TOOLTIP = { className: 'waypoint-tooltip', direction: 'auto', sticky: true, opacity: 1 };
 const POPUP = { className: 'waypoint-popup', keepInView: true };
 
+// A finger cannot hover. Tapping a marker makes the browser emulate one anyway
+// — a mouseover, then the click — and the marker answered both, stacking a
+// tooltip and a popup saying the same thing. Where there is no hover to answer,
+// only the popup is bound: it is the one that stays put and can be dismissed.
+const canHover = () => window.matchMedia('(hover: hover)').matches;
+
 /**
  * Draw a trip's waypoints, merging the ones that crowd each other.
  *
  * @param {L.Map} map the trip's map
  * @param {Array<{latitude: number, longitude: number, sym: string, name: string, desc: string}>} waypoints
- * @param {{minSeparation?: number}} [options]
+ * @param {{minSeparation?: number, hover?: function(): boolean}} [options]
  * @returns {{layer: L.FeatureGroup, remove: function(): void}} the layer to show,
  *          and the way to stop it following the zoom
  */
-export function waypointLayer(map, waypoints, { minSeparation = MIN_SEPARATION } = {}) {
+export function waypointLayer(map, waypoints, { minSeparation = MIN_SEPARATION, hover = canHover } = {}) {
     const layer = L.featureGroup();
 
     const draw = () => {
@@ -45,7 +51,7 @@ export function waypointLayer(map, waypoints, { minSeparation = MIN_SEPARATION }
         });
 
         groupByProximity(placed, minSeparation)
-            .map(group => markerFor(group.map(point => point.waypoint)))
+            .map(group => markerFor(group.map(point => point.waypoint), hover()))
             .forEach(marker => layer.addLayer(marker));
     };
 
@@ -63,7 +69,7 @@ export function waypointLayer(map, waypoints, { minSeparation = MIN_SEPARATION }
 }
 
 /** One marker speaking for one spot's waypoints. */
-function markerFor(waypoints) {
+function markerFor(waypoints, hover) {
     const { html, items, hasPhoto, hasCamp } = mergeGroupContent(waypoints);
     // The first waypoint's position, not the group's centre: the group is no
     // wider than the icon anyway, and an anchor that does not move keeps the
@@ -81,7 +87,16 @@ function markerFor(waypoints) {
         })
     });
 
-    if (html) marker.bindTooltip(html, TOOLTIP).bindPopup(html, POPUP);
+    if (!html) return marker;
+
+    marker.bindPopup(html, POPUP);
+    if (hover) {
+        marker.bindTooltip(html, TOOLTIP);
+        // A device that hovers can still be touched — a laptop with a screen,
+        // a tablet with a mouse. The tooltip is bound there, so the tap that
+        // opens the popup has to take it back down.
+        marker.on('popupopen', () => marker.closeTooltip());
+    }
     return marker;
 }
 

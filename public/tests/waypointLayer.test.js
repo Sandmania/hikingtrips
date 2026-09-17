@@ -38,8 +38,8 @@ function aMap(zoom) {
 }
 
 /** The waypoints as they are drawn, which is what the reader can hover. */
-function drawn(map, waypoints) {
-    const drawing = waypointLayer(map, waypoints);
+function drawn(map, waypoints, options = {}) {
+    const drawing = waypointLayer(map, waypoints, { hover: () => true, ...options });
     teardown.push(() => drawing.remove());
     drawing.layer.addTo(map);
     return drawing;
@@ -147,9 +147,33 @@ describe('the waypoints on the actual route', () => {
         expect(lng).to.be.closeTo(LEG_1.longitude, 0.0001);
     });
 
+    it('answers a touch with the popup alone', () => {
+        // A tap makes the browser emulate a hover before the click. Binding the
+        // tooltip anyway answered one tap with two boxes of the same photos.
+        const drawing = drawn(aMap(13), [DSC04101], { hover: () => false });
+
+        const [marker] = markers(drawing);
+        expect(marker.getTooltip()).to.be.undefined;
+        expect(marker.getPopup().getContent()).to.contain('image-grid');
+    });
+
+    it('takes the hover down when the click opens the popup', () => {
+        // A laptop with a touchscreen hovers and is tapped, so it gets both —
+        // but not at once.
+        const map = aMap(13);
+        const drawing = drawn(map, [DSC04101]);
+
+        const [marker] = markers(drawing);
+        marker.openTooltip();
+        marker.openPopup();
+
+        expect(marker.isTooltipOpen()).to.be.false;
+        expect(marker.isPopupOpen()).to.be.true;
+    });
+
     it('stops redrawing once it is taken off the map', () => {
         const map = aMap(13);
-        const drawing = waypointLayer(map, [LEG_1, DSC04009]);
+        const drawing = waypointLayer(map, [LEG_1, DSC04009], { hover: () => true });
         drawing.layer.addTo(map);
 
         drawing.remove();
