@@ -52,12 +52,13 @@ defaults:
       dinner: true
       snacks: true      
 
+
 trip:
   - gpx: planned_route/Kuohkimajarvi_ele.gpx
     startIcon: ../assets/images/circle-play-regular.svg
     mealPlan:
       breakfast: false
-      lunch: true # Lunch on the road or at Ritsem?
+      lunch: true
       dinner: true
       snacks: true
     description: >
@@ -83,6 +84,9 @@ trip:
       dinner: false
       snacks: true
     description: >
+
+actualRoute:
+  gpx: actual_route/combined.gpx    
 
 evacuation:
   - gpx: planned_route/evac1_ele.gpx
@@ -153,8 +157,18 @@ travel_info:
 mealPlan:
   csvUrl: mealPlan.csv
 
+packDetails:
+  csvUrl: lighterpack.csv
+
 photo_info:
   cameraOffset:
-    realClock: 13.09
-    cameraClock: 14.02
-    substrackt: "53m"
+    realClock: 11.44.30
+    cameraClock: 11.53.30
+    substrackt: "9m" # this is only for pics taken with RX100, timestamps of pics taken with phone were most likely foobared by this
+  galleryUrl: gallery.html
+
+weather:
+  csvUrl: "weather.csv"
+  # The Kestrel writes naive local wall times with no offset, so the zone the
+  # trip happened in has to be stated here.
+  timezone: Europe/Helsinki
