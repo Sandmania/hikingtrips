@@ -85,6 +85,15 @@ https://www.phpied.com/maximally-minimal-build-process/
 https://www.phpied.com/import-javascript-like-its-2026/
 https://blog.bitsrc.io/sharing-data-between-web-components-using-custom-events-7eff301625d2
 
+### NLS vector map style
+
+`public/assets/vectormap/nls_vector_map.json` is generated (offtiler's hiking
+palette mapped onto NLS taustakartta). Edit the script, not the JSON:
+
+```
+python3 tools/build_nls_style.py
+```
+
 ## Deployment
 ```
 aws sso login --profile joun_in

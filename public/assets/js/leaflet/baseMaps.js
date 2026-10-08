@@ -1,3 +1,19 @@
+// The NLS style paints a land-coloured background (the tiles carry no land
+// polygon). In the composite that would cover the Swedish and Norwegian
+// rasters beneath it, so hide it there.
+function withoutBackground(glLayer) {
+    glLayer.on('add', () => {
+        const glMap = glLayer.getMapboxMap();
+        const hide = () => glMap.setLayoutProperty('background', 'visibility', 'none');
+        if (glMap.isStyleLoaded()) {
+            hide();
+        } else {
+            glMap.once('style.load', hide);
+        }
+    });
+    return glLayer;
+}
+
 export function initializeConfiguredBasemaps(config) {
     const allBaseMaps = {
         "Esri World Imagery": L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
@@ -48,12 +64,12 @@ export function initializeConfiguredBasemaps(config) {
                 maxZoom: 18,
                 tileSize: 256
             }),
-            L.mapboxGL({
+            withoutBackground(L.mapboxGL({
                 style: 'assets/vectormap/nls_vector_map.json',
-                attribution: 
+                attribution:
                     '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
                     "target=new>Maanmittauslaitos</a>"
-            })
+            }))
         ])
     };
 
