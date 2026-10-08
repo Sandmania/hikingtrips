@@ -149,6 +149,16 @@ class HikingCalendar extends HTMLElement {
             acc.checkInTime?.slice(0, 5),
           ),
         });
+        // Fill the whole days between check-in and check-out of a multi-night stay
+        for (const date of this.getDatesBetween(acc.checkInDate, acc.checkOutDate)) {
+          events.push({
+            date,
+            type: "stay",
+            name: acc.name,
+            url: acc.url,
+            isoDateTime: this.parseDateTime(date),
+          });
+        }
         events.push({
           date: acc.checkOutDate,
           time: acc.checkOutTime,
@@ -164,6 +174,19 @@ class HikingCalendar extends HTMLElement {
     }
 
     return events;
+  }
+
+  // ISO dates strictly between startDateStr and endDateStr
+  getDatesBetween(startDateStr, endDateStr) {
+    const dates = [];
+    if (!startDateStr || !endDateStr) return dates;
+    const cursor = new Date(`${startDateStr}T00:00:00Z`);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+    while (cursor.toISOString().slice(0, 10) < endDateStr) {
+      dates.push(cursor.toISOString().slice(0, 10));
+      cursor.setUTCDate(cursor.getUTCDate() + 1);
+    }
+    return dates;
   }
 
   parseDateTime(dateStr, timeStr = "00:00") {
@@ -549,7 +572,7 @@ class HikingCalendar extends HTMLElement {
       .map((event) => {
         const time = event.time
           ? `<div class="event-time-label"><strong>Time:</strong> ${event.time}</div>`
-          : `<div class="event-time-label"><strong>Time:</strong> Not specified</div>`;
+          : ``;
         const type = `<div class="event-type-label"><strong>Type:</strong> <span class="event-type event-type-${event.type}">${this.capitalizeFirstLetter(event.type)}</span></div>`;
         const fromTo =
           event.from && event.to

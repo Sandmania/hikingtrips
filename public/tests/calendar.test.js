@@ -81,6 +81,27 @@ describe('HikingCalendar', () => {
             expect(checkOutEvents[0].name).to.equal('Hotel Rovaniemi');
         });
 
+        it('includes stay events on the days between check-in and check-out of a multi-night stay', () => {
+            const eventMap = calendar.buildEventMap({
+                to: [],
+                from: [{
+                    accommodation: {
+                        name: 'Cabin',
+                        checkInDate: '2025-07-30',
+                        checkInTime: '15:00',
+                        checkOutDate: '2025-08-02',
+                        checkOutTime: '08:00',
+                    },
+                }],
+            });
+
+            for (const date of ['2025-07-30', '2025-07-31', '2025-08-01', '2025-08-02']) {
+                const stays = (eventMap[date] || []).filter(e => e.type === 'stay');
+                expect(stays, `expected one stay event on ${date}`).to.have.lengthOf(1);
+                expect(stays[0].name).to.equal('Cabin');
+            }
+        });
+
         it('generates a hike event for each day between last to-checkout and first from-checkin', () => {
             const eventMap = calendar.buildEventMap(sampleTravelInfo);
 
