@@ -1,0 +1,127 @@
+heading: Halti 2017 - TrailTreader
+
+defaults:
+  numberOfZeroDays: 0
+  tileLayer: NLS Topographic map
+  availableTileLayers:
+    - "Esri World Imagery"
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "NLS Topographic map"
+    - "NLS Vector tiles"
+  walkingSpeed: 3
+  trip:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    startIcon: ../assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true      
+
+
+trip:
+  - gpx: planned_route/kilpisjarvi-kuonjarjoki.gpx
+    startIcon: ../assets/images/circle-play-regular.svg
+    mealPlan:
+      breakfast: false
+      lunch: true
+      dinner: true
+      snacks: true
+  - gpx: planned_route/kuonjarjoki-pihtsusjarvi.gpx
+  - gpx: planned_route/pihtsusjarvi-halti-haltintupa.gpx
+  - gpx: planned_route/halti-pitsus.gpx
+  - gpx: planned_route/pitsus-meeko.gpx
+  - gpx: planned_route/meeko-saarijarvi.gpx
+  - gpx: planned_route/saarijarvi-luontokeskus.gpx
+    endIcon: ../assets/images/flag-checkered-solid.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true
+    description: >
+
+travel_info:
+  to:
+    - transportation:
+        type: train
+        from: Jyväskylä
+        to: Tampere
+        outboundDate: "2017-08-11"
+        outboundTime: 19:20:00.000+03:00
+    - transportation:
+        type: train
+        from: Tampere
+        to: Rovaniemi
+        outboundDate: "2017-08-11"
+        outboundTime: 22:11:00.000+03:00
+    - transportation: # Rovaniemi rautatieasema (08:20) - Kilpisjärven luontotalo (16:13)
+        type: bus
+        from: Rovaniemi rautatieasema
+        to: Kilpisjärven luontotalo
+        outboundDate: "2017-08-12"
+        outboundTime: 08:20:00.000+03:00
+    - accommodation:
+        name: Huoneisto, Tundrea
+        url: https://tundrea.com/
+        checkInDate: "2017-08-12"
+        checkOutDate: "2017-08-13"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+  from:
+    - accommodation:
+        name: Taiston mökki, Tundrea
+        url: https://tundrea.com/
+        checkInDate: "2017-08-19"
+        checkOutDate: "2017-08-21"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+    - transportation:
+        type: bus
+        from: Kilpisjärven luontotalo
+        to: Rovaniemi rautatieasema
+        outboundDate: "2017-08-21"
+        outboundTime: 11:16
+    - transportation:
+        type: train
+        from: Rovaniemi
+        to: Tampere
+        outboundDate: "2017-08-21"
+        outboundTime: 21:15
+    - transportation:
+        type: train
+        from: Tampere
+        to: Jyväskylä
+        outboundDate: "2017-08-22"
+        outboundTime: 07:09

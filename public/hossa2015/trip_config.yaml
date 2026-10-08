@@ -1,0 +1,113 @@
+heading: Hossa 2015 - TrailTreader
+
+defaults:
+  numberOfZeroDays: 2
+  tileLayer: NLS Topographic map
+  availableTileLayers:
+    - "Esri World Imagery"
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "NLS Topographic map"
+    - "NLS Vector tiles"
+  walkingSpeed: 3
+  trip:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    startIcon: ../assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true      
+
+
+trip:
+  - gpx: planned_route/peranka-hevonperse.gpx
+    startIcon: ../assets/images/circle-play-regular.svg
+    mealPlan:
+      breakfast: false
+      lunch: true
+      dinner: true
+      snacks: true
+  - gpx: planned_route/hevonperse-lavajarvi.gpx
+  - gpx: planned_route/lavajarvi-kokalmus.gpx
+  - gpx: planned_route/kokalmus-ala-olkky.gpx
+  - gpx: planned_route/ala-olkky-hakokoski.gpx
+  - gpx: planned_route/hakokoski-hossan_lomakeskus.gpx
+    endIcon: ../assets/images/flag-checkered-solid.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true
+    description: >
+
+travel_info:
+  to:
+    - transportation:
+        type: bus
+        from: Jyväskylä Matkakeskus
+        to: Kuopio linja-autoasema
+        outboundDate: "2015-08-17"
+        outboundTime: 06:30:00.000+03:00 # Jyväskylä Matkakeskus (6:30) - Kuopio linja-autoasema (8:45)
+    - transportation:
+        type: train
+        from: Kuopio
+        to: Kajaani
+        outboundDate: "2015-08-17"
+        outboundTime: 09:50:00.000+03:00
+    - transportation:
+        type: bus
+        from: Kajaani linja-autoasema
+        to: Peranka
+        outboundDate: "2015-08-17"
+        outboundTime: 13:15 # Valittu menomatka: Kajaani linja-autoasema (13:15) - Peranka (16:10)
+  from:
+    - accommodation:
+        name: Hossan Lomakeskus
+        url: https://www.campnorwide.com/fi
+        checkInDate: "2015-08-22"
+        checkOutDate: "2015-08-24"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+    - transportation: # Tästä ei löytynyt kuittia, mutta eiköhän tää legi ollut tavalla tai toisella Lomakeskuksesta Ouluun
+        type: bus
+        from: Hossan Lomakeskus
+        to: Oulu
+        outboundDate: "2015-08-24"
+        outboundTime: 10:00
+    - transportation: # Oulu linja-autoasema (14:00) - Jyväskylä Matkakeskus (18:45)
+        type: bus
+        from: Oulu linja-autoasema
+        to: Jyväskylä Matkakeskus
+        outboundDate: "2015-08-24"
+        outboundTime: 14:00:00.000+03:00

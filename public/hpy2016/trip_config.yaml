@@ -1,0 +1,116 @@
+heading: Hetta-Pallas-Ylläs 2016 - TrailTreader
+
+defaults:
+  numberOfZeroDays: 2
+  tileLayer: NLS Topographic map
+  availableTileLayers:
+    - "Esri World Imagery"
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "NLS Topographic map"
+    - "NLS Vector tiles"
+  walkingSpeed: 3
+  trip:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    startIcon: ../assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true      
+
+
+trip:
+  - gpx: planned_route/hetta-sioskuru.gpx
+    startIcon: ../assets/images/circle-play-regular.svg
+    mealPlan:
+      breakfast: false
+      lunch: true
+      dinner: true
+      snacks: true
+  - gpx: planned_route/sioskuru-suaskuru.gpx
+  - gpx: planned_route/suaskuru-nammalakuru.gpx
+  - gpx: planned_route/nammalakuru-pallaksen-kota.gpx
+  - gpx: planned_route/pallaksen-kota-keimiojarvi.gpx
+  - gpx: planned_route/keimiojarvi-pahtavuoma.gpx
+  - gpx: planned_route/pahtavuoma-saivon-kota.gpx
+  - gpx: planned_route/saivon-kota-akaslompolo.gpx
+    endIcon: ../assets/images/flag-checkered-solid.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true
+    description: >
+
+travel_info:
+  to:
+    - transportation:
+        type: bus
+        from: Jyväskylä Matkakeskus
+        to: Hetta
+        outboundDate: "2016-08-15"
+        outboundTime: 06:00:00.000+03:00
+    - accommodation:
+        name: Hetan kota
+        url: 
+        checkInDate: "2016-08-15"
+        checkOutDate: "2016-08-16"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+    - transportation:
+        type: boat
+        from: Hetan Kota
+        to: Trail end
+        outboundDate: "2016-08-16"
+        outboundTime: 10:00:00.000+03:00
+  from:
+    - accommodation:
+        name: Ylläsmäkelä, Kuoppa, Äkäsentie 4 B
+        url: https://yllasmakela.fi/fi/mokit/kuoppa-2-2
+        checkInDate: "2016-08-24"
+        checkOutDate: "2016-08-25"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+    - transportation:
+        type: train
+        from: Kolari
+        to: Tampere
+        outboundDate: "2016-08-25"
+        outboundTime: 18:20
+    - transportation:
+        type: train
+        from: Tampere
+        to: Jyväskylä
+        outboundDate: "2016-08-26"
+        outboundTime: 07:09

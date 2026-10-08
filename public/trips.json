@@ -1,5 +1,29 @@
 [
   {
+    "id": "ukk2014",
+    "name": "Urho Kekkonen National Park",
+    "dates": "August 15-23, 2014",
+    "image": "assets/images/placeholder_small.png"
+  },
+  {
+    "id": "hossa2015",
+    "name": "Hossa National Park",
+    "dates": "August 17-24, 2015",
+    "image": "assets/images/placeholder_small.png"
+  },
+  {
+    "id": "hpy2016",
+    "name": "Pallas-Yllästunturi National Park",
+    "dates": "August 15-26, 2016",
+    "image": "assets/images/placeholder_small.png"
+  },
+  {
+    "id": "halti2017",
+    "name": "Käsivarsi Wilderness Area",
+    "dates": "August 11-22, 2017",
+    "image": "assets/images/placeholder_small.png"
+  },
+  {
     "id": "repovesi2023",
     "name": "Repovesi National Park",
     "dates": "June 22-25, 2023",

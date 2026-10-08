@@ -1,0 +1,124 @@
+heading: UKK 2014 - TrailTreader
+
+defaults:
+  numberOfZeroDays: 2
+  tileLayer: NLS Topographic map
+  availableTileLayers:
+    - "Esri World Imagery"
+    - "OpenTopoMap"
+    - "OpenStreetMap"
+    - "NLS Topographic map"
+    - "NLS Vector tiles"
+  walkingSpeed: 3
+  trip:
+    color: 'black'
+    opacity: 0.7
+    weight: 7
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  alternatives:
+    color: 'blue'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    endIcon: ../assets/images/bonfire-outline.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true
+  evacuation:
+    color: 'red'
+    opacity: 0.7
+    weight: 5
+    dashArray: '7, 7'
+    startIcon: ../assets/images/medkit-outline.svg
+    mealPlan:
+      breakfast: false
+      lunch: false
+      dinner: false
+      snacks: false
+  zero:
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: true
+      snacks: true      
+
+
+trip:
+  - gpx: planned_route/aittajarvi-porttikoski.gpx
+    startIcon: ../assets/images/circle-play-regular.svg
+    mealPlan:
+      breakfast: false
+      lunch: true
+      dinner: true
+      snacks: true
+  - gpx: planned_route/porttikoski-kotakongas.gpx
+  - gpx: planned_route/kotakongas-tuiskukuru.gpx
+  - gpx: planned_route/tuiskukuru-suomunruoktu.gpx
+  - gpx: planned_route/suomunruoktu-kiilopaa.gpx
+    endIcon: ../assets/images/flag-checkered-solid.svg
+    mealPlan:
+      breakfast: true
+      lunch: true
+      dinner: false
+      snacks: true
+    description: >
+
+travel_info:
+  to:
+    - transportation:
+        type: train
+        from: JY
+        to: TPE
+        outboundDate: "2014-08-15"
+        outboundTime: 21:14:00.000+03:00
+    - transportation:
+        type: train
+        from: TPE
+        to: ROI
+        outboundDate: "2014-08-15"
+        outboundTime: 23:09:00.000+03:00
+    - transportation:
+        type: bus
+        from: Rovaniemi
+        to: Saariselkä
+        outboundDate: "2014-08-16"
+        outboundTime: 07:20
+    - transportation:
+        type: taxi
+        from: Saariselkä
+        to: Aittajärvi
+        outboundDate: "2014-08-16"
+        outboundTime: 13:00
+  from:
+    - accommodation:
+        name: Hotelli Niilanpää
+        url: https://www.kiilopaa.fi/majoitus/hotelli-niilanpaa
+        checkInDate: "2014-08-21"
+        checkOutDate: "2014-08-22"
+        checkInTime: 15:00
+        checkOutTime: 08:00
+    - transportation:
+        type: bus
+        from: Kiilopää
+        to: Rovaniemi
+        outboundDate: "2014-08-22"
+        outboundTime: 14:00
+    - transportation:
+        type: train
+        from: ROI
+        to: TRE
+        outboundDate: "2014-08-22"
+        outboundTime: 20:57:00.000+03:00
+    - transportation:
+        type: train
+        from: TRE
+        to: JY
+        outboundDate: "2014-08-23"
+        outboundTime: 08:00:00.000+03:00
