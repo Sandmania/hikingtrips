@@ -32,7 +32,7 @@ export function initializeConfiguredBasemaps(config) {
             tileSize: 256
         }),
         "NLS Vector tiles": L.mapboxGL({
-            style: 'nls_vector_map.json',
+            style: 'assets/vectormap/nls_vector_map.json',
             attribution: 
                 '&copy; <a href="https://www.maanmittauslaitos.fi/avoindata_lisenssi_versio1_20120501"' +
                 "target=new>Maanmittauslaitos</a>"
